@@ -2,12 +2,14 @@
 
 ; CHECK-NOT: Instruction operands must be first-class
 
-; This previously was for PR826, but structs are now first-class so
-; the following is now valid.
+;; Test that a structure can be stored to memory.  This test fails with lli
+;; from svn revision 240238: 
+;;	lli 2015-02-25-StoreStruct.ll
+;;
 
-        %struct_4 = type { i32 }
+%struct_4 = type { i32 }
 
-define void @test() {
+define void @main() {
         store %struct_4 zeroinitializer, %struct_4* null
         unreachable
 }
