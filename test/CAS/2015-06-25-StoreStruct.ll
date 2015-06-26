@@ -2,9 +2,13 @@
 
 ; CHECK-NOT: Instruction operands must be first-class
 
+;; Status: this test currently fails, but not for the intended reason.
+;; TODO2: investigate as time allows. -- CAS 2015jun25
+;;
+
 ;; Test that a structure can be stored to memory.  This test fails with lli
 ;; from svn revision 240238: 
-;;	lli 2015-02-25-StoreStruct.ll
+;;	lli -force-interpreter 2015-02-25-StoreStruct.ll
 ;;
 
 %struct_4 = type { i32 }
