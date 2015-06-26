@@ -26,6 +26,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/Operator.h"
 #include "llvm/IR/ValueHandle.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/Object/Archive.h"
 #include "llvm/Object/ObjectFile.h"
 #include "llvm/Support/Debug.h"
@@ -1044,7 +1045,7 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 /// \param Ty information about the data type being written
 /// \param In_ptr information about the instruction invoking the Store 
 ///     operation
-void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
+static void StoreStructToMemory(const GenericValue &Src,
       GenericValue *Dest, Type *Ty, const StoreInst* In_ptr)  
 {{ 
   #if 0 //@casdbg@
@@ -1061,7 +1062,7 @@ void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
   unsigned elemIdx= 0;
   for ( elemIdx= 0; elemIdx < Ty->getStructNumElements(); elemIdx++ )  {
     Type* elemType= Ty->getStructElementType(elemIdx); 
-    StoreValueToMemory( Src.AggregateVal[elemIdx], 
+    ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx], 
         (GenericValue*)destPtr, elemType, In_ptr );
     #if 0 //@casdbg@
       std::cout << "   elem " << elemIdx << " is of type \"" << 
@@ -1168,9 +1169,8 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
 /// \param Src read data from here (this is the Ptr parameter from
 ///     LoadValueFromMemory(~))
 /// \param Ty information on the type of the data to move
-void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
-                          GenericValue *Src,
-                          Type *Ty)  
+static void LoadStructFromMemory(GenericValue &Dest,
+      GenericValue *Src, Type *Ty)  
 {{ 
   // TODO: check all this.  See how it works.
   #if 0 //@casdbg@
