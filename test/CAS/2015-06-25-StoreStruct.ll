@@ -9,7 +9,9 @@
 
 %struct_4 = type { i32 }
 
+@some_addr= global %struct_4 { i32 5 }, align 8
+
 define void @main() {
-        store %struct_4 zeroinitializer, %struct_4* null
-        unreachable
+  store %struct_4 zeroinitializer, %struct_4* @some_addr
+  ret void
 }
