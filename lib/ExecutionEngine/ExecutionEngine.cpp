@@ -1031,9 +1031,13 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
   }
 }
 
-/// StoreStructToMemory -- Writes a struct out from a register.  This
-/// is intended to be a helper function for StoreValueToMemory(~), and
-/// takes the same parameters as that function.
+/// StoreStructToMemory 
+///
+/// \brief Writes a struct out from a register.  
+///
+/// This is intended to be a helper function for
+/// StoreValueToMemory(~), and takes the same parameters as that
+/// function.
 /// 
 /// \param Src the value to read from
 /// \param Dest the address to write to
@@ -1043,14 +1047,13 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
       GenericValue *Dest, Type *Ty, const StoreInst* In_ptr)  
 {{ 
-  // TODO: check all this.  See how it works.
   #if 0 //@casdbg@
-    std::cout << "starting StoreStructToMemory(~)\n"; //@casdbg@
+    std::cout << "starting StoreStructToMemory(~)\n"; 
     std::cout << "   Src has size=" << Src.AggregateVal.size() << 
-        " elements. \n"; //@casdbg@
+        " elements. \n"; 
     std::cout << "   Dest has size " << 
-        getDataLayout()->getTypeStoreSize(Ty) << " bytes. \n"; //@casdbg@
-    std::cout << "   got to venus \n"; //@casdbg@
+        getDataLayout()->getTypeStoreSize(Ty) << " bytes. \n"; 
+    std::cout << "   got to venus \n"; 
   #endif
 
   // TODO: check all this:
@@ -1064,13 +1067,12 @@ void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
       std::cout << "   elem " << elemIdx << " is of type \"" << 
           elemType->getTypeID() << "\", " << 
           getDataLayout()->getTypeStoreSize( elemType ) << " bytes long. \n";
-          //@casdbg@
     #endif
     destPtr+= getDataLayout()->getTypeStoreSize( elemType );
   }
 
   #if 0 //@casdbg@
-    std::cout << "stopping LoadStructFromMemory(~)\n"; //@casdbg@
+    std::cout << "stopping StoreStructToMemory(~)\n"; 
   #endif
   return;
 }}
@@ -1153,9 +1155,13 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
   }
 }
 
-/// LoadStructFromMemory -- Loads a struct into a register.  This is
-/// intended to be a helper function for LoadValueFromMemory(~), and
-/// takes the same parameters as that function.
+/// LoadStructFromMemory 
+///
+/// \brief Loads a struct into a register.  
+///
+/// This is intended to be a helper function for
+/// LoadValueFromMemory(~), and takes the same parameters as that
+/// function.
 ///
 /// \param Dest the location data should be written to (this is the
 ///     Result parameter from LoadValueFromMemory(~))
@@ -1168,7 +1174,7 @@ void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
 {{ 
   // TODO: check all this.  See how it works.
   #if 0 //@casdbg@
-    std::cout << "starting LoadStructFromMemory(~)\n"; //@casdbg@
+    std::cout << "starting LoadStructFromMemory(~)\n"; 
   #endif
 
   /* Note: we use the number of elements in Ty, not in Src, as Src is a
@@ -1178,8 +1184,7 @@ void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
   Dest.AggregateVal.resize( Ty->getStructNumElements() );
   #if 0 // @casdbg@
     std::cout << "   Dest was resized to " << Dest.AggregateVal.size() << 
-        " elements. \n"; //@casdbg@
-    std::cout << "   got to venus \n"; //@casdbg@
+        " elements. \n"; 
   #endif 
 
   // TODO: check all this:
@@ -1200,7 +1205,7 @@ void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
   }
 
   #if 0 //@casdbg@
-    std::cout << "stopping LoadStructFromMemory(~)\n"; //@casdbg@
+    std::cout << "stopping LoadStructFromMemory(~)\n"; 
   #endif
   return;
 }}
