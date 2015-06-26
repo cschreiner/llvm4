@@ -1031,6 +1031,51 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
   }
 }
 
+/// StoreStructToMemory -- Writes a struct out from a register.  This
+/// is intended to be a helper function for StoreValueToMemory(~), and
+/// takes the same parameters as that function.
+/// 
+/// \param Src the value to read from
+/// \param Dest the address to write to
+/// \param Ty information about the data type being written
+/// \param In_ptr information about the instruction invoking the Store 
+///     operation
+void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
+      GenericValue *Dest, Type *Ty, const StoreInst* In_ptr)  
+{{ 
+  // TODO: check all this.  See how it works.
+  #if 0 //@casdbg@
+    std::cout << "starting StoreStructToMemory(~)\n"; //@casdbg@
+    std::cout << "   Src has size=" << Src.AggregateVal.size() << 
+        " elements. \n"; //@casdbg@
+    std::cout << "   Dest has size " << 
+        getDataLayout()->getTypeStoreSize(Ty) << " bytes. \n"; //@casdbg@
+    std::cout << "   got to venus \n"; //@casdbg@
+  #endif
+
+  // TODO: check all this:
+  int8_t* destPtr= (int8_t*)Dest;
+  unsigned elemIdx= 0;
+  for ( elemIdx= 0; elemIdx < Ty->getStructNumElements(); elemIdx++ )  {
+    Type* elemType= Ty->getStructElementType(elemIdx); 
+    StoreValueToMemory( Src.AggregateVal[elemIdx], 
+        (GenericValue*)destPtr, elemType, In_ptr );
+    #if 0 //@casdbg@
+      std::cout << "   elem " << elemIdx << " is of type \"" << 
+          elemType->getTypeID() << "\", " << 
+          getDataLayout()->getTypeStoreSize( elemType ) << " bytes long. \n";
+          //@casdbg@
+    #endif
+    destPtr+= getDataLayout()->getTypeStoreSize( elemType );
+  }
+
+  #if 0 //@casdbg@
+    std::cout << "stopping LoadStructFromMemory(~)\n"; //@casdbg@
+  #endif
+  return;
+}}
+
+
 void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
                                          GenericValue *Ptr, Type *Ty) {
   const unsigned StoreBytes = getDataLayout()->getTypeStoreSize(Ty);
@@ -1038,6 +1083,9 @@ void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
   switch (Ty->getTypeID()) {
   default:
     dbgs() << "Cannot store value of type " << *Ty << "!\n";
+    break;
+  case Type::StructTyID:
+    StoreStructToMemory( Val, Ptr, Ty, In_ptr );
     break;
   case Type::IntegerTyID:
     StoreIntToMemory(Val.IntVal, (uint8_t*)Ptr, StoreBytes);
@@ -1105,7 +1153,68 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
   }
 }
 
-/// FIXME: document
+/// LoadStructFromMemory -- Loads a struct into a register.  This is
+/// intended to be a helper function for LoadValueFromMemory(~), and
+/// takes the same parameters as that function.
+///
+/// \param Dest the location data should be written to (this is the
+///     Result parameter from LoadValueFromMemory(~))
+/// \param Src read data from here (this is the Ptr parameter from
+///     LoadValueFromMemory(~))
+/// \param Ty information on the type of the data to move
+void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
+                          GenericValue *Src,
+                          Type *Ty)  
+{{ 
+  // TODO: check all this.  See how it works.
+  #if 0 //@casdbg@
+    std::cout << "starting LoadStructFromMemory(~)\n"; //@casdbg@
+  #endif
+
+  /* Note: we use the number of elements in Ty, not in Src, as Src is a
+     pointer that is semi-arbitrarily cast to GenericValue*, it doesn't
+     point to any useful information about the struct being loaded.
+  */
+  Dest.AggregateVal.resize( Ty->getStructNumElements() );
+  #if 0 // @casdbg@
+    std::cout << "   Dest was resized to " << Dest.AggregateVal.size() << 
+        " elements. \n"; //@casdbg@
+    std::cout << "   got to venus \n"; //@casdbg@
+  #endif 
+
+  // TODO: check all this:
+  int8_t* valPtr= (int8_t*)Src;
+  unsigned elemIdx= 0;
+  for ( elemIdx= 0; elemIdx < Ty->getStructNumElements(); elemIdx++ )  {
+    GenericValue elem;
+    Type* elemType= Ty->getStructElementType(elemIdx); 
+    LoadValueFromMemory( elem, (GenericValue*)valPtr, elemType );
+    Dest.AggregateVal[elemIdx]= elem;
+    #if 0 //@casdbg@
+      std::cout << "   elem " << elemIdx << " is of type \"" << 
+          elemType->getTypeID() << "\", " << 
+          getDataLayout()->getTypeStoreSize( elemType ) << " bytes long. \n";
+          //@casdbg@
+    #endif
+    valPtr+= getDataLayout()->getTypeStoreSize( elemType );
+  }
+
+  #if 0 //@casdbg@
+    std::cout << "stopping LoadStructFromMemory(~)\n"; //@casdbg@
+  #endif
+  return;
+}}
+
+/// \brief loads an item of data from memory to a register, regardless of 
+/// its data type.  
+///
+/// Typically this function determines the relevant data type, and then acts
+/// as a dispatcher to other functions who specialize in loading that exact
+/// data type.
+///
+/// \param Result the location data should be written to 
+/// \param Ptr read data from here
+/// \param Ty information on the type of the data to move
 ///
 void ExecutionEngine::LoadValueFromMemory(GenericValue &Result,
                                           GenericValue *Ptr,
@@ -1113,6 +1222,22 @@ void ExecutionEngine::LoadValueFromMemory(GenericValue &Result,
   const unsigned LoadBytes = getDataLayout()->getTypeStoreSize(Ty);
 
   switch (Ty->getTypeID()) {
+  case Type::StructTyID:  {
+    #if 0 //@casdbg@
+      std::cout << "LoadBytes= " << LoadBytes << "\n"; //@casdbg@
+      std::cout << "&Result= \"" << &Result << "\"\n"; //@casdbg@
+      std::cout << "Ptr (src)= \"" << Ptr << "\"\n"; //@casdbg@
+      std::cout << "Ty (type)= \"" << Ty << "\"\n"; //@casdbg@
+      std::cout << "Ty->isAggregateType() = \"" << 
+          Ty->isAggregateType() << "\"\n"; //@casdbg@
+      //std::cout << "Ty->getStructName().str() = \"" << 
+      //        Ty->getStructName().str() << "\"\n"; //@casdbg@
+      std::cout << "Ty->getStructNumElements() = \"" << 
+          Ty->getStructNumElements() << "\"\n"; //@casdbg@
+    #endif
+    LoadStructFromMemory( Result, Ptr, Ty );
+    break;
+  }
   case Type::IntegerTyID:
     // An APInt with all words initially zero.
     Result.IntVal = APInt(cast<IntegerType>(Ty)->getBitWidth(), 0);
