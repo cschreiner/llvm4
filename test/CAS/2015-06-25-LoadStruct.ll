@@ -2,9 +2,9 @@
 
 ; CHECK-NOT: Instruction operands must be first-class
 
-;; Test that a structure can be loaded from memory.  This test fails with lli
-;; from svn revision 240238: 
-;;	lli 2015-02-25-StoreStruct.ll
+;; Test that a structure can be loaded from memory.  This test fails with 
+;; `lli -force-interpreter` from svn revision 240238: 
+;;	lli -force-interpreter 2015-02-25-StoreStruct.ll
 ;;
 
 %struct_4 = type { i32 }
