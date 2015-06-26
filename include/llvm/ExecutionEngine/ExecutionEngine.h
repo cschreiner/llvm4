@@ -366,12 +366,17 @@ public:
   ///
   const GlobalValue *getGlobalValueAtAddress(void *Addr);
 
+private:
+  void StoreStructToMemory(const GenericValue &Src,
+      GenericValue *Dest, Type *Ty );
+
+public:
   /// StoreValueToMemory - Stores the data in Val of type Ty at address Ptr.
   /// Ptr is the address of the memory at which to store Val, cast to
   /// GenericValue *.  It is not a pointer to a GenericValue containing the
   /// address at which to store Val.
   void StoreValueToMemory(const GenericValue &Val, GenericValue *Ptr,
-                          Type *Ty);
+                          Type *T);
 
   void InitializeMemory(const Constant *Init, void *Addr);
 
@@ -483,6 +488,11 @@ protected:
   void EmitGlobalVariable(const GlobalVariable *GV);
 
   GenericValue getConstantValue(const Constant *C);
+
+private:
+  void LoadStructFromMemory(GenericValue &Result, GenericValue *Ptr,
+                           Type *Ty);
+protected:
   void LoadValueFromMemory(GenericValue &Result, GenericValue *Ptr,
                            Type *Ty);
 };

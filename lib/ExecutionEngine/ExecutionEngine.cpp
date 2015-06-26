@@ -1043,10 +1043,8 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 /// \param Src the value to read from
 /// \param Dest the address to write to
 /// \param Ty information about the data type being written
-/// \param In_ptr information about the instruction invoking the Store 
-///     operation
-static void StoreStructToMemory(const GenericValue &Src,
-      GenericValue *Dest, Type *Ty, const StoreInst* In_ptr)  
+void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
+      GenericValue *Dest, Type *Ty )  
 {{ 
   #if 0 //@casdbg@
     std::cout << "starting StoreStructToMemory(~)\n"; 
@@ -1063,7 +1061,7 @@ static void StoreStructToMemory(const GenericValue &Src,
   for ( elemIdx= 0; elemIdx < Ty->getStructNumElements(); elemIdx++ )  {
     Type* elemType= Ty->getStructElementType(elemIdx); 
     ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx], 
-        (GenericValue*)destPtr, elemType, In_ptr );
+	(GenericValue*)destPtr, elemType );
     #if 0 //@casdbg@
       std::cout << "   elem " << elemIdx << " is of type \"" << 
           elemType->getTypeID() << "\", " << 
@@ -1080,7 +1078,7 @@ static void StoreStructToMemory(const GenericValue &Src,
 
 
 void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
-                                         GenericValue *Ptr, Type *Ty) {
+      GenericValue *Ptr, Type *Ty ) {
   const unsigned StoreBytes = getDataLayout()->getTypeStoreSize(Ty);
 
   switch (Ty->getTypeID()) {
@@ -1088,7 +1086,7 @@ void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
     dbgs() << "Cannot store value of type " << *Ty << "!\n";
     break;
   case Type::StructTyID:
-    StoreStructToMemory( Val, Ptr, Ty, In_ptr );
+    StoreStructToMemory( Val, Ptr, Ty );
     break;
   case Type::IntegerTyID:
     StoreIntToMemory(Val.IntVal, (uint8_t*)Ptr, StoreBytes);
@@ -1169,7 +1167,7 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
 /// \param Src read data from here (this is the Ptr parameter from
 ///     LoadValueFromMemory(~))
 /// \param Ty information on the type of the data to move
-static void LoadStructFromMemory(GenericValue &Dest,
+void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
       GenericValue *Src, Type *Ty)  
 {{ 
   // TODO: check all this.  See how it works.
