@@ -376,7 +376,7 @@ public:
   /// GenericValue *.  It is not a pointer to a GenericValue containing the
   /// address at which to store Val.
   void StoreValueToMemory(const GenericValue &Val, GenericValue *Ptr,
-                          Type *T);
+                          Type *Ty);
 
   void InitializeMemory(const Constant *Init, void *Addr);
 
