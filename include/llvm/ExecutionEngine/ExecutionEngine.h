@@ -367,8 +367,17 @@ public:
   const GlobalValue *getGlobalValueAtAddress(void *Addr);
 
 private:
+  /// \brief Writes a struct out from a register.  
+  ///
+  /// This is intended to be a helper function for
+  /// StoreValueToMemory(~), and takes the same parameters as that
+  /// function.
+  /// 
+  /// \param Src the value to read from
+  /// \param Dest the address to write to
+  /// \param Ty information about the data type being written
   void StoreStructToMemory(const GenericValue &Src,
-      GenericValue *Dest, Type *Ty );
+			   GenericValue *Dest, Type *Ty );
 
 public:
   /// StoreValueToMemory - Stores the data in Val of type Ty at address Ptr.
@@ -490,9 +499,31 @@ protected:
   GenericValue getConstantValue(const Constant *C);
 
 private:
-  void LoadStructFromMemory(GenericValue &Result, GenericValue *Ptr,
-                           Type *Ty);
+  /// \brief Loads a struct into a register.  
+  ///
+  /// This is intended to be a helper function for
+  /// LoadValueFromMemory(~), and takes the same parameter types as
+  /// that function.
+  ///
+  /// \param [out] Dest the location data should be written to (this is the
+  ///     Result parameter from LoadValueFromMemory(~))
+  /// \param Src read data from here (this is the Ptr parameter from
+  ///     LoadValueFromMemory(~))
+  /// \param Ty information on the type of the data to move
+  void LoadStructFromMemory(GenericValue &Dest,
+			    GenericValue *Src, Type *Ty)  
 protected:
+  /// \brief loads an item of data from memory to a register, regardless of 
+  /// its data type.  
+  ///
+  /// Typically this function determines the relevant data type, and then acts
+  /// as a dispatcher to other functions who specialize in loading that exact
+  /// data type.
+  ///
+  /// \param [out] Result the location data should be written to 
+  /// \param Ptr read data from here
+  /// \param Ty information on the type of the data to move
+  ///
   void LoadValueFromMemory(GenericValue &Result, GenericValue *Ptr,
                            Type *Ty);
 };
