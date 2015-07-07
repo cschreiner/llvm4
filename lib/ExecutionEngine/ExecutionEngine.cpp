@@ -1035,9 +1035,12 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
       GenericValue *Dest, Type *Ty )  
 {{ 
+  assert( Dest!= NULL && "Dest is null?");
+  assert( Ty!= NULL && "Ty is null?");
   int8_t* destPtr= (int8_t*)Dest;
   unsigned elemIdx= 0;
-  for ( elemIdx= 0; elemIdx < Ty->getStructNumElements(); elemIdx++ )  {
+  unsigned numElements= Ty->getStructNumElements();
+  for ( elemIdx= 0; elemIdx < numElements; elemIdx++ )  {
     Type* elemType= Ty->getStructElementType(elemIdx); 
     ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx], 
 	(GenericValue*)destPtr, elemType );
@@ -1128,6 +1131,8 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
 void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
       GenericValue *Src, Type *Ty)  
 {{ 
+  assert( Src!= NULL && "Src is null?");
+  assert( Ty!= NULL && "Ty is null?");
   /* Note: we use the number of elements in Ty, not in Src, as Src is a
      pointer that is semi-arbitrarily cast to GenericValue*, it doesn't
      point to any useful information about the struct being loaded.
@@ -1137,7 +1142,8 @@ void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
   // TODO: check all this:
   int8_t* valPtr= (int8_t*)Src;
   unsigned elemIdx= 0;
-  for ( elemIdx= 0; elemIdx < Ty->getStructNumElements(); elemIdx++ )  {
+  unsigned numElements= Ty->getStructNumElements();
+  for ( elemIdx= 0; elemIdx < numElements; elemIdx++ )  {
     GenericValue elem;
     Type* elemType= Ty->getStructElementType(elemIdx); 
     LoadValueFromMemory( elem, (GenericValue*)valPtr, elemType );
