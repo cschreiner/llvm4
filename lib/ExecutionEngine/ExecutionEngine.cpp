@@ -1035,33 +1035,15 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
       GenericValue *Dest, Type *Ty )  
 {{ 
-  #if 0 //@casdbg@
-    std::cout << "starting StoreStructToMemory(~)\n"; 
-    std::cout << "   Src has size=" << Src.AggregateVal.size() << 
-        " elements. \n"; 
-    std::cout << "   Dest has size " << 
-        getDataLayout()->getTypeStoreSize(Ty) << " bytes. \n"; 
-    std::cout << "   got to venus \n"; 
-  #endif
-
-  // TODO: check all this:
   int8_t* destPtr= (int8_t*)Dest;
   unsigned elemIdx= 0;
   for ( elemIdx= 0; elemIdx < Ty->getStructNumElements(); elemIdx++ )  {
     Type* elemType= Ty->getStructElementType(elemIdx); 
     ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx], 
 	(GenericValue*)destPtr, elemType );
-    #if 0 //@casdbg@
-      std::cout << "   elem " << elemIdx << " is of type \"" << 
-          elemType->getTypeID() << "\", " << 
-          getDataLayout()->getTypeStoreSize( elemType ) << " bytes long. \n";
-    #endif
     destPtr+= getDataLayout()->getTypeStoreSize( elemType );
   }
 
-  #if 0 //@casdbg@
-    std::cout << "stopping StoreStructToMemory(~)\n"; 
-  #endif
   return;
 }}
 
@@ -1146,20 +1128,11 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
 void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
       GenericValue *Src, Type *Ty)  
 {{ 
-  // TODO: check all this.  See how it works.
-  #if 0 //@casdbg@
-    std::cout << "starting LoadStructFromMemory(~)\n"; 
-  #endif
-
   /* Note: we use the number of elements in Ty, not in Src, as Src is a
      pointer that is semi-arbitrarily cast to GenericValue*, it doesn't
      point to any useful information about the struct being loaded.
   */
   Dest.AggregateVal.resize( Ty->getStructNumElements() );
-  #if 0 // @casdbg@
-    std::cout << "   Dest was resized to " << Dest.AggregateVal.size() << 
-        " elements. \n"; 
-  #endif 
 
   // TODO: check all this:
   int8_t* valPtr= (int8_t*)Src;
@@ -1169,18 +1142,9 @@ void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
     Type* elemType= Ty->getStructElementType(elemIdx); 
     LoadValueFromMemory( elem, (GenericValue*)valPtr, elemType );
     Dest.AggregateVal[elemIdx]= elem;
-    #if 0 //@casdbg@
-      std::cout << "   elem " << elemIdx << " is of type \"" << 
-          elemType->getTypeID() << "\", " << 
-          getDataLayout()->getTypeStoreSize( elemType ) << " bytes long. \n";
-          //@casdbg@
-    #endif
     valPtr+= getDataLayout()->getTypeStoreSize( elemType );
   }
 
-  #if 0 //@casdbg@
-    std::cout << "stopping LoadStructFromMemory(~)\n"; 
-  #endif
   return;
 }}
 
@@ -1191,18 +1155,6 @@ void ExecutionEngine::LoadValueFromMemory(GenericValue &Result,
 
   switch (Ty->getTypeID()) {
   case Type::StructTyID:  {
-    #if 0 //@casdbg@
-      std::cout << "LoadBytes= " << LoadBytes << "\n"; //@casdbg@
-      std::cout << "&Result= \"" << &Result << "\"\n"; //@casdbg@
-      std::cout << "Ptr (src)= \"" << Ptr << "\"\n"; //@casdbg@
-      std::cout << "Ty (type)= \"" << Ty << "\"\n"; //@casdbg@
-      std::cout << "Ty->isAggregateType() = \"" << 
-          Ty->isAggregateType() << "\"\n"; //@casdbg@
-      //std::cout << "Ty->getStructName().str() = \"" << 
-      //        Ty->getStructName().str() << "\"\n"; //@casdbg@
-      std::cout << "Ty->getStructNumElements() = \"" << 
-          Ty->getStructNumElements() << "\"\n"; //@casdbg@
-    #endif
     LoadStructFromMemory( Result, Ptr, Ty );
     break;
   }
