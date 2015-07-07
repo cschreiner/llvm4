@@ -140,6 +140,10 @@ public:
   void callFunction(Function *F, ArrayRef<GenericValue> ArgVals);
   void run();                // Execute instructions until nothing left to do
 
+  void checkFtnCallForPoisonedArgs( 
+      CallSite& cs, ExecutionContext& exCon );
+
+
   // Opcode Implementations
   void visitReturnInst(ReturnInst &I);
   void visitBranchInst(BranchInst &I);
