@@ -534,6 +534,30 @@ bool Instruction::isNilpotent(unsigned Opcode) {
   return Opcode == Xor;
 }
 
+/// toString - converts this instance to a string.  This is usually
+/// used for informational or debugging purposes.  Only key fields
+/// are included in the resulting string.
+std::string Instruction::toString() {
+  std::string result= "Instruction: opcode=\"";
+  result+= Instruction::getOpcodeName();
+  result+= "\", ";
+  result+= std::to_string( getNumOperands() ) + " args";
+  {
+    unsigned ii;
+    for ( ii= 0; ii < getNumOperands(); ii++ )  {
+      std::string nullSt("");
+      raw_string_ostream ss( nullSt );
+      getOperand(ii)->print( ss ); 
+      result+= ", "+ std::to_string(ii) + "=\""+ ss.str()+ "\"";
+      //result+= ", "+ std::to_string(ii) + "=\""+ getOperand(ii)->toString()+ 
+      //    "\""; //@casdbg@
+    }
+  }
+  result+= ".";
+  // TODO3: add info on the operands.
+  return result; 
+}
+
 Instruction *Instruction::clone() const {
   Instruction *New = clone_impl();
   New->SubclassOptionalData = SubclassOptionalData;
