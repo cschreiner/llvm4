@@ -1,11 +1,11 @@
-; RUN: llvm-as < %s 2>&1 | FileCheck %s 
+; RUN: %lli -force-interpreter %s 2>&1 | FileCheck %s 
 
-; CHECK-NOT: Instruction operands must be first-class
+;; Test that a structure can be loaded from memory.  
 
-;; Test that a structure can be loaded from memory.  This test fails with 
-;; `lli -force-interpreter` from svn revision 240238: 
+;; Note: This test fails with `lli -force-interpreter` from svn revision 
+;; 240238: 
 ;;	lli -force-interpreter 2015-02-25-StoreStruct.ll
-;;
+;; but succeeds with the accompanying patch.
 
 %struct_4 = type { i32 }
 
