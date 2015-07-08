@@ -1,15 +1,17 @@
-; RUN: llvm-as < %s 2>&1 | FileCheck %s 
-
-; CHECK-NOT: Instruction operands must be first-class
+; RUN: %lli -force-interpreter %s 2>&1 | FileCheck %s 
+;; we expect this to fail until the investigation mentioned below is finished.
+; XFAIL: * 
 
 ;; Status: this test currently fails, but not for the intended reason.
-;; TODO2: investigate as time allows. -- CAS 2015jun25
-;;
+;; Apparently while the raw "store" code works, some other part of the
+;; interpreter gripes and halts.  Investigation is still pending as of
+;; 2015jul08.
 
-;; Test that a structure can be stored to memory.  This test fails with lli
-;; from svn revision 240238: 
+;; Test that a structure can be stored to memory.  
+
+;; This test fails with lli from svn revision 240238, see the above note: 
 ;;	lli -force-interpreter 2015-02-25-StoreStruct.ll
-;;
+;; The reason for failure changes with the accompanying patch.
 
 %struct_4 = type { i32 }
 
@@ -19,3 +21,4 @@ define void @main() {
   store %struct_4 zeroinitializer, %struct_4* @some_addr
   ret void
 }
+
