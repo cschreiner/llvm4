@@ -1052,7 +1052,7 @@ void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
 
 
 void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
-                                         GenericValue *Ptr, Type *Ty ) {
+                                         GenericValue *Ptr, Type *Ty) {
   const unsigned StoreBytes = getDataLayout()->getTypeStoreSize(Ty);
 
   switch (Ty->getTypeID()) {
@@ -1128,6 +1128,8 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
   }
 }
 
+/// FIXME: document
+///
 void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
       GenericValue *Src, Type *Ty)  
 {{ 
