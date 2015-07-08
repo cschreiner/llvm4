@@ -1033,7 +1033,7 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 }
 
 void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
-      GenericValue *Dest, Type *Ty )  
+                                          GenericValue *Dest, Type *Ty )  
 {{ 
   assert( Dest!= NULL && "Dest is null?");
   assert( Ty!= NULL && "Ty is null?");
@@ -1043,7 +1043,7 @@ void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
   for ( elemIdx= 0; elemIdx < numElements; elemIdx++ )  {
     Type* elemType= Ty->getStructElementType(elemIdx); 
     ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx], 
-	(GenericValue*)destPtr, elemType );
+        (GenericValue*)destPtr, elemType );
     destPtr+= getDataLayout()->getTypeStoreSize( elemType );
   }
 
@@ -1052,7 +1052,7 @@ void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
 
 
 void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
-      GenericValue *Ptr, Type *Ty ) {
+                                         GenericValue *Ptr, Type *Ty ) {
   const unsigned StoreBytes = getDataLayout()->getTypeStoreSize(Ty);
 
   switch (Ty->getTypeID()) {
