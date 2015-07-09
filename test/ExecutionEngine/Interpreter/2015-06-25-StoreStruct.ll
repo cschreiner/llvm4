@@ -1,4 +1,4 @@
-; RUN: %lli -force-interpreter %s 2>&1 | FileCheck %s 
+; RUN: %lli -force-interpreter %s 
 ;; we expect this to fail until the investigation mentioned below is finished.
 ; XFAIL: * 
 

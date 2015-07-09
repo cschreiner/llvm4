@@ -1,4 +1,4 @@
-; RUN: %lli -force-interpreter %s 2>&1 | FileCheck %s 
+; RUN: %lli -force-interpreter %s 
 
 ;; Test that a structure can be loaded from memory.  
 
