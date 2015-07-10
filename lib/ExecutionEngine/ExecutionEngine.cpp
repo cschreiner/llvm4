@@ -36,8 +36,10 @@
 #include "llvm/Support/TargetRegistry.h"
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
+#include "llvm/IR/Instructions.h"
 #include <cmath>
 #include <cstring>
+#include <iostream> // CAS TODO: remove when debugging is done
 #include "llvm/Support/LUF_etc.h"
 #include "llvm/Support/LUF_opts.h"
 using namespace llvm;
@@ -343,15 +345,20 @@ void *ArgvArray::reset(LLVMContext &C, ExecutionEngine *EE,
     Dest[Size-1] = 0;
 
     // Endian safe: Array[i] = (PointerTy)Dest;
+    // TODO: find a way to convert the LLVMContext C to a StoreInst
+    // and use it instead of NULL.
     EE->StoreValueToMemory(PTOGV(Dest.get()),
-                           (GenericValue*)(&Array[i*PtrSize]), SBytePtr);
+                           (GenericValue*)(&Array[i*PtrSize]), SBytePtr, NULL );
     Values.push_back(std::move(Dest));
   }
 
   // Null terminate it
+  // TODO: find a way to convert the LLVMContext C to a StoreInst
+  // and use it instead of NULL.
   EE->StoreValueToMemory(PTOGV(nullptr),
                          (GenericValue*)(&Array[InputArgv.size()*PtrSize]),
-                         SBytePtr);
+                         SBytePtr, 
+			 NULL);
   return Array.get();
 }
 
@@ -1016,7 +1023,7 @@ static std::map<uint8_t*, bool> poisonedMem;
 /// StoreIntToMemory - Fills the StoreBytes bytes of memory starting from Dst
 /// with the integer held in IntVal.
 static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
-                             unsigned StoreBytes, StoreInst* In_ptr ) {
+                             unsigned StoreBytes, const StoreInst* In_ptr ) {
   assert((IntVal.getBitWidth()+7)/8 >= StoreBytes && "Integer too small!");
   const uint8_t *Src = (const uint8_t *)IntVal.getRawData();
 
@@ -1143,7 +1150,7 @@ void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
       if (cast<VectorType>(Ty)->getElementType()->isIntegerTy()) {
         unsigned numOfBytes =(Val.AggregateVal[i].IntVal.getBitWidth()+7)/8;
         StoreIntToMemory(Val.AggregateVal[i].IntVal, 
-			 (uint8_t*)Ptr + numOfBytes*i, numOfBytes, NULL);
+			 (uint8_t*)Ptr + numOfBytes*i, numOfBytes, In_ptr);
       }
     }
     break;
@@ -1380,6 +1387,8 @@ void ExecutionEngine::InitializeMemory(const Constant *Init, void *Addr) {
 
   if (Init->getType()->isFirstClassType()) {
     GenericValue Val = getConstantValue(Init);
+    // TODO: do we need to find a way to provide a StoreInst and use
+    // it instead of NULL here?.
     StoreValueToMemory(Val, (GenericValue*)Addr, Init->getType(), NULL);
     return;
   }
