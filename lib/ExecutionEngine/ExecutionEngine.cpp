@@ -502,7 +502,7 @@ ExecutionEngine *EngineBuilder::create(TargetMachine *TM) {
   // to the function tells DynamicLibrary to load the program, not a library.
   if (sys::DynamicLibrary::LoadLibraryPermanently(nullptr, ErrorStr))
     return nullptr;
-  
+
   // If the user specified a memory manager but didn't specify which engine to
   // create, we assume they only want the JIT, and we fail if they only want
   // the interpreter.
@@ -603,7 +603,7 @@ GenericValue ExecutionEngine::getConstantValue(const Constant *C) {
         for (unsigned int i = 0; i < elemNum; ++i) {
           Type *ElemTy = STy->getElementType(i);
           if (ElemTy->isIntegerTy())
-            Result.AggregateVal[i].IntVal = 
+            Result.AggregateVal[i].IntVal =
               APInt(ElemTy->getPrimitiveSizeInBits(), 0);
           else if (ElemTy->isAggregateType()) {
               const Constant *ElemUndef = UndefValue::get(ElemTy);
@@ -967,7 +967,7 @@ GenericValue ExecutionEngine::getConstantValue(const Constant *C) {
     // Check if vector holds integers.
     if (ElemTy->isIntegerTy()) {
       if (CAZ) {
-        GenericValue intZero;     
+        GenericValue intZero;
         intZero.IntVal = APInt(ElemTy->getScalarSizeInBits(), 0ull);
         std::fill(Result.AggregateVal.begin(), Result.AggregateVal.end(),
                   intZero);
@@ -1033,22 +1033,21 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 }
 
 void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
-                                          GenericValue *Dest, Type *Ty )  
-{{ 
+                                          GenericValue *Dest, Type *Ty) {
   assert( Dest!= NULL && "Dest is null?");
   assert( Ty!= NULL && "Ty is null?");
   int8_t* destPtr= (int8_t*)Dest;
   unsigned elemIdx= 0;
   unsigned numElements= Ty->getStructNumElements();
-  for ( elemIdx= 0; elemIdx < numElements; elemIdx++ )  {
-    Type* elemType= Ty->getStructElementType(elemIdx); 
-    ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx], 
+  for ( elemIdx= 0; elemIdx < numElements; elemIdx++ ) {
+    Type* elemType= Ty->getStructElementType(elemIdx);
+    ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx],
         (GenericValue*)destPtr, elemType );
     destPtr+= getDataLayout()->getTypeStoreSize( elemType );
   }
 
   return;
-}}
+}
 
 
 void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
@@ -1089,7 +1088,7 @@ void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
         *(((float*)Ptr)+i) = Val.AggregateVal[i].FloatVal;
       if (cast<VectorType>(Ty)->getElementType()->isIntegerTy()) {
         unsigned numOfBytes =(Val.AggregateVal[i].IntVal.getBitWidth()+7)/8;
-        StoreIntToMemory(Val.AggregateVal[i].IntVal, 
+        StoreIntToMemory(Val.AggregateVal[i].IntVal,
           (uint8_t*)Ptr + numOfBytes*i, numOfBytes);
       }
     }
@@ -1131,8 +1130,8 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
 /// FIXME: document
 ///
 void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
-      GenericValue *Src, Type *Ty)  
-{{ 
+      GenericValue *Src, Type *Ty)
+{{
   assert( Src!= NULL && "Src is null?");
   assert( Ty!= NULL && "Ty is null?");
   /* Note: we use the number of elements in Ty, not in Src, as Src is a
@@ -1147,7 +1146,7 @@ void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
   unsigned numElements= Ty->getStructNumElements();
   for ( elemIdx= 0; elemIdx < numElements; elemIdx++ )  {
     GenericValue elem;
-    Type* elemType= Ty->getStructElementType(elemIdx); 
+    Type* elemType= Ty->getStructElementType(elemIdx);
     LoadValueFromMemory( elem, (GenericValue*)valPtr, elemType );
     Dest.AggregateVal[elemIdx]= elem;
     valPtr+= getDataLayout()->getTypeStoreSize( elemType );
@@ -1226,7 +1225,7 @@ void ExecutionEngine::InitializeMemory(const Constant *Init, void *Addr) {
   DEBUG(Init->dump());
   if (isa<UndefValue>(Init))
     return;
-  
+
   if (const ConstantVector *CP = dyn_cast<ConstantVector>(Init)) {
     unsigned ElementSize =
       getDataLayout()->getTypeAllocSize(CP->getType()->getElementType());
@@ -1234,12 +1233,12 @@ void ExecutionEngine::InitializeMemory(const Constant *Init, void *Addr) {
       InitializeMemory(CP->getOperand(i), (char*)Addr+i*ElementSize);
     return;
   }
-  
+
   if (isa<ConstantAggregateZero>(Init)) {
     memset(Addr, 0, (size_t)getDataLayout()->getTypeAllocSize(Init->getType()));
     return;
   }
-  
+
   if (const ConstantArray *CPA = dyn_cast<ConstantArray>(Init)) {
     unsigned ElementSize =
       getDataLayout()->getTypeAllocSize(CPA->getType()->getElementType());
@@ -1247,7 +1246,7 @@ void ExecutionEngine::InitializeMemory(const Constant *Init, void *Addr) {
       InitializeMemory(CPA->getOperand(i), (char*)Addr+i*ElementSize);
     return;
   }
-  
+
   if (const ConstantStruct *CPS = dyn_cast<ConstantStruct>(Init)) {
     const StructLayout *SL =
       getDataLayout()->getStructLayout(cast<StructType>(CPS->getType()));
