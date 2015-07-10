@@ -1034,21 +1034,20 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
 
 void ExecutionEngine::StoreStructToMemory(const GenericValue &Src,
                                           GenericValue *Dest, Type *Ty) {
-  assert( Dest!= NULL && "Dest is null?");
-  assert( Ty!= NULL && "Ty is null?");
-  int8_t* destPtr= (int8_t*)Dest;
-  unsigned elemIdx= 0;
-  unsigned numElements= Ty->getStructNumElements();
-  for ( elemIdx= 0; elemIdx < numElements; elemIdx++ ) {
-    Type* elemType= Ty->getStructElementType(elemIdx);
-    ExecutionEngine::StoreValueToMemory( Src.AggregateVal[elemIdx],
-        (GenericValue*)destPtr, elemType );
-    destPtr+= getDataLayout()->getTypeStoreSize( elemType );
+  assert(Dest != NULL && "Dest is null?");
+  assert(Ty != NULL && "Ty is null?");
+  int8_t* destPtr= (int8_t *)Dest;
+  unsigned elemIdx = 0;
+  unsigned numElements = Ty->getStructNumElements();
+  for (elemIdx = 0; elemIdx < numElements; elemIdx++) {
+    Type* elemType = Ty->getStructElementType(elemIdx);
+    ExecutionEngine::StoreValueToMemory(Src.AggregateVal[elemIdx],
+					(GenericValue *)destPtr, elemType);
+    destPtr += getDataLayout()->getTypeStoreSize(elemType);
   }
 
   return;
 }
-
 
 void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
                                          GenericValue *Ptr, Type *Ty) {
@@ -1059,10 +1058,10 @@ void ExecutionEngine::StoreValueToMemory(const GenericValue &Val,
     dbgs() << "Cannot store value of type " << *Ty << "!\n";
     break;
   case Type::StructTyID:
-    StoreStructToMemory( Val, Ptr, Ty );
+    StoreStructToMemory(Val, Ptr, Ty);
     break;
   case Type::IntegerTyID:
-    StoreIntToMemory(Val.IntVal, (uint8_t*)Ptr, StoreBytes);
+    StoreIntToMemory(Val.IntVal, (uint8_t *)Ptr, StoreBytes);
     break;
   case Type::FloatTyID:
     *((float*)Ptr) = Val.FloatVal;
@@ -1127,48 +1126,52 @@ static void LoadIntFromMemory(APInt &IntVal, uint8_t *Src, unsigned LoadBytes) {
   }
 }
 
-/// FIXME: document
+/// LoadStructFromMemory -- Loads a struct into a register.  This is
+/// intended to be a helper function for LoadValueFromMemory(~), and
+/// takes the same parameters as that function.
 ///
+/// \param Dest the location data should be written to (this is the
+///    Result parameter from LoadValueFromMemory(~))
+/// \param Src read data from here (this is the Ptr parameter from
+///    LoadValueFromMemory(~))
+/// \param Ty information on the type of the data to move
 void ExecutionEngine::LoadStructFromMemory(GenericValue &Dest,
-      GenericValue *Src, Type *Ty)
-{{
-  assert( Src!= NULL && "Src is null?");
-  assert( Ty!= NULL && "Ty is null?");
+					   GenericValue *Src, Type *Ty) {
+  assert(Src != NULL && "Src is null?");
+  assert(Ty != NULL && "Ty is null?");
   /* Note: we use the number of elements in Ty, not in Src, as Src is a
      pointer that is semi-arbitrarily cast to GenericValue*, it doesn't
      point to any useful information about the struct being loaded.
   */
   Dest.AggregateVal.resize( Ty->getStructNumElements() );
 
-  // TODO: check all this:
-  int8_t* valPtr= (int8_t*)Src;
-  unsigned elemIdx= 0;
-  unsigned numElements= Ty->getStructNumElements();
-  for ( elemIdx= 0; elemIdx < numElements; elemIdx++ )  {
+  int8_t *valPtr = (int8_t *)Src;
+  unsigned elemIdx = 0;
+  unsigned numElements = Ty->getStructNumElements();
+  for (elemIdx = 0; elemIdx < numElements; elemIdx++)  {
     GenericValue elem;
-    Type* elemType= Ty->getStructElementType(elemIdx);
-    LoadValueFromMemory( elem, (GenericValue*)valPtr, elemType );
-    Dest.AggregateVal[elemIdx]= elem;
-    valPtr+= getDataLayout()->getTypeStoreSize( elemType );
+    Type* elemType = Ty->getStructElementType(elemIdx);
+    LoadValueFromMemory(elem, (GenericValue *)valPtr, elemType);
+    Dest.AggregateVal[elemIdx] = elem;
+    valPtr += getDataLayout()->getTypeStoreSize(elemType);
   }
 
   return;
-}}
+}
 
 void ExecutionEngine::LoadValueFromMemory(GenericValue &Result,
-                                          GenericValue *Ptr,
-                                          Type *Ty) {
+                                          GenericValue *Ptr, Type *Ty) {
   const unsigned LoadBytes = getDataLayout()->getTypeStoreSize(Ty);
 
   switch (Ty->getTypeID()) {
-  case Type::StructTyID:  {
-    LoadStructFromMemory( Result, Ptr, Ty );
+  case Type::StructTyID: {
+    LoadStructFromMemory(Result, Ptr, Ty);
     break;
   }
   case Type::IntegerTyID:
     // An APInt with all words initially zero.
     Result.IntVal = APInt(cast<IntegerType>(Ty)->getBitWidth(), 0);
-    LoadIntFromMemory(Result.IntVal, (uint8_t*)Ptr, LoadBytes);
+    LoadIntFromMemory(Result.IntVal, (uint8_t *)Ptr, LoadBytes);
     break;
   case Type::FloatTyID:
     Result.FloatVal = *((float*)Ptr);
