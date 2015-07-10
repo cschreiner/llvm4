@@ -905,6 +905,7 @@ public:
       result= XorSlowCase(RHS);
     }
     result.poisoned= this->poisoned || RHS.poisoned;
+    return result;
   }
 
   /// \brief Bitwise XOR function.
