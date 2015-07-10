@@ -64,7 +64,7 @@ bool llvm::lli_undef_fix::opt_poison_eq_undef_early= false;
 
 /** if and IR opcode attempts division by zero, return instead of crashing.
  */
-bool llvm:lli_undef_fix::opt_return_if_div_0;
+bool llvm::lli_undef_fix::opt_return_if_div_0;
 
 typedef struct {
    const char* name;
