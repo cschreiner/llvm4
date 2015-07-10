@@ -1172,7 +1172,9 @@ APInt APInt::sextOrSelf(unsigned width) const {
 /// Arithmetic right-shift this APInt by shiftAmt.
 /// @brief Arithmetic right-shift function.
 APInt APInt::ashr(const APInt &shiftAmt) const {
-  return ashr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  APInt Result= ashr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  Result.orPoisoned( *this, shiftAmt );
+  return Result;
 }
 
 /// Arithmetic right-shift this APInt by shiftAmt.
@@ -1185,12 +1187,17 @@ APInt APInt::ashr(unsigned shiftAmt) const {
 
   // Handle single word shifts with built-in ashr
   if (isSingleWord()) {
-    if (shiftAmt == BitWidth)
-      return APInt(BitWidth, 0); // undefined
-    else {
+    if (shiftAmt == BitWidth)  {
+      // was: Result= APInt(BitWidth, 0); // undefined // TODO2: clean this up
+      Result= getUndef( BitWidth );
+      Result.poisoned= poisoned;
+      return Result;
+    } else {
       unsigned SignBit = APINT_BITS_PER_WORD - BitWidth;
-      return APInt(BitWidth,
-        (((int64_t(VAL) << SignBit) >> SignBit) >> shiftAmt));
+      Result= APInt(BitWidth,
+         (((int64_t(VAL) << SignBit) >> SignBit) >> shiftAmt));
+      Result.poisoned= poisoned;
+      return Result;
     }
   }
 
@@ -1198,10 +1205,17 @@ APInt APInt::ashr(unsigned shiftAmt) const {
   // We return -1 if it was negative, 0 otherwise. We check this early to avoid
   // issues in the algorithm below.
   if (shiftAmt == BitWidth) {
-    if (isNegative())
-      return APInt(BitWidth, -1ULL, true);
-    else
-      return APInt(BitWidth, 0);
+    #if 0 // this was: (TODO2: clean this up)
+      if (isNegative())  {
+       Result= APInt(BitWidth, -1ULL, true);
+      } else {
+       Result= APInt(BitWidth, 0);
+      }
+    #else // the new, hopefully better code
+      Result.getUndef( BitWidth, isNegative() );
+    #endif
+    Result.poisoned= poisoned;
+    return Result;
   }
 
   // Create some space for the result.
@@ -1255,36 +1269,56 @@ APInt APInt::ashr(unsigned shiftAmt) const {
   uint64_t fillValue = (isNegative() ? -1ULL : 0);
   for (unsigned i = breakWord+1; i < getNumWords(); ++i)
     val[i] = fillValue;
-  APInt Result(val, BitWidth);
+  Result= APInt(val, BitWidth);
   Result.clearUnusedBits();
+  Result.poisoned= poisoned;
+  // Note: the APInt instance will free val's memory.
   return Result;
 }
 
 /// Logical right-shift this APInt by shiftAmt.
 /// @brief Logical right-shift function.
 APInt APInt::lshr(const APInt &shiftAmt) const {
-  return lshr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  APInt Result= lshr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  Result.orPoisoned( *this, shiftAmt );
+  return Result;
 }
 
 /// Logical right-shift this APInt by shiftAmt.
 /// @brief Logical right-shift function.
 APInt APInt::lshr(unsigned shiftAmt) const {
+  APInt Result;
   if (isSingleWord()) {
     if (shiftAmt >= BitWidth)
-      return APInt(BitWidth, 0);
+      Result= APInt(BitWidth, 0);
     else
-      return APInt(BitWidth, this->VAL >> shiftAmt);
+      Result= APInt(BitWidth, this->VAL >> shiftAmt);
+    Result.poisoned= poisoned;
+    return Result;
   }
 
   // If all the bits were shifted out, the result is 0. This avoids issues
   // with shifting by the size of the integer type, which produces undefined
   // results. We define these "undefined results" to always be 0.
-  if (shiftAmt >= BitWidth)
-    return APInt(BitWidth, 0);
+  if (shiftAmt >= BitWidth)  {
+    #if 0 // this was: (TODO2: clean this up)
+      // If all the bits were shifted out, the result is 0. This avoids
+      // issues with shifting by the size of the integer type, which
+      // produces undefined results. We define these "undefined results" to
+      // always be 0.
+      Result= APInt(BitWidth, 0);
+    #else // the new, better code
+      Result= getUndef( BitWidth );
+    #endif
+    Result.poisoned= poisoned;
+    return Result;
+  }
 
   // If none of the bits are shifted out, the result is *this. This avoids
   // issues with shifting by the size of the integer type, which produces
   // undefined results in the code below. This is also an optimization.
+  //
+  // Poison preservation here happens automatically.
   if (shiftAmt == 0)
     return *this;
 
@@ -1294,8 +1328,10 @@ APInt APInt::lshr(unsigned shiftAmt) const {
   // If we are shifting less than a word, compute the shift with a simple carry
   if (shiftAmt < APINT_BITS_PER_WORD) {
     lshrNear(val, pVal, getNumWords(), shiftAmt);
-    APInt Result(val, BitWidth);
+    Result= Result(val, BitWidth);
     Result.clearUnusedBits();
+    Result.poisoned= poisoned;
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1309,8 +1345,10 @@ APInt APInt::lshr(unsigned shiftAmt) const {
       val[i] = pVal[i+offset];
     for (unsigned i = getNumWords()-offset; i < getNumWords(); i++)
       val[i] = 0;
-    APInt Result(val, BitWidth);
+    Result= Result(val, BitWidth);
     Result.clearUnusedBits();
+    Result.poisoned= poisoned;
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1325,28 +1363,44 @@ APInt APInt::lshr(unsigned shiftAmt) const {
   // Remaining words are 0
   for (unsigned i = breakWord+1; i < getNumWords(); ++i)
     val[i] = 0;
-  APInt Result(val, BitWidth);
+  Result= Result(val, BitWidth);
   Result.clearUnusedBits();
+  Result.poisoned= poisoned;
+  // Note: the APInt instance will free val's memory.
   return Result;
 }
 
 /// Left-shift this APInt by shiftAmt.
 /// @brief Left-shift function.
 APInt APInt::shl(const APInt &shiftAmt) const {
-  // It's undefined behavior in C to shift by BitWidth or greater.
-  return shl((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  APInt Result;
+  /* It's undefined behavior in C to shift by BitWidth or greater.  This is
+       dealt with by the shl(~) method.  
+  */
+  Result= shl((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  Result.orPoisoned( *this, shiftAmt );
+  return Result;
 }
 
 APInt APInt::shlSlowCase(unsigned shiftAmt) const {
+  APInt Result;
+
   // If all the bits were shifted out, the result is 0. This avoids issues
   // with shifting by the size of the integer type, which produces undefined
   // results. We define these "undefined results" to always be 0.
-  if (shiftAmt == BitWidth)
-    return APInt(BitWidth, 0);
+  // TODO2: change the "undefined" value to be a random value.
+  if (shiftAmt == BitWidth)  {
+     // was: Result= APInt(BitWidth, 0); TODO2: clean this up
+     Result= getUndef( BitWidth );
+     Result.poisoned= poisoned;
+     return Result;
+  }
+
 
   // If none of the bits are shifted out, the result is *this. This avoids a
   // lshr by the words size in the loop below which can produce incorrect
   // results. It also avoids the expensive computation below for a common case.
+  // poison preservation happens automatically.
   if (shiftAmt == 0)
     return *this;
 
@@ -1360,8 +1414,10 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
       val[i] = pVal[i] << shiftAmt | carry;
       carry = pVal[i] >> (APINT_BITS_PER_WORD - shiftAmt);
     }
-    APInt Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
+    Result.poisoned= poisoned;
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1375,8 +1431,10 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
       val[i] = 0;
     for (unsigned i = offset; i < getNumWords(); i++)
       val[i] = pVal[i-offset];
-    APInt Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
+    Result.poisoned= poisoned;
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1388,8 +1446,10 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
   val[offset] = pVal[0] << wordShift;
   for (i = 0; i < offset; ++i)
     val[i] = 0;
-  APInt Result(val, BitWidth);
+  Result= APInt(val, BitWidth);
   Result.clearUnusedBits();
+  Result.poisoned= poisoned;
+  // Note: the APInt instance will free val's memory.
   return Result;
 }
 
