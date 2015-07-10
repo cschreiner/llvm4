@@ -30,6 +30,8 @@ endif( NOT MSVC )
 add_llvm_library(LLVMSupport
   APFloat.cpp
   APInt.cpp
+  APIntPoison.cpp
+  APIntPoison_printIfPoison.cpp
   APSInt.cpp
   ARMBuildAttrs.cpp
   ARMWinEH.cpp
@@ -61,8 +63,11 @@ add_llvm_library(LLVMSupport
   IntrusiveRefCntPtr.cpp
   LEB128.cpp
   LineIterator.cpp
+  LLIUndefFix.cpp
   Locale.cpp
   LockFileManager.cpp
+  LUF_exit_due_to_poison.cpp
+  LUF_opts.cpp
   ManagedStatic.cpp
   MathExtras.cpp
   MemoryBuffer.cpp
