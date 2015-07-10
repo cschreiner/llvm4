@@ -24,9 +24,13 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MathExtras.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/IR/DerivedTypes.h" 
+    // TODO: this wasn't necessary in lli_undef_fix__caswork3 era, why now?
 
+#include "llvm/ADT/APIntPoison.h"
 #include "llvm/Support/LUF_opts.h"
 #include "llvm/Support/LUF_etc.h"
+#include <iostream> // TODO: disable when debugging code is disabled
 
 #include <algorithm>
 #include <cmath>
@@ -61,20 +65,24 @@ static cl::opt<bool> PrintVolatile("interpreter-print-volatile", cl::Hidden,
    * \return void
    *
    */
-#define PROTECT_VS_DIV_0                                               \
-{{                                                                     \
-  if ( llvm::lli_undef_fix::opt_return_if_div_0 )  {                   \
-    Type* retType= new IntegerType();                                  \
-    GenericValue retVal;                                               \
-    retVal.IntVal= new APInt(0);                                       \
-    /*asdf*/                                                           \
-    /* prototype: */                                                   \
-    /*Interpreter::popStackAndReturnValueToCaller(Type *RetTy, */      \
-    /*                                             GenericValue Result); */ \
-    Interpreter::popStackAndReturnValueToCaller( retType, retVal );    \
-    return;                                                            \
-  }                                                                    \
-}}     
+#if 0 // TODO: reinstate this once debugging is done. -- CAS 2015jul09
+  #define PROTECT_VS_DIV_0                                               \
+  {{                                                                     \
+    if ( llvm::lli_undef_fix::opt_return_if_div_0 )  {                   \
+      Type* retType= new IntegerType();                                  \
+      GenericValue retVal;                                               \
+      retVal.IntVal= new APInt(0);                                       \
+      /*asdf*/                                                           \
+      /* prototype: */                                                   \
+      /*Interpreter::popStackAndReturnValueToCaller(Type *RetTy, */      \
+      /*                                             GenericValue Result); */ \
+      Interpreter::popStackAndReturnValueToCaller( retType, retVal );    \
+      return;                                                            \
+    }                                                                    \
+  }}     
+#else
+#define PROTECT_VS_DIV_0 
+#endif
 
 //===----------------------------------------------------------------------===//
 //                     Various Helper Functions
