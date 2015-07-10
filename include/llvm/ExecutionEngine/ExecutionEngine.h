@@ -376,8 +376,8 @@ private:
   /// \param Src the value to read from
   /// \param Dest the address to write to
   /// \param Ty information about the data type being written
-  void StoreStructToMemory(const GenericValue &Src,
-                           GenericValue *Dest, Type *Ty);
+  void StoreStructToMemory(const GenericValue &Src, GenericValue *Dest, 
+			   Type *Ty);
 
 public:
   /// StoreValueToMemory - Stores the data in Val of type Ty at address Ptr.
@@ -510,8 +510,8 @@ private:
   /// \param Src read data from here (this is the Ptr parameter from
   ///     LoadValueFromMemory(~))
   /// \param Ty information on the type of the data to move
-  void LoadStructFromMemory(GenericValue &Dest,
-                            GenericValue *Src, Type *Ty);
+  void LoadStructFromMemory(GenericValue &Dest, GenericValue *Src, Type *Ty);
+
 protected:
   /// \brief loads an item of data from memory to a register, regardless of
   /// its data type.
