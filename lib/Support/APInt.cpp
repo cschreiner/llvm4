@@ -1115,8 +1115,6 @@ APInt APInt::zext(unsigned width) const {
   assert(width > BitWidth && "Invalid APInt ZeroExtend request");
   APInt Result;
 
-  APInt Result;
- 
   if (width <= APINT_BITS_PER_WORD)  {
     Result= APInt(width, VAL);
     Result.poisoned= poisoned;
@@ -1184,6 +1182,8 @@ APInt APInt::ashr(unsigned shiftAmt) const {
   // Handle a degenerate case
   if (shiftAmt == 0)
     return *this;
+
+  APInt Result;
 
   // Handle single word shifts with built-in ashr
   if (isSingleWord()) {
@@ -1328,7 +1328,7 @@ APInt APInt::lshr(unsigned shiftAmt) const {
   // If we are shifting less than a word, compute the shift with a simple carry
   if (shiftAmt < APINT_BITS_PER_WORD) {
     lshrNear(val, pVal, getNumWords(), shiftAmt);
-    Result= Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
     Result.poisoned= poisoned;
     // Note: the APInt instance will free val's memory.
@@ -1345,7 +1345,7 @@ APInt APInt::lshr(unsigned shiftAmt) const {
       val[i] = pVal[i+offset];
     for (unsigned i = getNumWords()-offset; i < getNumWords(); i++)
       val[i] = 0;
-    Result= Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
     Result.poisoned= poisoned;
     // Note: the APInt instance will free val's memory.
@@ -1363,7 +1363,7 @@ APInt APInt::lshr(unsigned shiftAmt) const {
   // Remaining words are 0
   for (unsigned i = breakWord+1; i < getNumWords(); ++i)
     val[i] = 0;
-  Result= Result(val, BitWidth);
+  Result= APInt(val, BitWidth);
   Result.clearUnusedBits();
   Result.poisoned= poisoned;
   // Note: the APInt instance will free val's memory.
@@ -2050,8 +2050,8 @@ void APInt::divide(const APInt LHS, unsigned lhsWords,
     delete [] Q;
     delete [] R;
   }
-  Quotient->orPiosned( LHS, RHS );
-  Remainder->orPiosned( LHS, RHS );
+  Quotient->orPoisoned( LHS, RHS );
+  Remainder->orPoisoned( LHS, RHS );
 }
 
 APInt APInt::udiv(const APInt& RHS) const {
@@ -2345,6 +2345,7 @@ APInt APInt::sshl_ov(const APInt &ShAmt, bool &Overflow) const {
 }
 
 APInt APInt::ushl_ov(const APInt &ShAmt, bool &Overflow) const {
+  APInt Result;
   Overflow = ShAmt.uge(getBitWidth());
   if (Overflow)  {
     Result= APInt(BitWidth, 0);
