@@ -1454,10 +1454,14 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
 }
 
 APInt APInt::rotl(const APInt &rotateAmt) const {
-  return rotl((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  APInt Result;
+  Result= rotl((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  Result.orPoisoned( *this, rotateAmt );
+  return Result;
 }
 
 APInt APInt::rotl(unsigned rotateAmt) const {
+  // poison preservation done by called functions
   rotateAmt %= BitWidth;
   if (rotateAmt == 0)
     return *this;
@@ -1465,10 +1469,14 @@ APInt APInt::rotl(unsigned rotateAmt) const {
 }
 
 APInt APInt::rotr(const APInt &rotateAmt) const {
-  return rotr((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  APInt Result;
+  Result= rotr((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  Result.orPoisoned( *this, rotateAmt );
+  return Result;
 }
 
 APInt APInt::rotr(unsigned rotateAmt) const {
+  // poison preservation done by called functions
   rotateAmt %= BitWidth;
   if (rotateAmt == 0)
     return *this;
@@ -1483,6 +1491,7 @@ APInt APInt::rotr(unsigned rotateAmt) const {
 // back to a uint64_t which is then used to construct the result. Finally,
 // the Babylonian method for computing square roots is used.
 APInt APInt::sqrt() const {
+  APInt Result;
 
   // Determine the magnitude of the value.
   unsigned magnitude = getActiveBits();
@@ -1499,7 +1508,9 @@ APInt APInt::sqrt() const {
       /* 21-30 */ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
       /*    31 */ 6
     };
-    return APInt(BitWidth, results[ (isSingleWord() ? VAL : pVal[0]) ]);
+    Result= APInt(BitWidth, results[ (isSingleWord() ? VAL : pVal[0]) ]);
+    Result.poisoned= poisoned;
+    return Result;
   }
 
   // If the magnitude of the value fits in less than 52 bits (the precision of
@@ -1507,8 +1518,10 @@ APInt APInt::sqrt() const {
   // libc sqrt function which will probably use a hardware sqrt computation.
   // This should be faster than the algorithm below.
   if (magnitude < 52) {
-    return APInt(BitWidth,
+    Result= APInt(BitWidth,
                  uint64_t(::round(::sqrt(double(isSingleWord()?VAL:pVal[0])))));
+    Result.poisoned= poisoned;
+    return Result;
   }
 
   // Okay, all the short cuts are exhausted. We must compute it. The following
@@ -1545,13 +1558,18 @@ APInt APInt::sqrt() const {
   // between this algorithm and pari/gp for bit widths < 192 bits.
   APInt square(x_old * x_old);
   APInt nextSquare((x_old + 1) * (x_old +1));
-  if (this->ult(square))
+  if (this->ult(square))  {
+    x_old.poisoned= poisoned;
     return x_old;
+  }
   assert(this->ule(nextSquare) && "Error in APInt::sqrt computation");
   APInt midpoint((nextSquare - square).udiv(two));
   APInt offset(*this - square);
-  if (offset.ult(midpoint))
+  if (offset.ult(midpoint))  {
+    x_old.poisoned= poisoned;
     return x_old;
+  }
+  x_old.poisoned= poisoned;
   return x_old + 1;
 }
 
