@@ -2192,6 +2192,8 @@ void APInt::udivrem(const APInt &LHS, const APInt &RHS,
     uint64_t RemVal = LHS.VAL % RHS.VAL;
     Quotient = APInt(LHS.BitWidth, QuotVal);
     Remainder = APInt(LHS.BitWidth, RemVal);
+    Quotient.orPoisoned( LHS, RHS );
+    Remainder.orPoisoned( LHS, RHS );
     return;
   }
 
@@ -2205,18 +2207,24 @@ void APInt::udivrem(const APInt &LHS, const APInt &RHS,
   if (lhsWords == 0) {
     Quotient = 0;                // 0 / Y ===> 0
     Remainder = 0;               // 0 % Y ===> 0
+    Quotient.orPoisoned( LHS, RHS );
+    Remainder.orPoisoned( LHS, RHS );
     return;
   }
 
   if (lhsWords < rhsWords || LHS.ult(RHS)) {
     Remainder = LHS;            // X % Y ===> X, iff X < Y
     Quotient = 0;               // X / Y ===> 0, iff X < Y
+    Quotient.orPoisoned( LHS, RHS );
+    Remainder.orPoisoned( LHS, RHS );
     return;
   }
 
   if (LHS == RHS) {
     Quotient  = 1;              // X / X ===> 1
     Remainder = 0;              // X % X ===> 0;
+    Quotient.orPoisoned( LHS, RHS );
+    Remainder.orPoisoned( LHS, RHS );
     return;
   }
 
@@ -2226,15 +2234,22 @@ void APInt::udivrem(const APInt &LHS, const APInt &RHS,
     uint64_t rhsValue = RHS.isSingleWord() ? RHS.VAL : RHS.pVal[0];
     Quotient = APInt(LHS.getBitWidth(), lhsValue / rhsValue);
     Remainder = APInt(LHS.getBitWidth(), lhsValue % rhsValue);
+    Quotient.orPoisoned( LHS, RHS );
+    Remainder.orPoisoned( LHS, RHS );
     return;
   }
 
   // Okay, lets do it the long way
   divide(LHS, lhsWords, RHS, rhsWords, &Quotient, &Remainder);
+  Quotient.orPoisoned( LHS, RHS );
+  Remainder.orPoisoned( LHS, RHS );
 }
 
 void APInt::sdivrem(const APInt &LHS, const APInt &RHS,
                     APInt &Quotient, APInt &Remainder) {
+  /* Becuase this is defined in terms of udivrem, poison propogation is handled
+     with udivrem.
+  */
   if (LHS.isNegative()) {
     if (RHS.isNegative())
       APInt::udivrem(-LHS, -RHS, Quotient, Remainder);
@@ -2255,12 +2270,14 @@ APInt APInt::sadd_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this+RHS;
   Overflow = isNonNegative() == RHS.isNonNegative() &&
              Res.isNonNegative() != isNonNegative();
+  Res.orPoisoned( *this, RHS );
   return Res;
 }
 
 APInt APInt::uadd_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this+RHS;
   Overflow = Res.ult(RHS);
+  Res.orPoisoned( *this, RHS );
   return Res;
 }
 
@@ -2268,17 +2285,20 @@ APInt APInt::ssub_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this - RHS;
   Overflow = isNonNegative() != RHS.isNonNegative() &&
              Res.isNonNegative() != isNonNegative();
+  Res.orPoisoned( *this, RHS );
   return Res;
 }
 
 APInt APInt::usub_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this-RHS;
   Overflow = Res.ugt(*this);
+  Res.orPoisoned( *this, RHS );
   return Res;
 }
 
 APInt APInt::sdiv_ov(const APInt &RHS, bool &Overflow) const {
   // MININT/-1  -->  overflow.
+  // poison preservation done by called functions
   Overflow = isMinSignedValue() && RHS.isAllOnesValue();
   return sdiv(RHS);
 }
@@ -2290,6 +2310,7 @@ APInt APInt::smul_ov(const APInt &RHS, bool &Overflow) const {
     Overflow = Res.sdiv(RHS) != *this || Res.sdiv(*this) != RHS;
   else
     Overflow = false;
+  Res.orPoisoned( *this, RHS );
   return Res;
 }
 
@@ -2300,32 +2321,43 @@ APInt APInt::umul_ov(const APInt &RHS, bool &Overflow) const {
     Overflow = Res.udiv(RHS) != *this || Res.udiv(*this) != RHS;
   else
     Overflow = false;
+  Res.orPoisoned( *this, RHS );
   return Res;
 }
 
 APInt APInt::sshl_ov(const APInt &ShAmt, bool &Overflow) const {
+  APInt Result;
   Overflow = ShAmt.uge(getBitWidth());
-  if (Overflow)
-    return APInt(BitWidth, 0);
+  if (Overflow) {
+    Result= APInt(BitWidth, 0);
+    Result.poisoned= poisoned;
+    return Result; 
+  } 
 
   if (isNonNegative()) // Don't allow sign change.
     Overflow = ShAmt.uge(countLeadingZeros());
   else
     Overflow = ShAmt.uge(countLeadingOnes());
   
-  return *this << ShAmt;
+  Result= *this << ShAmt;
+  Result.poisoned= poisoned;
+  return Result;
 }
 
 APInt APInt::ushl_ov(const APInt &ShAmt, bool &Overflow) const {
   Overflow = ShAmt.uge(getBitWidth());
-  if (Overflow)
-    return APInt(BitWidth, 0);
+  if (Overflow)  {
+    Result= APInt(BitWidth, 0);
+    Result.poisoned= poisoned;
+    return Result;
+  }
 
   Overflow = ShAmt.ugt(countLeadingZeros());
 
-  return *this << ShAmt;
+  Result= *this << ShAmt;
+  Result.poisoned= poisoned;
+  return Result;
 }
-
 
 
 
@@ -3154,3 +3186,68 @@ APInt::tcSetLeastSignificantBits(integerPart *dst, unsigned int parts,
   while (i < parts)
     dst[i++] = 0;
 }
+
+/* =======================================================================
+* Stuff moved here by CAS to resolve an include-file loop while implementing
+* short-circuit poison propogation.  
+* TODO: remove this notice when this works.
+*/
+
+  /// \brief Bitwise AND operator.
+  ///
+  /// Performs a bitwise AND operation on *this and RHS.
+  ///
+  /// \returns An APInt value representing the bitwise AND of *this and RHS.
+  APInt APInt::operator&(const APInt &RHS) const {
+    assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+    APInt result;
+    if (isSingleWord()) {
+      result= APInt(getBitWidth(), VAL & RHS.VAL);
+    } else {
+      result= AndSlowCase(RHS);
+    }
+    APIntPoison::poisonIfNeeded_bitAnd( result, *this, RHS );
+    return result;
+  }
+  APInt LLVM_ATTRIBUTE_UNUSED_RESULT APInt::And(const APInt &RHS) const {
+    APInt result= this->operator&(RHS);
+    APIntPoison::poisonIfNeeded_bitAnd( result, *this, RHS );
+    return result;
+  }
+
+  /// \brief Bitwise OR operator.
+  ///
+  /// Performs a bitwise OR operation on *this and RHS.
+  ///
+  /// \returns An APInt value representing the bitwise OR of *this and RHS.
+  APInt APInt::operator|(const APInt &RHS) const {
+    assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+    APInt result;
+    if (isSingleWord())  {
+      result= APInt(getBitWidth(), VAL | RHS.VAL);
+    } else { 
+      result= OrSlowCase(RHS);
+    }
+    APIntPoison::poisonIfNeeded_bitOr( result, *this, RHS );
+    return result;
+  }
+
+  /// \brief Bitwise OR function.
+  ///
+  /// Performs a bitwise or on *this and RHS. This is implemented bny simply
+  /// calling operator|.
+  ///
+  /// \returns An APInt value representing the bitwise OR of *this and RHS.
+  APInt LLVM_ATTRIBUTE_UNUSED_RESULT APInt::Or(const APInt &RHS) const {
+    APInt result= this->operator|(RHS);
+    // poison propogation handled by operator|().
+    return result;
+  }
+
+
+/* ======================================================================= 
+* end of Stuff moved here by CAS to resolve an include-file loop while
+* implementing short-circuit poison propogation.
+*
+* TODO: remove this notice when this works.
+*/
