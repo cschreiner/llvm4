@@ -1581,6 +1581,8 @@ APInt APInt::sqrt() const {
 APInt APInt::multiplicativeInverse(const APInt& modulo) const {
   assert(ult(modulo) && "This APInt must be smaller than the modulo");
 
+  APInt Result;
+
   // Using the properties listed at the following web page (accessed 06/21/08):
   //   http://www.numbertheory.org/php/euclid.html
   // (especially the properties numbered 3, 4 and 9) it can be proved that
@@ -1607,14 +1609,19 @@ APInt APInt::multiplicativeInverse(const APInt& modulo) const {
   // inverse, so return 0. We check this by looking at the next-to-last
   // remainder, which is the gcd(*this,modulo) as calculated by the Euclidean
   // algorithm.
-  if (r[i] != 1)
-    return APInt(BitWidth, 0);
+  if (r[i] != 1)  {
+    Result= APInt(BitWidth, 0);
+    Result.poisoned= poisoned || modulo.poisoned;
+    return Result;
+  }
 
   // The next-to-last t is the multiplicative inverse.  However, we are
   // interested in a positive inverse. Calcuate a positive one from a negative
   // one if necessary. A simple addition of the modulo suffices because
   // abs(t[i]) is known to be less than *this/2 (see the link above).
-  return t[i].isNegative() ? t[i] + modulo : t[i];
+  Result= t[i].isNegative() ? t[i] + modulo : t[i];
+  Result.poisoned= poisoned || modulo.poisoned;
+  return Result;
 }
 
 /// Calculate the magic numbers required to implement a signed integer division
@@ -1656,6 +1663,7 @@ APInt::ms APInt::magic() const {
   mag.m = q2 + 1;
   if (d.isNegative()) mag.m = -mag.m;   // resulting magic number
   mag.s = p - d.getBitWidth();          // resulting shift
+  mag.m.poisoned= poisoned;
   return mag;
 }
 
@@ -1706,6 +1714,7 @@ APInt::mu APInt::magicu(unsigned LeadingZeros) const {
            (q1.ult(delta) || (q1 == delta && r1 == 0)));
   magu.m = q2 + 1; // resulting magic number
   magu.s = p - d.getBitWidth();  // resulting shift
+  magu.m.poisoned= poisoned;
   return magu;
 }
 
@@ -2041,15 +2050,20 @@ void APInt::divide(const APInt LHS, unsigned lhsWords,
     delete [] Q;
     delete [] R;
   }
+  Quotient->orPiosned( LHS, RHS );
+  Remainder->orPiosned( LHS, RHS );
 }
 
 APInt APInt::udiv(const APInt& RHS) const {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+  APInt Quotient;
 
   // First, deal with the easy case
   if (isSingleWord()) {
     assert(RHS.VAL != 0 && "Divide by zero?");
-    return APInt(BitWidth, VAL / RHS.VAL);
+    Quotient= APInt(BitWidth, VAL / RHS.VAL);
+    Quotient.orPoisoned( *this, RHS );
+    return Quotient;
   }
 
   // Get some facts about the LHS and RHS number of bits and words
@@ -2060,27 +2074,39 @@ APInt APInt::udiv(const APInt& RHS) const {
   unsigned lhsWords = !lhsBits ? 0 : (APInt::whichWord(lhsBits - 1) + 1);
 
   // Deal with some degenerate cases
-  if (!lhsWords)
+  if (!lhsWords) {
     // 0 / X ===> 0
-    return APInt(BitWidth, 0);
-  else if (lhsWords < rhsWords || this->ult(RHS)) {
+    Quotient= APInt(BitWidth, 0);
+    Quotient.orPoisoned( *this, RHS );
+    return Quotient;
+  } else if (lhsWords < rhsWords || this->ult(RHS)) {
     // X / Y ===> 0, iff X < Y
-    return APInt(BitWidth, 0);
+    Quotient= APInt(BitWidth, 0);
+    Quotient.orPoisoned( *this, RHS );
+    return Quotient;
   } else if (*this == RHS) {
     // X / X ===> 1
-    return APInt(BitWidth, 1);
+    Quotient= APInt(BitWidth, 1);
+    Quotient.orPoisoned( *this, RHS );
+    return Quotient;
   } else if (lhsWords == 1 && rhsWords == 1) {
     // All high words are zero, just use native divide
-    return APInt(BitWidth, this->pVal[0] / RHS.pVal[0]);
+    Quotient= APInt(BitWidth, this->pVal[0] / RHS.pVal[0]);
+    Quotient.orPoisoned( *this, RHS );
+    return Quotient;
   }
-
+  
   // We have to compute it the hard way. Invoke the Knuth divide algorithm.
-  APInt Quotient(1,0); // to hold result.
+  Quotient= APInt(1,0); // to hold result.
   divide(*this, lhsWords, RHS, rhsWords, &Quotient, nullptr);
+  Quotient.orPoisoned( *this, RHS );
   return Quotient;
 }
 
 APInt APInt::sdiv(const APInt &RHS) const {
+  /* Becasue this is defined in terms of udiv, poison propogation is handled
+      with udiv.
+  */
   if (isNegative()) {
     if (RHS.isNegative())
       return (-(*this)).udiv(-RHS);
@@ -2093,9 +2119,13 @@ APInt APInt::sdiv(const APInt &RHS) const {
 
 APInt APInt::urem(const APInt& RHS) const {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+  APInt result;
+
   if (isSingleWord()) {
     assert(RHS.VAL != 0 && "Remainder by zero?");
-    return APInt(BitWidth, VAL % RHS.VAL);
+    result= APInt(BitWidth, VAL % RHS.VAL);
+    result.orPoisoned( *this, RHS );
+    return result;
   }
 
   // Get some facts about the LHS
@@ -2110,25 +2140,37 @@ APInt APInt::urem(const APInt& RHS) const {
   // Check the degenerate cases
   if (lhsWords == 0) {
     // 0 % Y ===> 0
-    return APInt(BitWidth, 0);
+    result= APInt(BitWidth, 0);
+    result.orPoisoned( *this, RHS );
+    return result;
   } else if (lhsWords < rhsWords || this->ult(RHS)) {
     // X % Y ===> X, iff X < Y
-    return *this;
+    result= *this;
+    result.orPoisoned( *this, RHS );
+    return result;
   } else if (*this == RHS) {
     // X % X == 0;
-    return APInt(BitWidth, 0);
+    result= APInt(BitWidth, 0);
+    result.orPoisoned( *this, RHS );
+    return result;
   } else if (lhsWords == 1) {
     // All high words are zero, just use native remainder
-    return APInt(BitWidth, pVal[0] % RHS.pVal[0]);
+    result= APInt(BitWidth, pVal[0] % RHS.pVal[0]);
+    result.orPoisoned( *this, RHS );
+    return result;
   }
 
   // We have to compute it the hard way. Invoke the Knuth divide algorithm.
-  APInt Remainder(1,0);
-  divide(*this, lhsWords, RHS, rhsWords, nullptr, &Remainder);
-  return Remainder;
+  result= APInt(1,0);
+  divide(*this, lhsWords, RHS, rhsWords, nullptr, &result);
+  result.orPoisoned( *this, RHS );
+  return result;
 }
 
 APInt APInt::srem(const APInt &RHS) const {
+  /* Because this is defined in terms of urem, poison propogation is handled
+     with urem.
+  */
   if (isNegative()) {
     if (RHS.isNegative())
       return -((-(*this)).urem(-RHS));
