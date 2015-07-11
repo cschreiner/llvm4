@@ -521,6 +521,17 @@ private:
   void LoadStructFromMemory(GenericValue &Dest,
                             GenericValue *Src, Type *Ty);
 protected:
+  /// \brief loads an item of data from memory to a register, regardless of 
+  /// its data type.  
+  ///
+  /// Typically this function determines the relevant data type, and then acts
+  /// as a dispatcher to other functions who specialize in loading that exact
+  /// data type.
+  ///
+  /// \param Result the location data should be written to 
+  /// \param Ptr read data from here
+  /// \param Ty information on the type of the data to move
+  ///
   void LoadValueFromMemory(GenericValue &Result, GenericValue *Ptr,
                            Type *Ty);
 };
