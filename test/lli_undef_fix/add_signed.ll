@@ -1,4 +1,9 @@
-; RUN: lit.py %s
+; RUN: %lli -force-interpreter %s 
+
+;; we expect this to fail until the investigation mentioned below is finished.
+; XFAIL: * 
+
+
 
 ; TODO: find some way to add lit code here to run this, and compare
 ;	its printed output against an expected value... which may be
@@ -19,22 +24,22 @@ declare i32 @printf(i8* nocapture readonly, ...)
 ; Definition of main function
 define i32 @main() {   ; i32()*
   ; Convert [19 x i8]* to i8  *...
-  %unpoison_st_i8 = getelementptr [21 x i8]* @unpoison_st, i64 0, i64 0
-  %poison_st_i8 = getelementptr [19 x i8]* @poison_st, i64 0, i64 0
+  %unpoison_st_i8 = getelementptr [21 x i8], [21 x i8]* @unpoison_st, i64 0, i64 0
+  %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
   %nowrap1= add i8 178, 7
   %nowrap2= add nsw i8 178, 7
 
   ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...)* @printf(i8* %unpoison_st_i8, i8 %nowrap1 )
-  call i32 (i8*, ...)* @printf(i8* %unpoison_st_i8, i8 %nowrap2 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap2 )
 
   %unpoisoned_1= add i8 122, 7
   %poisoned_1= add nsw i8 122, 7
 
   ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...)* @printf(i8* %unpoison_st_i8, i8 %unpoisoned_1 )
-  call i32 (i8*, ...)* @printf(i8* %poison_st_i8, i8 %poisoned_1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %unpoisoned_1 )
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %poisoned_1 )
 
   ; clean up and return
   ret i32 0

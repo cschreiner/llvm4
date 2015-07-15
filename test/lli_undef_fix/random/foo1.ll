@@ -9,7 +9,7 @@ declare i32 @printf(i8* nocapture readonly, ...)
 
 define i7 @main() { ; 
   ; %convert [? x i8]* to i8* 
-  %printf_st_i8 = getelementptr [37 x i8]* @printf_st, i64 0, i64 0
+  %printf_st_i8 = getelementptr [37 x i8], [37 x i8]* @printf_st, i64 0, i64 0
 
   %1= add i7 11, 0 
   %2= add i7 25, 0 
@@ -25,7 +25,7 @@ define i7 @main() { ;
   %11= urem i7 %10, 116
   %12= and i7 %11, %7
 
-  call i32 (i8*, ...)* @printf(i8* %printf_st_i8, i7 %12)
+  call i32 (i8*, ...) @printf(i8* %printf_st_i8, i7 %12)
 
   ; clean up and return 
   ret i7 0 

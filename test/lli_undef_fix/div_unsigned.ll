@@ -19,22 +19,22 @@ declare i32 @printf(i8* nocapture readonly, ...)
 ; Definition of main function
 define i32 @main() {   ; i32()*
   ; Convert [19 x i8]* to i8  *...
-  %unpoison_st_i8 = getelementptr [21 x i8]* @unpoison_st, i64 0, i64 0
-  %poison_st_i8 = getelementptr [19 x i8]* @poison_st, i64 0, i64 0
+  %unpoison_st_i8 = getelementptr [21 x i8], [21 x i8]* @unpoison_st, i64 0, i64 0
+  %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
   %nowrap1= udiv i8 240, 3
   %nowrap2= udiv exact i8 240, 3
 
   ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...)* @printf(i8* %unpoison_st_i8, i8 %nowrap1 )
-  call i32 (i8*, ...)* @printf(i8* %unpoison_st_i8, i8 %nowrap2 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap2 )
 
   %unpoisoned_1= udiv i8 145, 9
   %poisoned_1= udiv exact i8 145, 9
 
   ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...)* @printf(i8* %unpoison_st_i8, i8 %unpoisoned_1 )
-  call i32 (i8*, ...)* @printf(i8* %poison_st_i8, i8 %poisoned_1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %unpoisoned_1 )
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %poisoned_1 )
 
   ; clean up and return
   ret i32 0

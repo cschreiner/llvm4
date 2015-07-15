@@ -8,7 +8,7 @@ declare i32 @printf(i8* nocapture readonly, ...)
 
 define i19 @main() { ; 
   ; %convert [? x i8]* to i8* 
-  %printf_st_i8 = getelementptr [37 x i8]* @printf_st, i64 0, i64 0
+  %printf_st_i8 = getelementptr [37 x i8], [37 x i8]* @printf_st, i64 0, i64 0
 
   %1= add i19 472132, 0 
   %2= add i19 119074, 0 
@@ -23,7 +23,7 @@ define i19 @main() { ;
   %11= udiv exact i19 %10, 181157
   %12= or i19 %11, %4
 
-  call i32 (i8*, ...)* @printf(i8* %printf_st_i8, i19 %12)
+  call i32 (i8*, ...) @printf(i8* %printf_st_i8, i19 %12)
 
   ; clean up and return 
   ret i19 0 
