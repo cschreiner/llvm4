@@ -55,6 +55,10 @@
 #include "llvm/Transforms/Instrumentation.h"
 #include <cerrno>
 
+// added for lli_undef_fix work:
+#include "llvm/Support/LLIUndefFix.h"
+#include "llvm/Support/LUF_opts.h"
+
 #ifdef __CYGWIN__
 #include <cygwin/version.h>
 #if defined(CYGWIN_VERSION_DLL_MAJOR) && CYGWIN_VERSION_DLL_MAJOR<1007
@@ -397,6 +401,7 @@ int main(int argc, char **argv, char * const *envp) {
 
   cl::ParseCommandLineOptions(argc, argv,
                               "llvm interpreter & dynamic compiler\n");
+  lli_undef_fix::parse_opts(); // added for lli_undef_fix
 
   // If the user doesn't want core files, disable them.
   if (DisableCoreFiles)
