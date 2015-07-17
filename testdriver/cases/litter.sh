@@ -4,4 +4,8 @@
 
 cd ..
 ../build/bin/llvm-lit test 
+lit_status=$?
+
+echo lit exit status=\"$lit_status\"
+exit 0
 
