@@ -21,21 +21,30 @@ for ii in `find ../test/lli_undef_fix -maxdepth 1 -iname \*.ll | sort `; do
    sync
    
    # run the .ll file
-   # we run it twice, once to capture stdout, another time to capture stderr.
+   # We run it twice, once to capture stdout, another time to capture stderr.
+   # Everything is eventually sent to stdout, so it can be compared with 
+   # benchmarks in a predictable way.  Sheesh.
    $PROJ_ROOT/admin/bin/llifi $ii 2>> /dev/null
+   ll_status1=$?
    echo '\n########\n'
    echo stderr:
    stdbuf -o 0 -e 0 $PROJ_ROOT/admin/bin/llifi $ii 2>&1 1>> /dev/null | \
    	 sed 's/addr=0x[0-9a-zA-Z]*/addr=dummy_address/' 
+   ll_status2=$?
 
    # Note: this didn't work, neither did a dozen+ other attempts.  Sheesh.
    #(stdbuf -o 0 -e 0 $PROJ_ROOT/admin/bin/llifi $ii 2>&3 ) 3>&1 1>&2 | \
    #	 sed 's/addr=0x[0-9a-zA-Z]*/addr=dummy_address/'
    ll_status=$?
-   echo -n exit status=\"$ll_status\" " "
+   
 
    # process the results
    echo '\n########\n'
+   if [ $ll_status1 -ne $ll_status2 ]; then
+      echo TEST FAILURE: statuses disagree:
+      echo "  " ll_status1=\"$ll_status1\", ll_status2=\"$ll_status2\"
+   fi
+   echo -n exit status=\"$ll_status1\" " "
    if [ "$failure_expected" = "true" ]; then
       echo \(Expected nonzero, i.e. .ll program should end with an error.\) 
       if [ $ll_status -eq 0 ]; then
