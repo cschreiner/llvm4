@@ -14,7 +14,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0xb9' 
 unpoisoned: '0xb9' 
 unpoisoned: '0x81' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/add_unsigned.ll
@@ -32,7 +40,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x9d' 
 unpoisoned: '0x9d' 
 unpoisoned: '0x1' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/ashr.ll
@@ -50,7 +66,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0xfc54' 
 unpoisoned: '0xfc54' 
 unpoisoned: '0x682' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/div_signed.ll
@@ -68,7 +92,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0xfb' 
 unpoisoned: '0xfb' 
 unpoisoned: '0xfb' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/div_unsigned.ll
@@ -86,7 +118,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x50' 
 unpoisoned: '0x50' 
 unpoisoned: '0x10' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/first.ll
@@ -102,6 +142,10 @@ LUF Option settings via LLI_LUF_OPTS:
   (end of options) 
 
 hello 2a world
+
+########
+
+stderr:
 exit status="0"  (Expected zero, i.e. .ll program should end normally.)
  
 #####################################################################
@@ -120,7 +164,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x2b38' 
 unpoisoned: '0x2b38' 
 unpoisoned: '0x3396' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/mul_signed.ll
@@ -138,7 +190,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x2a' 
 unpoisoned: '0x2a' 
 unpoisoned: '0x70' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/mul_unsigned.ll
@@ -156,7 +216,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x78' 
 unpoisoned: '0x78' 
 unpoisoned: '0xe0' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/select_std_1f.ll
@@ -172,7 +240,15 @@ LUF Option settings via LLI_LUF_OPTS:
   (end of options) 
 
 unpoisoned: '0x9' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/select_std_1t.ll
@@ -188,7 +264,15 @@ LUF Option settings via LLI_LUF_OPTS:
   (end of options) 
 
 unpoisoned: '0x5' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/select_std_2f.ll
@@ -205,6 +289,10 @@ LUF Option settings via LLI_LUF_OPTS:
 
 unpoisoned: '0x14' 
 unpoisoned: '0x14' 
+
+########
+
+stderr:
 exit status="0"  (Expected zero, i.e. .ll program should end normally.)
  
 #####################################################################
@@ -221,7 +309,15 @@ LUF Option settings via LLI_LUF_OPTS:
   (end of options) 
 
 unpoisoned: '0x82' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/select_std_3f.ll
@@ -237,7 +333,15 @@ LUF Option settings via LLI_LUF_OPTS:
   (end of options) 
 
 unpoisoned: '0x82' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/select_std_3t.ll
@@ -254,6 +358,10 @@ LUF Option settings via LLI_LUF_OPTS:
 
 unpoisoned: '0x14' 
 unpoisoned: '0x14' 
+
+########
+
+stderr:
 exit status="0"  (Expected zero, i.e. .ll program should end normally.)
  
 #####################################################################
@@ -272,7 +380,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x8880' 
 unpoisoned: '0x8880' 
 unpoisoned: '0x8100' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/shl_unsigned.ll
@@ -290,7 +406,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x52b0' 
 unpoisoned: '0x52b0' 
 unpoisoned: '0x6fa0' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/store_poison_n_load.ll
@@ -306,7 +430,15 @@ LUF Option settings via LLI_LUF_OPTS:
   (end of options) 
 
 this prints if poison-free: '0xe' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/store_poison_volatile.ll
@@ -321,7 +453,15 @@ LUF Option settings via LLI_LUF_OPTS:
   return_if_div_0=0 (default=0) 
   (end of options) 
 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to write a poison value to a volatile memory location. 
+   addr=dummy_address, length=2, val=2047.
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/sub_signed.ll
@@ -339,7 +479,15 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x19' 
 unpoisoned: '0x19' 
 unpoisoned: '0x7a' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/sub_unsigned.ll
@@ -357,5 +505,13 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x97' 
 unpoisoned: '0x97' 
 unpoisoned: '0xea' 
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+
+########
+
+stderr:
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
