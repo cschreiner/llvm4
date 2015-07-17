@@ -1,3 +1,0 @@
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
-exiting due to external poison propogation. 
