@@ -973,7 +973,6 @@ public:
     } else {
       result= shlSlowCase(shiftAmt);
     }
-    return shlSlowCase(shiftAmt);
     result.poisoned= poisoned;
     return result;
   }
