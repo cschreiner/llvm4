@@ -3,7 +3,10 @@
 # be run by another test case.
 
 cd ..
-../build/bin/llvm-lit test 
+# We need to change suffixes of form "(574 of 15638)" into something
+# repeatable, as lit does not run the tests in a consistent order.
+../build/bin/llvm-lit test | grep -e ^PASS -e ^FAIL -e ^X -e ^UNSUPPORTED | \
+      sed 's/[0-9][0-9]* of/xxx of/' | sort 
 lit_status=$?
 
 echo lit exit status=\"$lit_status\"
