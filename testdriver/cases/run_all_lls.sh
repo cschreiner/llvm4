@@ -27,7 +27,14 @@ for ii in `find ../test/lli_undef_fix -maxdepth 1 -iname \*.ll | sort `; do
    sync
    
    # run the .ll file
-   $PROJ_ROOT/admin/bin/llifi $ii 
+   # we run it twice, once to capture stdout, another time to capture stderr.
+   $PROJ_ROOT/admin/bin/llifi $ii 2>> /dev/null
+   stdbuf -o 0 -e 0 $PROJ_ROOT/admin/bin/llifi $ii 2>&1 1>> /dev/null | \
+   	 sed 's/addr=0x[0-9a-zA-Z]*/addr=dummy_address/' 1>&2
+
+   # Note: this didn't work
+   #(stdbuf -o 0 -e 0 $PROJ_ROOT/admin/bin/llifi $ii 2>&3 ) 3>&1 1>&2 | \
+   #	 sed 's/addr=0x[0-9a-zA-Z]*/addr=dummy_address/'
    ll_status=$?
    echo -n exit status=\"$ll_status\" " "
 
