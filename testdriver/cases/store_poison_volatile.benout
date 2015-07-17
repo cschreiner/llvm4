@@ -1,7 +1,0 @@
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-status=1
