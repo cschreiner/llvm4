@@ -1049,9 +1049,10 @@ static void StoreIntToMemory(const APInt &IntVal, uint8_t *Dst,
   if ( poison && In_ptr != NULL )  {
     if ( In_ptr->isVolatile() )  {
       std::cerr << 
-         "Attempt to write a poison value to a volatile memory location. \n";
-      std::cerr << "   addr=" << Dst << ", length=" << StoreBytes << 
-         ", val=" << IntVal.toString( 10, false ) << ".\n";
+          "Attempt to write a poison value to a volatile memory location. \n";
+      std::cerr << "   addr=" << static_cast<void*>(Dst) << 
+	  ", length=" << StoreBytes << 
+          ", val=" << IntVal.toString( 10, false ) << ".\n";
       lli_undef_fix::exit_due_to_poison();
     }
   }
