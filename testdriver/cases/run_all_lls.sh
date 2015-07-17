@@ -4,14 +4,18 @@
 # to maintain a separate test script for every .ll file.
 
 
-for ii in `find ../test/lli_undef_fix -iname \*.ll | sort `; do
+for ii in `find ../test/lli_undef_fix -maxdepth 1 -iname \*.ll | sort `; do
    echo '#####################################################################'
    echo found test .ll program: $ii
    echo " "
 
+   failure_expected=false
    grep -qE 'TESTDRIVER-BASED: *failure *expected\b' $ii
    if [ $? -eq 0 ]; then
       failure_expected=true
+      echo "  " .ll file says failure expected
+   else
+      echo "  " .ll file says success expected
    fi
    
    $PROJ_ROOT/admin/bin/llifi $ii 2>&1 
