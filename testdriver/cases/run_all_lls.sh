@@ -18,7 +18,7 @@ for ii in `find ../test/lli_undef_fix -maxdepth 1 -iname \*.ll | sort `; do
       echo "  " .ll file says success expected
    fi
    
-   $PROJ_ROOT/admin/bin/llifi $ii 2>&1 
+   $PROJ_ROOT/admin/bin/llifi $ii 
    ll_status=$?
    echo -n exit status=\"$ll_status\" " "
    if [ "$failure_expected" = "true" ]; then
