@@ -19,14 +19,14 @@ define i11 @main() { ;
 
   %1= sub i11 15, 1; not poisoned
   store i11 %1, i11* @addr_a;
-  %2= load i11* @addr_a; 
+  %2= load i11, i11* @addr_a; 
 
   ; should print fine
   call i32 (i8*, ...) @printf(i8* %printf_st_i8, i11 %2)
 
   %poison= sub nuw i11 0, 1 ; generates POISON 
   store i11 %poison, i11* @addr_a
-  %poison2= load i11* @addr_a;
+  %poison2= load i11, i11* @addr_a;
 
   ; should not print, as this is poisoned
   call i32 (i8*, ...) @printf(i8* %printf_st_i8, i11 %poison2)
