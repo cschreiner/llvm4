@@ -1,0 +1,4 @@
+llvm-lit: lit.cfg:279: note: Did not find llvm-go in /uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/build/./bin
+llvm-lit: discovery.py:190: warning: test suite 'LLVM-Unit' contained no tests
+
+1 warning(s) in tests.
