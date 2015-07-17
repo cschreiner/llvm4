@@ -1,8 +1,9 @@
-; RUN: %lli -force-interpreter %s 
+; RUN: %lli -force-interpreter %s | FileCheck
 
-;; we expect this to fail until the investigation mentioned below is finished.
+; TESTDRIVER-BASED: failure expected
+;; Failure is expected because the last printf(~) prints a poison value.
 ; XFAIL: * 
-
+; TODO: add CHECK: lines here for FileCheck
 
 
 ; TODO: find some way to add lit code here to run this, and compare

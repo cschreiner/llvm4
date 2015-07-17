@@ -1,4 +1,10 @@
-; RUN lli -force-interpreter %s
+; RUN: %lli -force-interpreter %s | FileCheck
+
+;; Failure is expected because the last printf(~) prints a poison value.
+; TESTDRIVER-BASED: failure expected
+; XFAIL: * 
+; TODO: add CHECK: lines here for FileCheck
+
 
 @printf_st = private unnamed_addr constant [37 x i8] c"this prints if poison-free: '0x%x' \0A\00"
 

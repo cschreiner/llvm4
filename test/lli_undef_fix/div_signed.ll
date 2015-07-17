@@ -1,4 +1,9 @@
-; RUN: lit.py %s
+; RUN: %lli -force-interpreter %s | FileCheck
+
+;; Failure is expected because the last printf(~) prints a poison value.
+; TESTDRIVER-BASED: failure expected
+; XFAIL: * 
+; TODO: add CHECK: lines here for FileCheck
 
 ; TODO: find some way to add lit code here to run this, and compare
 ;	its printed output against an expected value... which may be
