@@ -60,25 +60,27 @@ static cl::opt<bool> PrintVolatile("interpreter-print-volatile", cl::Hidden,
    *
    * \b Reentrancy: 
    *
+   * \param inst (input) the instruction to be protected
    * \param denom (input) the denominator
    * 
    * \return void
    *
    */
 #if 0 // TODO: reinstate this once debugging is done. -- CAS 2015jul09
-  #define PROTECT_VS_DIV_0                                               \
-  {{                                                                     \
-    if ( llvm::lli_undef_fix::opt_return_if_div_0 )  {                   \
-      Type* retType= new IntegerType();                                  \
-      GenericValue retVal;                                               \
-      retVal.IntVal= new APInt(0);                                       \
-      /*asdf*/                                                           \
-      /* prototype: */                                                   \
-      /*Interpreter::popStackAndReturnValueToCaller(Type *RetTy, */      \
+  #define PROTECT_VS_DIV_0( inst, denom )				\
+  {{									\
+    if ( llvm::lli_undef_fix::opt_return_if_div_0 )  {			\
+asdf
+      Type *retType = Type::getVoidTy(inst.getContext());
+      GenericValue retVal;						\
+      retVal.IntVal= new APInt(0);					\
+      /*asdf*/								\
+      /* prototype: */							\
+      /*Interpreter::popStackAndReturnValueToCaller(Type *RetTy, */	\
       /*                                             GenericValue Result); */ \
-      Interpreter::popStackAndReturnValueToCaller( retType, retVal );    \
-      return;                                                            \
-    }                                                                    \
+      Interpreter::popStackAndReturnValueToCaller( retType, retVal );	\
+      return;								\
+    }									\
   }}     
 #else
 #define PROTECT_VS_DIV_0 
