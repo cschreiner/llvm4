@@ -1,4 +1,6 @@
 #####################################################################
+found test .ll program: cases/add_signed.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -10,6 +12,8 @@ unpoisoned: '0xb9'
 unpoisoned: '0x81' 
 status=1
 #####################################################################
+found test .ll program: cases/add_unsigned.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -21,6 +25,8 @@ unpoisoned: '0x9d'
 unpoisoned: '0x1' 
 status=1
 #####################################################################
+found test .ll program: cases/ashr.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -32,6 +38,8 @@ unpoisoned: '0xfc54'
 unpoisoned: '0x682' 
 status=1
 #####################################################################
+found test .ll program: cases/div_signed.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -43,6 +51,8 @@ unpoisoned: '0xfb'
 unpoisoned: '0xfb' 
 status=1
 #####################################################################
+found test .ll program: cases/div_unsigned.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -54,6 +64,8 @@ unpoisoned: '0x50'
 unpoisoned: '0x10' 
 status=1
 #####################################################################
+found test .ll program: cases/first.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -63,6 +75,8 @@ LUF Option settings via LLI_LUF_OPTS:
 hello 2a world
 status=0
 #####################################################################
+found test .ll program: cases/lshr.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -74,6 +88,8 @@ unpoisoned: '0x2b38'
 unpoisoned: '0x3396' 
 status=1
 #####################################################################
+found test .ll program: cases/mul_signed.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -85,6 +101,8 @@ unpoisoned: '0x2a'
 unpoisoned: '0x70' 
 status=1
 #####################################################################
+found test .ll program: cases/mul_unsigned.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -96,105 +114,8 @@ unpoisoned: '0x78'
 unpoisoned: '0xe0' 
 status=1
 #####################################################################
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0xb9' 
-unpoisoned: '0xb9' 
-unpoisoned: '0x81' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x9d' 
-unpoisoned: '0x9d' 
-unpoisoned: '0x1' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0xfc54' 
-unpoisoned: '0xfc54' 
-unpoisoned: '0x682' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0xfb' 
-unpoisoned: '0xfb' 
-unpoisoned: '0xfb' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x50' 
-unpoisoned: '0x50' 
-unpoisoned: '0x10' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-hello 2a world
-status=0
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x2b38' 
-unpoisoned: '0x2b38' 
-unpoisoned: '0x3396' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x2a' 
-unpoisoned: '0x2a' 
-unpoisoned: '0x70' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x78' 
-unpoisoned: '0x78' 
-unpoisoned: '0xe0' 
-status=1
-#####################################################################
-#####################################################################
+found test .ll program: cases/shl_signed.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -206,6 +127,8 @@ unpoisoned: '0x8880'
 unpoisoned: '0x8100' 
 status=1
 #####################################################################
+found test .ll program: cases/shl_unsigned.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -217,6 +140,8 @@ unpoisoned: '0x52b0'
 unpoisoned: '0x6fa0' 
 status=1
 #####################################################################
+found test .ll program: cases/store_poison_n_load.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -226,6 +151,8 @@ LUF Option settings via LLI_LUF_OPTS:
 this prints if poison-free: '0xe' 
 status=1
 #####################################################################
+found test .ll program: cases/store_poison_volatile.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -234,6 +161,8 @@ LUF Option settings via LLI_LUF_OPTS:
 
 status=1
 #####################################################################
+found test .ll program: cases/sub_signed.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
@@ -245,67 +174,8 @@ unpoisoned: '0x19'
 unpoisoned: '0x7a' 
 status=1
 #####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x97' 
-unpoisoned: '0x97' 
-unpoisoned: '0xea' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x8880' 
-unpoisoned: '0x8880' 
-unpoisoned: '0x8100' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x52b0' 
-unpoisoned: '0x52b0' 
-unpoisoned: '0x6fa0' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-this prints if poison-free: '0xe' 
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-status=1
-#####################################################################
-LUF Option settings via LLI_LUF_OPTS: 
-  antidote_select=0 (default=0) 
-  antidote_and_or=0 (default=0) 
-  print_new_poison=0 (default=0) 
-  (end of options) 
-
-unpoisoned: '0x19' 
-unpoisoned: '0x19' 
-unpoisoned: '0x7a' 
-status=1
-#####################################################################
+found test .ll program: cases/sub_unsigned.benout
+ 
 LUF Option settings via LLI_LUF_OPTS: 
   antidote_select=0 (default=0) 
   antidote_and_or=0 (default=0) 
