@@ -1,87 +1,77 @@
-#####################################################################
-found test .ll program: cases/add_signed.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/add_unsigned.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/ashr.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/div_signed.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/div_unsigned.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/first.benerr
- 
-#####################################################################
-found test .ll program: cases/lshr.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/mul_signed.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/mul_unsigned.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/shl_signed.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/shl_unsigned.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/store_poison_n_load.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/store_poison_volatile.benerr
- 
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
 Attempt to write a poison value to a volatile memory location. 
-   addr=ÿZZZZZZ!, length=2, val=2047.
+   addr=ÿÿÿ¿, length=2, val=2047.
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/sub_signed.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
-#####################################################################
-found test .ll program: cases/sub_unsigned.benerr
- 
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
+/test/lli_undef_fix/shl_signed.ll
+   .ll file says failure expected
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/shl_unsigned.ll
+   .ll file says failure expected
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/store_poison_n_load.ll
+   .ll file says failure expected
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/store_poison_volatile.ll
+   .ll file says failure expected
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/sub_signed.ll
+   .ll file says failure expected
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/sub_unsigned.ll
+   .ll file says failure expected
+ 
