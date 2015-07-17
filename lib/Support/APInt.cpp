@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <iostream> //;;
 using namespace llvm;
 
 #define DEBUG_TYPE "apint"
@@ -1408,9 +1409,18 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
   uint64_t * val = new uint64_t[getNumWords()];
 
   // If we are shifting less than a word, do it the easy way
+  assert( getNumWords() > 1 && 
+      "Following code assumes the APInt is more than one word long." );
+  std::cout << "got to mercury, num words=" << getNumWords() << 
+      ", BitWidth=" << BitWidth << ".\n";;
   if (shiftAmt < APINT_BITS_PER_WORD) {
     uint64_t carry = 0;
     for (unsigned i = 0; i < getNumWords(); i++) {
+      std::cout << "i=" << i << 
+	  " shiftAmt=" << shiftAmt << 
+	  " carry=" << carry << ",\n";;
+      std::cout << "val[i]=" << val[i] << ",\n";;
+      std::cout << "pVal[i]=" << pVal[i] << " <eom>\n";;
       val[i] = pVal[i] << shiftAmt | carry;
       carry = pVal[i] >> (APINT_BITS_PER_WORD - shiftAmt);
     }
