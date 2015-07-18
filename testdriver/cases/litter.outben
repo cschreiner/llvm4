@@ -12685,3 +12685,4 @@ XFAIL: LLVM :: Transforms/PhaseOrdering/PR6627.ll (xx of yy)
 XFAIL: LLVM :: Transforms/Reassociate/2012-05-08-UndefLeak.ll (xx of yy)
 XFAIL: LLVM :: Transforms/ScalarRepl/2007-11-03-bigendian_apint.ll (xx of yy)
 XFAIL: LLVM :: Transforms/TailDup/2008-06-11-AvoidDupLoopHeader.ll (xx of yy)
+lit exit status="0"
