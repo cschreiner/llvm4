@@ -70,8 +70,8 @@ static cl::opt<bool> PrintVolatile("interpreter-print-volatile", cl::Hidden,
   #define PROTECT_VS_DIV_0( inst, denom )				\
   {{									\
     if ( llvm::lli_undef_fix::opt_return_if_div_0 )  {			\
-asdf
-      Type *retType = Type::getVoidTy(inst.getContext());
+      asdf								\
+      Type *retType = Type::getVoidTy(inst.getContext());		\
       GenericValue retVal;						\
       retVal.IntVal= new APInt(0);					\
       /*asdf*/								\
