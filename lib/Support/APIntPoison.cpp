@@ -59,19 +59,10 @@ namespace APIntPoison {
 void poisonIfNeeded_add( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
-  if ( nsw )  { 
-    if ( rhs.slt(0) ? dest.sgt(lhs) : dest.slt(lhs) )  {
-      // an unallowed signed wrap happened
-      dest.orPoisoned(true);
-    }
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_add_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  if ( nuw )  { 
-    if ( dest.ult(lhs) || dest.ult(rhs) )  {
-      // an unallowed unsigned wrap happened
-      dest.orPoisoned(true);
-    }
-  }
-  return;
+  return poisonIfNeeded_add_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -104,19 +95,10 @@ void poisonIfNeeded_add( APInt& dest, APInt& lhs, APInt& rhs,
 void poisonIfNeeded_sub( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
-  if ( nsw )  { 
-    if ( rhs.sgt(0) ? dest.sgt(lhs) : dest.slt(lhs) )  {
-      // an unallowed signed wrap happened
-      dest.orPoisoned(true);
-    }
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_sub_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  if ( nuw )  { 
-    if ( lhs.ult(rhs) )  {
-      // an unallowed unsigned wrap happened
-      dest.orPoisoned(true);
-    }
-  }
-  return;
+  return poisonIfNeeded_sub_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -149,81 +131,10 @@ void poisonIfNeeded_sub( APInt& dest, APInt& lhs, APInt& rhs,
 void poisonIfNeeded_mul( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
-
-  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-     quick check for special cases that propogate or clear poison
-   */
-  if ( llvm::lli_undef_fix::opt_antidote_and_or )  {
-    if ( lhs.getPoisoned() && (!rhs) )  { 
-      // poison times zero is unpoisoned zero
-      dest.setPoisoned( false );
-      return;
-    }
-    if ( (!lhs) && rhs.getPoisoned() )  { 
-      // zero times poison is unpoisoned zero
-      dest.setPoisoned( false );
-      return;
-    }
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_mul_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
-    dest.setPoisoned( true );
-    return;
-  }
-  
-  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-     determine if new poison was created by forbidden signed wraparound
-   */
-  if ( nsw )  { 
-    // algorithm from:
-    // https://www.securecoding.cert.org/confluence/display/seccode/INT32-C.+Ensure+that+operations+on+signed+integers+do+not+result+in+overflow
-
-    APInt int_max= APInt::getSignedMaxValue( dest.getBitWidth() );
-    APInt int_min= APInt::getSignedMinValue( dest.getBitWidth() );
-    if ( lhs.sgt(0) ) {  /* lhs is positive */
-      if (rhs.sgt(0) > 0) {  /* lhs and rhs are positive */
-	if (lhs.sgt( (int_max.sdiv(rhs) )) )  {
-	  // an unallowed signed wrap happened
-	  dest.orPoisoned(true);
-	}
-      } else { /* lhs positive, rhs nonpositive */
-	if (rhs.slt( (int_min.sdiv(lhs) )) )  {
-	  // an unallowed signed wrap happened
-	  dest.orPoisoned(true);
-	}
-      } /* lhs positive, rhs nonpositive */
-    } else { /* lhs is nonpositive */
-      if (rhs.sgt(0) )  { /* lhs is nonpositive, rhs is positive */
-	if (lhs.slt( (int_min.sdiv(rhs) )) )  {
-	  // an unallowed signed wrap happened
-	  dest.orPoisoned(true);
-	}
-      } else { /* lhs and rhs are nonpositive */
-	if ( (lhs != 0) && (rhs.slt( (int_max.sdiv(lhs) )) ) )  {
-	  // an unallowed signed wrap happened
-	  dest.orPoisoned(true);
-	}
-      } /* End if lhs and rhs are nonpositive */
-    } /* End if lhs is nonpositive */
-  }
-
-  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-     determine if new poison was created by forbidden unsigned wraparound
-   */
-  if ( nuw )  { 
-    // algorithm from: 
-    // http://stackoverflow.com/questions/199333/best-way-to-detect-integer-overflow-in-c-c
-    unsigned lhs_digits= lhs.getBitWidth()- lhs.countLeadingZeros();
-    unsigned rhs_digits= rhs.getBitWidth()- rhs.countLeadingZeros();
-    if ( (lhs_digits + rhs_digits) > dest.getBitWidth() )  {
-      // an unallowed unsigned wrap happened
-      dest.orPoisoned(true);
-    }
-  }
-
-  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
-     clean up and return
-   */
-  return;
+  return poisonIfNeeded_mul_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -256,13 +167,10 @@ void poisonIfNeeded_mul( APInt& dest, APInt& lhs, APInt& rhs,
 void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool exact )
 {{
-  if ( exact )  { 
-    if ( (rhs * dest) != lhs )  {
-      // an unallowed remainder happened
-      dest.orPoisoned(true);
-    }
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_div_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  return;
+  return poisonIfNeeded_div_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -288,8 +196,10 @@ void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs,
  */
 void poisonIfNeeded_rem( APInt& dest, APInt& lhs, APInt& rhs )
 {{
-  dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
-  return;
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_rem_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_rem_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 // ----------------------------------------------------------------------------
@@ -315,33 +225,10 @@ void poisonIfNeeded_rem( APInt& dest, APInt& lhs, APInt& rhs )
    */
 void poisonIfNeeded_bitAnd( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
-  if ( llvm::lli_undef_fix::opt_antidote_and_or || 
-      llvm::lli_undef_fix::opt_poison_eq_undef )  {
-    if ( lhs.getPoisoned() && rhs.getPoisoned() )  {
-       dest.setPoisoned( true );
-       return;
-    }
-    if ( (!lhs.getPoisoned()) && (!rhs.getPoisoned()) )  {
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is poisoned, rhs is unpoisoned and zero.
-    if ( lhs.getPoisoned() && (!rhs.getPoisoned()) && (!rhs) )  {
-       // a corrupted value in lhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is unpoisoned and zero, rhs is poisoned.
-    if ( (!lhs.getPoisoned()) && (!lhs) && rhs.getPoisoned() )  {
-       // a corrupted value in rhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-  } 
-
-  // use the classical definition of poison
-  dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
-  return;
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_bitAnd_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_bitAnd_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 
@@ -368,33 +255,10 @@ void poisonIfNeeded_bitAnd( APInt& dest, const APInt& lhs, const APInt& rhs )
    */
 void poisonIfNeeded_bitOr( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
-  if ( llvm::lli_undef_fix::opt_antidote_and_or ||
-      llvm::lli_undef_fix::opt_poison_eq_undef )  {
-    if ( lhs.getPoisoned() && rhs.getPoisoned() )  {
-       dest.setPoisoned( true );
-       return;
-    }
-    if ( (!lhs.getPoisoned()) && (!rhs.getPoisoned()) )  {
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is poisoned, rhs is unpoisoned and one.
-    if ( lhs.getPoisoned() && (!rhs.getPoisoned()) && rhs.isAllOnesValue() )  {
-       // a corrupted value in lhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is unpoisoned and zero, rhs is poisoned.
-    if ( (!lhs.getPoisoned()) && lhs.isAllOnesValue() && rhs.getPoisoned() )  {
-       // a corrupted value in rhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-  } 
-
-  // use the classical definition of poison
-  dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
-  return;
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_bitOr_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_bitOr_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 // ----------------------------------------------------------------------------
@@ -417,8 +281,10 @@ void poisonIfNeeded_bitOr( APInt& dest, const APInt& lhs, const APInt& rhs )
  */
 void poisonIfNeeded_bitXor( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
-  dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
-  return;
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_bitXor_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_bitXor_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -452,38 +318,10 @@ void poisonIfNeeded_bitXor( APInt& dest, const APInt& lhs, const APInt& rhs )
 void poisonIfNeeded_shl( APInt& dest, APInt& lhs, unsigned shiftAmt,
 			 bool nsw, bool nuw )
 {{
-  // if nothing was shifted, no poison can be generated.
-  if ( shiftAmt == 0 )  { return; }
-
-  if ( nsw )  { 
-    if ( dest.isNegative() )  {
-      // did any 0 bits get shifted out?
-      if ( ! lhs.getHiBits(shiftAmt).trunc(shiftAmt).isAllOnesValue()  )  {
-      	// an unallowed signed wrap happened
-      	dest.orPoisoned(true);
-      }
-    } else {
-      // did any 1 bits get shifted out?
-      /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
-	 is here for now to guarantee accuracy.
-       */
-      if ( lhs.getHiBits(shiftAmt).trunc(shiftAmt) != 0 )  {
-      	// an unallowed signed wrap happened
-      	dest.orPoisoned(true);
-      }
-    }
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_shl_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  if ( nuw )  { 
-    // did any 1 bits get shifted out?
-    /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
-       is here for now to guarantee accuracy.
-     */
-    if ( lhs.getHiBits(shiftAmt).trunc(shiftAmt) != 0 )  {
-      // an unallowed unsigned wrap happened
-      dest.orPoisoned(true);
-    }
-  }
-  return;
+  return poisonIfNeeded_shl_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -514,19 +352,10 @@ void poisonIfNeeded_shl( APInt& dest, APInt& lhs, unsigned shiftAmt,
 void poisonIfNeeded_lshr( APInt& dest, APInt& lhs, unsigned shiftAmt,
 			  bool exact )
 {{
-  if ( exact )  { 
-    // did any 1 bits get shifted out?
-    /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
-       is here for now to guarantee accuracy.
-     */
-    if ( shiftAmt != 0 )  {
-      if ( lhs.getLoBits(shiftAmt).trunc(shiftAmt) != 0 )  {
-	// an unallowed unsigned wrap happened
-	dest.orPoisoned(true);
-      }
-    }
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_lshr_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  return;
+  return poisonIfNeeded_lshr_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -558,19 +387,10 @@ void poisonIfNeeded_lshr( APInt& dest, APInt& lhs, unsigned shiftAmt,
 void poisonIfNeeded_ashr( APInt& dest, APInt& lhs, unsigned shiftAmt,
 			  bool exact )
 {{
-  if ( exact )  { 
-    // did any 1 bits get shifted out?
-    /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
-       is here for now to guarantee accuracy.
-     */
-    if ( shiftAmt != 0 )  {
-      if ( lhs.getLoBits(shiftAmt).trunc(shiftAmt) != 0 )  {
-	// an unallowed unsigned wrap happened
-	dest.orPoisoned(true);
-      }
-    }
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_ashr_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  return;
+  return poisonIfNeeded_ashr_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 // ----------------------------------------------------------------------------
@@ -594,42 +414,10 @@ void poisonIfNeeded_ashr( APInt& dest, APInt& lhs, unsigned shiftAmt,
 void poisonIfNeeded_select( APInt& Dest,
     const APInt& Src1, const APInt& Src2, const APInt& Src3 )
 {{
-  /* TODO: get rid of this, and the #include <stdlib.h> above, if we can use
-      the opt_select_antidote variable. 
-  */
-
-  if ( lli_undef_fix::opt_antidote_select )  { 
-    /* this is the default behavior */
-    /* CAS TODO: make the above if be dependant on a command-line parameter */
-    Dest.setPoisoned( Src1.getPoisoned() );
-    Dest.orPoisoned( Src2, Src3 );
-  } else {
-    /* only propagate poison iff:
-	Src1 is poisoned
-	or
-	the selected element of {Src2, Src3} is poisoned.
-      */
-    Dest.setPoisoned( Src1.getPoisoned() );
-    Dest.orPoisoned( 
-	(Src1 == 0) ? 
-	  Src3.getPoisoned() : Src2.getPoisoned() 
-	);
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_select_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  #if 0 
-    std::cerr << "in select opcode: \n";
-    if ( Src1.getPoisoned() || Src2.getPoisoned() || 
-	  Src3.getPoisoned() || Dest.getPoisoned() )  {
-       std::cout << "   select: poison bits " << 
-	   "Src1=" << Src1.getPoisoned() <<
-	   " Src2=" << Src2.getPoisoned() <<
-	   " Src3=" << Src3.getPoisoned() <<
-	   " Dest=" << Dest.getPoisoned() << "\n";
-    }
-    fflush( stdout );
-    fflush( stderr );
-  #endif
-
-  return;
+  return poisonIfNeeded_select_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 // ----------------------------------------------------------------------------
@@ -655,8 +443,10 @@ void poisonIfNeeded_select( APInt& Dest,
 void poisonIfNeeded_trunc( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
-  dest.setPoisoned( src.getPoisoned() );
-  return;
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_trunc_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_trunc_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 // ----------------------------------------------------------------------------
@@ -682,8 +472,10 @@ void poisonIfNeeded_trunc( APInt& dest, const APInt& src,
 void poisonIfNeeded_sext( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
-  dest.setPoisoned( src.getPoisoned() );
-  return;
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_sext_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_sext_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
 // ----------------------------------------------------------------------------
@@ -709,34 +501,212 @@ void poisonIfNeeded_sext( APInt& dest, const APInt& src,
 void poisonIfNeeded_zext( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
-  dest.setPoisoned( src.getPoisoned() );
-  return;
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_zext_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_zext_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
-/*** --------------------------------------------------------------------------
-   * function poisonIfNeeded_getelementptr()
-   * --------------------------------------------------------------------------
-   * Description: CAS TODO3: implement this sometime.
-   *
-   * Method: 
-   *
-   * Reentrancy: 
-   *
-   * Inputs: 
-   *    
-   * Outputs: 
-   *
-   * Return Value: 
-   *
-   */
-//void poisonIfNeeded_getelementptr()
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_ptrtoint()
+// ----------------------------------------------------------------------------
+/*** \brief CAS TODO: implement this sometime
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param ptrtoint (input) 
+ *    
+ * \param dest (output) write the result here
+ *    
+ * \param src (intput) the value to convert
+ *
+ * \return void
+ *
+ */
+void poisonIfNeeded_ptrtoint( dest, src );
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_ptrtoint_SchemeNuno( dest, src );
+  }
+  return poisonIfNeeded_ptrtoint_SchemeEtc( dest, src );
+}}
+	
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_inttoptr()
+// ----------------------------------------------------------------------------
+/*** \brief CAS TODO: implement this sometime
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param inttoptr (input) 
+ *    
+ * \param dest (output) write the result here
+ *    
+ * \param src (intput) the value to convert
+ *
+ * \return void
+ *
+ */
+void poisonIfNeeded_inttoptr( dest, src );
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
+  }
+  return poisonIfNeeded_inttoptr_SchemeEtc( dest, src );
+}}
 
-} // end namespace APIntPoison
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_bitcast()
+// ----------------------------------------------------------------------------
+/*** \brief CAS TODO: implement this sometime
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param bitcast (input) 
+ *    
+ * \param dest (output) write the result here
+ *    
+ * \param src (intput) the value to convert
+ *
+ * \return void
+ *
+ */
+void poisonIfNeeded_bitcast( dest, src );
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
+  }
+  return poisonIfNeeded_inttoptr_SchemeEtc( dest, src );
+}}
+	
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_icmp()
+// ----------------------------------------------------------------------------
+/*** \brief CAS TODO: implement this sometime
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param dest (output) write the result here
+ *    
+ * \param lhs (intput) the left value to compare
+ * \param rhs (intput) the right value to compare
+ *
+ * \return void
+ *
+ */
+void poisonIfNeeded_icmp( dest, lhs, rhs );
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_icmp_SchemeNuno( dest, lhs, rhs );
+  }
+  return poisonIfNeeded_icmp_SchemeEtc( 
+}}
+	
+// ----------------------------------------------------------------------------
+///  Note: phi and call are handled by normal poison propogation in APInt
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_br()
+// ----------------------------------------------------------------------------
+/*** \brief CAS TODO: implement this sometime
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param br (input) 
+ *    
+ * \param yy (output) 
+ *
+ * \return void
+ *
+ */
+void poisonIfNeeded_br()
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_br_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+  }
+  return poisonIfNeeded_br_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+}}
+	
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_getelementptr()
+// ----------------------------------------------------------------------------
+/*** \brief CAS TODO: implement this sometime
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param getelementptr (input) 
+ *    
+ * \param yy (output) 
+ *
+ * \return void
+ *
+ */
+void poisonIfNeeded_getelementptr()
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_getelementptr_SchemeNuno( dest, src );
+  }
+  return poisonIfNeeded_getelementptr_SchemeEtc( dest, src );
+}}
+	
+} // end poisonIfNeeded_bitcastspace APIntPoison
 // ############################################################################
 
 
 } // end namespace llvm
 // ############################################################################
+
+// special template is 25 lines long
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_xx()
+// ----------------------------------------------------------------------------
+/*** \brief CAS TODO: implement this sometime
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param xx (input) 
+ *    
+ * \param yy (output) 
+ *
+ * \return void
+ *
+ */
+void poisonIfNeeded_xx()
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_xx_SchemeNuno( dest, src );
+  }
+  return poisonIfNeeded_xx_SchemeEtc( dest, src );
+}}
 
 // template is 21 lines long
 // ----------------------------------------------------------------------------
