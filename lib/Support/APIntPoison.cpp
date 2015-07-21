@@ -510,7 +510,7 @@ void poisonIfNeeded_zext( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_ptrtoint()
 // ----------------------------------------------------------------------------
-/*** \brief CAS TODO: implement this sometime
+/*** \brief determines of the result of a ptrtoint instruction is poisoned
  *
  * \b Detailed_Description: 
  *
@@ -538,7 +538,7 @@ void poisonIfNeeded_ptrtoint( dest, src );
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_inttoptr()
 // ----------------------------------------------------------------------------
-/*** \brief CAS TODO: implement this sometime
+/*** \brief determines of the result of an inttoptr instruction is poisoned
  *
  * \b Detailed_Description: 
  *
@@ -566,7 +566,7 @@ void poisonIfNeeded_inttoptr( dest, src );
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_bitcast()
 // ----------------------------------------------------------------------------
-/*** \brief CAS TODO: implement this sometime
+/*** \brief determines of the result of a bitcast instruction is poisoned
  *
  * \b Detailed_Description: 
  *
@@ -594,7 +594,7 @@ void poisonIfNeeded_bitcast( dest, src );
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_icmp()
 // ----------------------------------------------------------------------------
-/*** \brief CAS TODO: implement this sometime
+/*** \brief determines of the result of an icmp instruction is poisoned
  *
  * \b Detailed_Description: 
  *
@@ -625,7 +625,7 @@ void poisonIfNeeded_icmp( dest, lhs, rhs );
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_br()
 // ----------------------------------------------------------------------------
-/*** \brief CAS TODO: implement this sometime
+/*** \brief determines of the result of a br instruction is poisoned
  *
  * \b Detailed_Description: 
  *
@@ -651,11 +651,12 @@ void poisonIfNeeded_br()
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_getelementptr()
 // ----------------------------------------------------------------------------
-/*** \brief CAS TODO: implement this sometime
+/*** \brief determines of the result of a br instruction is poisoned
  *
  * \b Detailed_Description: 
  *
- * \b Method: 
+ * \b Method: this can probably be implemented as "if the src pointer is 
+ *	poisoned, so is the destination."
  *
  * \b Reentrancy: 
  *
@@ -685,6 +686,7 @@ void poisonIfNeeded_getelementptr()
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_xx()
 // ----------------------------------------------------------------------------
+// CAS TODO: implement this sometime
 /*** \brief CAS TODO: implement this sometime
  *
  * \b Detailed_Description: 
