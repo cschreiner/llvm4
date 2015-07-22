@@ -105,13 +105,13 @@ namespace APIntPoison {
 					    APInt& lhs, APInt& rhs,	\
 					    bool inbounds );
 
-  DISPATCH_FUNCTIONS_FOR_SCHEME();
+  DISPATCH_FUNCTIONS_FOR_SCHEME()
   // TODO: is there any way to make these functions private to the
   // namespace?  If not, should this namespace be made into a
   // singleton a class, and ALL the functions be made static?
   // --CAS 2015jul21
-  DISPATCH_FUNCTIONS_FOR_SCHEME(_SchemeEtc);
-  DISPATCH_FUNCTIONS_FOR_SCHEME(_SchemeNuno);
+  DISPATCH_FUNCTIONS_FOR_SCHEME(_SchemeEtc)
+  DISPATCH_FUNCTIONS_FOR_SCHEME(_SchemeNuno)
 
 #undef DISPATCH_FUNCTIONS_FOR_SCHEME
 
@@ -119,7 +119,6 @@ namespace APIntPoison {
    END OF DISPATCHED FUNCTIONS
 */
 
-public:
 void printIfPoison( Instruction& In, APInt& val );
 // TODO2: see if const qualifiers can be applied to I or val
 
