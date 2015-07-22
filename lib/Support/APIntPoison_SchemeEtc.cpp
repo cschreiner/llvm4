@@ -196,6 +196,15 @@ void poisonIfNeeded_div_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs,
 }}
 
 // ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_div( APInt&, APInt&, ApInt& )
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_div_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs )  
+{{
+  dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
+  return;
+}}
+
+// ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_rem()
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_rem_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs )

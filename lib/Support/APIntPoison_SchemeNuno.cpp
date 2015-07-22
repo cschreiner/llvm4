@@ -179,12 +179,6 @@ void poisonIfNeeded_mul_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
  *	checking is performed for remainders.  Of course, if
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
- *    
- * Outputs: 
- *   dest: write the poison result here
- *
- * Return Value: none
- *
  */
 void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool exact )
@@ -195,6 +189,15 @@ void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
       dest.orPoisoned(true);
     }
   }
+  return;
+}}
+
+// ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_div( APInt&, APInt&, ApInt& )
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs )  
+{{
+  dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
   return;
 }}
 
