@@ -52,56 +52,56 @@ namespace APIntPoison {
 //
 // Example: DISPATCH_FUNCTIONS_FOR_SCHEME(_SchemeEtc)
 
-#define DISPATCH_FUNCTIONS_FOR_SCHEME( SCHEME )				\
-  void poisonIfNeeded_add#SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
+#define DISPATCH_FUNCTIONS_FOR_SCHEME(SCHEME)				\
+  void poisonIfNeeded_add##SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
 				  bool nsw, bool nuw );			\
   /* Looks like we need separate checks for ++ vs a full add.		\
      Add such a function if needed.					\
   */									\
-  void poisonIfNeeded_sub#SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
+  void poisonIfNeeded_sub##SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
 				  bool nsw, bool nuw );			\
-  void poisonIfNeeded_mul#SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
+  void poisonIfNeeded_mul##SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
 				  bool nsw, bool nuw );			\
 									\
-  void poisonIfNeeded_div#SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
+  void poisonIfNeeded_div##SCHEME( APInt& dest, APInt& lhs, APInt& rhs,	\
 				  bool exact );				\
-  void poisonIfNeeded_div#SCHEME( APInt& dest, APInt& lhs, APInt& rhs ); \
-  void poisonIfNeeded_rem#SCHEME( APInt& dest, APInt& lhs, APInt& rhs ); \
+  void poisonIfNeeded_div##SCHEME( APInt& dest, APInt& lhs, APInt& rhs ); \
+  void poisonIfNeeded_rem##SCHEME( APInt& dest, APInt& lhs, APInt& rhs ); \
 									\
-  void poisonIfNeeded_bitAnd#SCHEME( APInt& dest,			\
+  void poisonIfNeeded_bitAnd##SCHEME( APInt& dest,			\
 				     const APInt& lhs, const APInt& rhs ); \
-  void poisonIfNeeded_bitOr#SCHEME( APInt& dest,			\
+  void poisonIfNeeded_bitOr##SCHEME( APInt& dest,			\
 				    const APInt& lhs, const APInt& rhs ); \
-  void poisonIfNeeded_bitXor#SCHEME( APInt& dest,			\
+  void poisonIfNeeded_bitXor##SCHEME( APInt& dest,			\
 				     const APInt& lhs, const APInt& rhs ); \
 									\
-  void poisonIfNeeded_shl#SCHEME( APInt& dest, APInt& src,		\
+  void poisonIfNeeded_shl##SCHEME( APInt& dest, APInt& src,		\
 				  unsigned shiftAmt, bool nsw, bool nuw ); \
-  void poisonIfNeeded_lshr#SCHEME( APInt& dest, APInt& src,		\
+  void poisonIfNeeded_lshr##SCHEME( APInt& dest, APInt& src,		\
 				   unsigned shiftAmt, bool exact );	\
-  void poisonIfNeeded_ashr#SCHEME( APInt& dest, APInt& src,		\
+  void poisonIfNeeded_ashr##SCHEME( APInt& dest, APInt& src,		\
 				   unsigned shiftAmt, bool exact );	\
 									\
-  void poisonIfNeeded_select#SCHEME( APInt& dest,			\
+  void poisonIfNeeded_select##SCHEME( APInt& dest,			\
 				     const APInt& src1, const APInt& src2, \
 				     const APInt& src3 );		\
 									\
-  void poisonIfNeeded_trunc#SCHEME( APInt& dest, const APInt& src,	\
+  void poisonIfNeeded_trunc##SCHEME( APInt& dest, const APInt& src,	\
 				    const unsigned newBitWidth );	\
-  void poisonIfNeeded_sext#SCHEME( APInt& dest, const APInt& src,	\
+  void poisonIfNeeded_sext##SCHEME( APInt& dest, const APInt& src,	\
 				   const unsigned newBitWidth );	\
-  void poisonIfNeeded_zext#SCHEME( APInt& dest, const APInt& src,	\
+  void poisonIfNeeded_zext##SCHEME( APInt& dest, const APInt& src,	\
 				   const unsigned newBitWidth );	\
 									\
-  void poisonIfNeeded_ptrtoint#SCHEME( APInt& dest, const APInt& src );	\
-  void poisonIfNeeded_inttoptr#SCHEME( APInt& dest, const APInt& src );	\
-  void poisonIfNeeded_bitcast#SCHEME( APInt& dest, const APInt& src );	\
-  void poisonIfNeeded_icmp#SCHEME( APInt& dest,				\
+  void poisonIfNeeded_ptrtoint##SCHEME( APInt& dest, const APInt& src ); \
+  void poisonIfNeeded_inttoptr##SCHEME( APInt& dest, const APInt& src ); \
+  void poisonIfNeeded_bitcast##SCHEME( APInt& dest, const APInt& src );	\
+  void poisonIfNeeded_icmp##SCHEME( APInt& dest,			\
 				   const APInt& lhs, const APInt& rhs ); \
   //  Note: phi and call are handled by normal poison propogation in APInt \
-  void poisonIfNeeded_br#SCHEME();					\
+  void poisonIfNeeded_br##SCHEME();					\
 									\
-  void poisonIfNeeded_getelementptr#SCHEME( Value& dest,		\
+  void poisonIfNeeded_getelementptr##SCHEME( Value& dest,		\
 					    APInt& lhs, APInt& rhs,	\
 					    bool inbounds );
 
