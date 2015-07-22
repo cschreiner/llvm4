@@ -466,23 +466,64 @@ void poisonIfNeeded_zext_SchemeEtc( APInt& dest, const APInt& src,
   return;
 }}
 
-/*** --------------------------------------------------------------------------
-   * function poisonIfNeeded_getelementptr()
-   * --------------------------------------------------------------------------
-   * Description: CAS TODO3: implement this sometime.
-   *
-   * Method: 
-   *
-   * Reentrancy: 
-   *
-   * Inputs: 
-   *    
-   * Outputs: 
-   *
-   * Return Value: 
-   *
-   */
-//void poisonIfNeeded_getelementptr()
+// ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_ptrtoint()
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_ptrtoint_SchemeEtc( dest, src );
+{{
+  // intentionally nothing
+  return;
+}}
+	
+// ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_inttoptr()
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_inttoptr_SchemeEtc( dest, src );
+{{
+  // intentionally nothing
+  return;
+}}
+
+// ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_bitcast()
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_bitcast_SchemeEtc( dest, src );
+{{
+  // intentionally nothing
+  return;
+}}
+	
+// ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_icmp()
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_icmp_SchemeEtc( dest, lhs, rhs );
+{{
+  // intentionally nothing
+  return;
+}}
+	
+// ----------------------------------------------------------------------------
+///  Note: phi and call are handled by normal poison propogation in APInt
+// ----------------------------------------------------------------------------
+
+// ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_br()
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_br_SchemeEtc()
+{{
+  // intentionally nothing
+  return;
+}}
+	
+// ----------------------------------------------------------------------------
+/// \brief same interface as poisonIfNeeded_getelementptr()
+// ----------------------------------------------------------------------------
+void poisonIfNeeded_getelementptr_SchemeEtc()
+{{
+  // intentionally nothing
+  return;
+}}
+	
 
 } // end namespace APIntPoison
 // ############################################################################
