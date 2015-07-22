@@ -29,6 +29,9 @@ namespace llvm {
 // ############################################################################
 namespace APIntPoison {
 
+// TODO: adapt this to implement the scheme Nuno and John and David
+// and I are fiddling with.
+
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_add()
 // ----------------------------------------------------------------------------
@@ -37,7 +40,7 @@ namespace APIntPoison {
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_add_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_add_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 				   bool nsw, bool nuw )
 {{
   if ( nsw )  { 
@@ -63,7 +66,7 @@ void poisonIfNeeded_add_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs,
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_sub_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_sub_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
   if ( nsw )  { 
@@ -89,7 +92,7 @@ void poisonIfNeeded_sub_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs,
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_mul_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_mul_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
 
@@ -183,7 +186,7 @@ void poisonIfNeeded_mul_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs,
  * Return Value: none
  *
  */
-void poisonIfNeeded_div_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool exact )
 {{
   if ( exact )  { 
@@ -198,7 +201,7 @@ void poisonIfNeeded_div_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_rem()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_rem_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs )
+void poisonIfNeeded_rem_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs )
 {{
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
   return;
@@ -212,7 +215,7 @@ void poisonIfNeeded_rem_SchemeEtc( APInt& dest, APInt& lhs, APInt& rhs )
    *	0).  Otherwise propogates poison if either operand is
    *	poisoned.
    */
-void poisonIfNeeded_bitAnd_SchemeEtc( APInt& dest, const APInt& lhs, const APInt& rhs )
+void poisonIfNeeded_bitAnd_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   if ( llvm::lli_undef_fix::opt_antidote_and_or || 
       llvm::lli_undef_fix::opt_poison_eq_undef )  {
@@ -251,7 +254,7 @@ void poisonIfNeeded_bitAnd_SchemeEtc( APInt& dest, const APInt& lhs, const APInt
    *	1).  Otherwise propogates poison if either operand is
    *	poisoned.
    */
-void poisonIfNeeded_bitOr_SchemeEtc( APInt& dest, const APInt& lhs, const APInt& rhs )
+void poisonIfNeeded_bitOr_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   if ( llvm::lli_undef_fix::opt_antidote_and_or ||
       llvm::lli_undef_fix::opt_poison_eq_undef )  {
@@ -285,7 +288,7 @@ void poisonIfNeeded_bitOr_SchemeEtc( APInt& dest, const APInt& lhs, const APInt&
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_bitXor()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_bitXor_SchemeEtc( APInt& dest, const APInt& lhs, const APInt& rhs )
+void poisonIfNeeded_bitXor_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
   return;
@@ -303,7 +306,7 @@ void poisonIfNeeded_bitXor_SchemeEtc( APInt& dest, const APInt& lhs, const APInt
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_shl_SchemeEtc( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
 			 bool nsw, bool nuw )
 {{
   // if nothing was shifted, no poison can be generated.
@@ -348,7 +351,7 @@ void poisonIfNeeded_shl_SchemeEtc( APInt& dest, APInt& lhs, unsigned shiftAmt,
  *	poisoned (probably because one of the operands was poisoned),
  *	that poison remains.
  */
-void poisonIfNeeded_lshr_SchemeEtc( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
 			  bool exact )
 {{
   if ( exact )  { 
@@ -374,7 +377,7 @@ void poisonIfNeeded_lshr_SchemeEtc( APInt& dest, APInt& lhs, unsigned shiftAmt,
  *	poisoned (probably because one of the operands was poisoned),
  *	that poison remains.
  */
-void poisonIfNeeded_ashr_SchemeEtc( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
 			  bool exact )
 {{
   if ( exact )  { 
@@ -395,7 +398,7 @@ void poisonIfNeeded_ashr_SchemeEtc( APInt& dest, APInt& lhs, unsigned shiftAmt,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_select()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_select_SchemeEtc( APInt& Dest,
+void poisonIfNeeded_select_SchemeNuno( APInt& Dest,
     const APInt& Src1, const APInt& Src2, const APInt& Src3 )
 {{
   /* TODO: get rid of this, and the #include <stdlib.h> above, if we can use
@@ -439,7 +442,7 @@ void poisonIfNeeded_select_SchemeEtc( APInt& Dest,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_trunc()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_trunc_SchemeEtc( APInt& dest, const APInt& src, 
+void poisonIfNeeded_trunc_SchemeNuno( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
   dest.setPoisoned( src.getPoisoned() );
@@ -449,7 +452,7 @@ void poisonIfNeeded_trunc_SchemeEtc( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_sext()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_sext_SchemeEtc( APInt& dest, const APInt& src, 
+void poisonIfNeeded_sext_SchemeNuno( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
   dest.setPoisoned( src.getPoisoned() );
@@ -459,7 +462,7 @@ void poisonIfNeeded_sext_SchemeEtc( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_zext()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_zext_SchemeEtc( APInt& dest, const APInt& src, 
+void poisonIfNeeded_zext_SchemeNuno( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
   dest.setPoisoned( src.getPoisoned() );
@@ -469,7 +472,7 @@ void poisonIfNeeded_zext_SchemeEtc( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_ptrtoint()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_ptrtoint_SchemeEtc( dest, src );
+void poisonIfNeeded_ptrtoint_SchemeNuno( dest, src );
 {{
   // intentionally nothing
   return;
@@ -478,7 +481,7 @@ void poisonIfNeeded_ptrtoint_SchemeEtc( dest, src );
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_inttoptr()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_inttoptr_SchemeEtc( dest, src );
+void poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
 {{
   // intentionally nothing
   return;
@@ -487,7 +490,7 @@ void poisonIfNeeded_inttoptr_SchemeEtc( dest, src );
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_bitcast()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_bitcast_SchemeEtc( dest, src );
+void poisonIfNeeded_bitcast_SchemeNuno( dest, src );
 {{
   // intentionally nothing
   return;
@@ -496,7 +499,7 @@ void poisonIfNeeded_bitcast_SchemeEtc( dest, src );
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_icmp()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_icmp_SchemeEtc( dest, lhs, rhs );
+void poisonIfNeeded_icmp_SchemeNuno( dest, lhs, rhs );
 {{
   // intentionally nothing
   return;
@@ -509,7 +512,7 @@ void poisonIfNeeded_icmp_SchemeEtc( dest, lhs, rhs );
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_br()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_br_SchemeEtc()
+void poisonIfNeeded_br_SchemeNuno()
 {{
   // intentionally nothing
   return;
@@ -518,7 +521,7 @@ void poisonIfNeeded_br_SchemeEtc()
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_getelementptr()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_getelementptr_SchemeEtc()
+void poisonIfNeeded_getelementptr_SchemeNuno()
 {{
   // intentionally nothing
   return;
