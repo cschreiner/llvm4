@@ -64,7 +64,11 @@ bool llvm::lli_undef_fix::opt_poison_eq_undef_early= false;
 
 /** if and IR opcode attempts division by zero, return instead of crashing.
  */
-bool llvm::lli_undef_fix::opt_return_if_div_0;
+bool llvm::lli_undef_fix::opt_return_if_div_0= false;
+
+/** use the poison generation scheme John, Nuno, David and I contributed to that we named after Nuno.
+ */
+bool llvm::lli_undef_fix::opt_nuno= false;
 
 typedef struct {
    const char* name;
@@ -94,6 +98,10 @@ const filelocal_opt_t opt_array[]= {
 
   { "return_if_div_0", 
     &llvm::lli_undef_fix::opt_return_if_div_0, 
+    false },
+
+  { "nuno", 
+    &llvm::lli_undef_fix::opt_nuno, 
     false },
 
   // end of the list
