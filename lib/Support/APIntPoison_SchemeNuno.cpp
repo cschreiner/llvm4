@@ -475,16 +475,16 @@ void poisonIfNeeded_zext_SchemeNuno( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_ptrtoint()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_ptrtoint_SchemeNuno( dest, src );
+void poisonIfNeeded_ptrtoint_SchemeNuno( APInt& dest, const APInt& src ) 
 {{
   // intentionally nothing
   return;
 }}
-	
+
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_inttoptr()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
+void poisonIfNeeded_inttoptr_SchemeNuno( APInt& dest, const APInt& src )
 {{
   // intentionally nothing
   return;
@@ -493,7 +493,7 @@ void poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_bitcast()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_bitcast_SchemeNuno( dest, src );
+void poisonIfNeeded_bitcast_SchemeNuno( APInt& dest, const APInt& src ) 
 {{
   // intentionally nothing
   return;
@@ -502,7 +502,8 @@ void poisonIfNeeded_bitcast_SchemeNuno( dest, src );
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_icmp()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_icmp_SchemeNuno( dest, lhs, rhs );
+void poisonIfNeeded_icmp_SchemeNuno( APInt& dest, 
+				     const APInt& lhs, const APInt& rhs ) 
 {{
   // intentionally nothing
   return;
