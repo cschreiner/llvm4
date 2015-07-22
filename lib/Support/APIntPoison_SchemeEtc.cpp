@@ -528,7 +528,9 @@ void poisonIfNeeded_br_SchemeEtc()
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_getelementptr()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_getelementptr_SchemeEtc()
+void poisonIfNeeded_getelementptr_SchemeEtc( Value& dest, 
+    const APInt& lhs, const APInt& rhs,
+    bool inbounds )
 {{
   // intentionally nothing
   return;
