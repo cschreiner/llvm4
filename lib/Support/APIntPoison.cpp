@@ -168,9 +168,9 @@ void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs,
 			 bool exact )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_div_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_div_SchemeNuno( dest, lhs, rhs, exact );
   }
-  return poisonIfNeeded_div_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_div_SchemeEtc( dest, lhs, rhs, exact );
 }}
 
 // ----------------------------------------------------------------------------
@@ -224,9 +224,9 @@ void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs )
 void poisonIfNeeded_rem( APInt& dest, APInt& lhs, APInt& rhs )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_rem_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_rem_SchemeNuno( dest, lhs, rhs );
   }
-  return poisonIfNeeded_rem_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_rem_SchemeEtc( dest, lhs, rhs );
 }}
 
 // ----------------------------------------------------------------------------
@@ -253,9 +253,9 @@ void poisonIfNeeded_rem( APInt& dest, APInt& lhs, APInt& rhs )
 void poisonIfNeeded_bitAnd( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_bitAnd_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_bitAnd_SchemeNuno( dest, lhs, rhs );
   }
-  return poisonIfNeeded_bitAnd_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_bitAnd_SchemeEtc( dest, lhs, rhs );
 }}
 
 
@@ -283,9 +283,9 @@ void poisonIfNeeded_bitAnd( APInt& dest, const APInt& lhs, const APInt& rhs )
 void poisonIfNeeded_bitOr( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_bitOr_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_bitOr_SchemeNuno( dest, lhs, rhs );
   }
-  return poisonIfNeeded_bitOr_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_bitOr_SchemeEtc( dest, lhs, rhs );
 }}
 
 // ----------------------------------------------------------------------------
@@ -309,9 +309,9 @@ void poisonIfNeeded_bitOr( APInt& dest, const APInt& lhs, const APInt& rhs )
 void poisonIfNeeded_bitXor( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_bitXor_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_bitXor_SchemeNuno( dest, lhs, rhs );
   }
-  return poisonIfNeeded_bitXor_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_bitXor_SchemeEtc( dest, lhs, rhs );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -342,13 +342,13 @@ void poisonIfNeeded_bitXor( APInt& dest, const APInt& lhs, const APInt& rhs )
  * Return Value: none
  *
  */
-void poisonIfNeeded_shl( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_shl( APInt& dest, APInt& src, unsigned shiftAmt,
 			 bool nsw, bool nuw )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_shl_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_shl_SchemeNuno( dest, src, shiftAmt, nsw, nuw );
   }
-  return poisonIfNeeded_shl_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_shl_SchemeEtc( dest, src, shiftAmt, nsw, nuw );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -376,13 +376,13 @@ void poisonIfNeeded_shl( APInt& dest, APInt& lhs, unsigned shiftAmt,
  * Return Value: none
  *
  */
-void poisonIfNeeded_lshr( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_lshr( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_lshr_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_lshr_SchemeNuno( dest, src, shiftAmt, exact );
   }
-  return poisonIfNeeded_lshr_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_lshr_SchemeEtc( dest, src, shiftAmt, exact );
 }}
 
 /*** --------------------------------------------------------------------------
@@ -398,7 +398,7 @@ void poisonIfNeeded_lshr( APInt& dest, APInt& lhs, unsigned shiftAmt,
  *
  * Inputs: 
  *   dest: the result to check
- *   lhs: the APInt that got shifted
+ *   src: the APInt that got shifted
  *   shiftAmt: the number of places to shift left
  *   exact: true if the "exact" flag was present on the LLVM instruction.  
  *	If this is false, no poison can be generated, so no checking is
@@ -411,13 +411,13 @@ void poisonIfNeeded_lshr( APInt& dest, APInt& lhs, unsigned shiftAmt,
  * Return Value: none
  *
  */
-void poisonIfNeeded_ashr( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_ashr( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_ashr_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_ashr_SchemeNuno( dest, src, shiftAmt, exact );
   }
-  return poisonIfNeeded_ashr_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_ashr_SchemeEtc( dest, src, shiftAmt, exact );
 }}
 
 // ----------------------------------------------------------------------------
@@ -438,13 +438,13 @@ void poisonIfNeeded_ashr( APInt& dest, APInt& lhs, unsigned shiftAmt,
  * \return void
  *
  */
-void poisonIfNeeded_select( APInt& Dest,
-    const APInt& Src1, const APInt& Src2, const APInt& Src3 )
+void poisonIfNeeded_select( APInt& dest,
+    const APInt& src1, const APInt& src2, const APInt& src3 )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_select_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_select_SchemeNuno( dest, src1, src2, src3 );
   }
-  return poisonIfNeeded_select_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_select_SchemeEtc( dest, src1, src2, src3 );
 }}
 
 // ----------------------------------------------------------------------------
@@ -471,9 +471,9 @@ void poisonIfNeeded_trunc( APInt& dest, const APInt& src,
     const unsigned newBitWidth )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_trunc_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_trunc_SchemeNuno( dest, src, newBitWidth );
   }
-  return poisonIfNeeded_trunc_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_trunc_SchemeEtc( dest, src, newBitWidth );
 }}
 
 // ----------------------------------------------------------------------------
@@ -500,9 +500,9 @@ void poisonIfNeeded_sext( APInt& dest, const APInt& src,
     const unsigned newBitWidth )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_sext_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_sext_SchemeNuno( dest, src, newBitWidth );
   }
-  return poisonIfNeeded_sext_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_sext_SchemeEtc( dest, src, newBitWidth );
 }}
 
 // ----------------------------------------------------------------------------
@@ -529,9 +529,9 @@ void poisonIfNeeded_zext( APInt& dest, const APInt& src,
     const unsigned newBitWidth )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_zext_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_zext_SchemeNuno( dest, src, newBitWidth );
   }
-  return poisonIfNeeded_zext_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_zext_SchemeEtc( dest, src, newBitWidth );
 }}
 
 // ----------------------------------------------------------------------------
@@ -642,7 +642,7 @@ void poisonIfNeeded_icmp( APInt& dest, const APInt& lhs, const APInt& rhs )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_icmp_SchemeNuno( dest, lhs, rhs );
   }
-  return poisonIfNeeded_icmp_SchemeEtc( 
+  return poisonIfNeeded_icmp_SchemeEtc( dest, lhs, rhs );
 }}
 	
 // ----------------------------------------------------------------------------
@@ -670,9 +670,11 @@ void poisonIfNeeded_icmp( APInt& dest, const APInt& lhs, const APInt& rhs )
 void poisonIfNeeded_br()
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_br_SchemeNuno(); 
+    poisonIfNeeded_br_SchemeNuno(); 
+    return;
   }
-  return poisonIfNeeded_br_SchemeEtc(); 
+  poisonIfNeeded_br_SchemeEtc(); 
+  return;
 }}
 	
 // ----------------------------------------------------------------------------
@@ -701,13 +703,13 @@ void poisonIfNeeded_br()
  *
  */
  void poisonIfNeeded_getelementptr( Value& dest, 
-				    const APInt& lhs, const APInt rhs, 
+				    const APInt& lhs, const APInt& rhs, 
 				    bool inbounds)
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_getelementptr_SchemeNuno(); 
+    return poisonIfNeeded_getelementptr_SchemeNuno( dest, lhs, rhs, inbounds ); 
   }
-  return poisonIfNeeded_getelementptr_SchemeEtc(); 
+  return poisonIfNeeded_getelementptr_SchemeEtc( dest, lhs, rhs, inbounds ); 
 }}
 	
 } // end poisonIfNeeded_bitcastspace APIntPoison
@@ -717,7 +719,8 @@ void poisonIfNeeded_br()
 } // end namespace llvm
 // ############################################################################
 
-// special template is 25 lines long
+// special template is 27 lines long
+#if 0
 // ----------------------------------------------------------------------------
 ///  \fn poisonIfNeeded_xx()
 // ----------------------------------------------------------------------------
@@ -744,6 +747,8 @@ void poisonIfNeeded_xx()
   }
   return poisonIfNeeded_xx_SchemeEtc( dest, src );
 }}
+
+#endif // end special template
 
 // template is 21 lines long
 // ----------------------------------------------------------------------------
