@@ -9,6 +9,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xb9' 
@@ -36,6 +37,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x9d' 
@@ -63,6 +65,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xfc54' 
@@ -90,6 +93,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xfb' 
@@ -117,6 +121,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x50' 
@@ -144,6 +149,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 hello 2a world
@@ -166,6 +172,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x2b38' 
@@ -193,6 +200,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x2a' 
@@ -220,6 +228,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x78' 
@@ -247,6 +256,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x9' 
@@ -272,6 +282,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x5' 
@@ -297,6 +308,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x14' 
@@ -320,6 +332,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x82' 
@@ -345,6 +358,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x82' 
@@ -370,6 +384,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x14' 
@@ -393,6 +408,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x8880' 
@@ -420,6 +436,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x52b0' 
@@ -447,6 +464,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 this prints if poison-free: '0xe' 
@@ -472,6 +490,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 
@@ -496,6 +515,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x19' 
@@ -523,6 +543,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef=0 (default=0) 
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x97' 
