@@ -98,12 +98,12 @@ namespace APIntPoison {
   void poisonIfNeeded_bitcast##SCHEME( APInt& dest, const APInt& src );	\
   void poisonIfNeeded_icmp##SCHEME( APInt& dest,			\
 				   const APInt& lhs, const APInt& rhs ); \
-  //  Note: phi and call are handled by normal poison propogation in APInt \
+  /*  Note: phi and call are handled by normal poison propogation in APInt */ \
   void poisonIfNeeded_br##SCHEME();					\
 									\
   void poisonIfNeeded_getelementptr##SCHEME( Value& dest,		\
-					    APInt& lhs, APInt& rhs,	\
-					    bool inbounds );
+      const APInt& lhs, const APInt& rhs,				\
+      bool inbounds );
 
   DISPATCH_FUNCTIONS_FOR_SCHEME()
   // TODO: is there any way to make these functions private to the
