@@ -173,6 +173,33 @@ void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs,
   return poisonIfNeeded_div_SchemeEtc( dest, lhs, rhs, nsw, nuw );
 }}
 
+// ----------------------------------------------------------------------------
+///  \fn poisonIfNeeded_div()
+// ----------------------------------------------------------------------------
+/*** \brief propogates poison for a division instruction (udiv or
+ * sdiv).  Effectively, the instruction's "exact" flag is assumed to
+ * be not present, so no new poison can be created.
+ *
+ * \b Detailed_Description: 
+ *
+ * \b Method: 
+ *
+ * \b Reentrancy: 
+ *
+ * \param  dest (output) the quotient to check
+ * \param  lhs, rhs (inputs) the two operands to check
+ *    
+ * \return void
+ *
+ */
+void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs )  
+{{
+  if ( llvm::lli_undef_fix::opt_nuno )  {
+    return poisonIfNeeded_div_SchemeNuno( dest, lhs, rhs );
+  }
+  return poisonIfNeeded_div_SchemeEtc( dest, lhs, rhs );
+}}
+
 /*** --------------------------------------------------------------------------
  * function poisonIfNeeded_rem()
  * ----------------------------------------------------------------------------
@@ -527,7 +554,7 @@ void poisonIfNeeded_zext( APInt& dest, const APInt& src,
  * \return void
  *
  */
-void poisonIfNeeded_ptrtoint( dest, src );
+void poisonIfNeeded_ptrtoint( APInt& dest, const APInt& src )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_ptrtoint_SchemeNuno( dest, src );
@@ -555,7 +582,7 @@ void poisonIfNeeded_ptrtoint( dest, src );
  * \return void
  *
  */
-void poisonIfNeeded_inttoptr( dest, src );
+void poisonIfNeeded_inttoptr( APInt& dest, const APInt& src )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
@@ -583,7 +610,7 @@ void poisonIfNeeded_inttoptr( dest, src );
  * \return void
  *
  */
-void poisonIfNeeded_bitcast( dest, src );
+void poisonIfNeeded_bitcast( APInt& dest, const APInt& src )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
@@ -610,7 +637,7 @@ void poisonIfNeeded_bitcast( dest, src );
  * \return void
  *
  */
-void poisonIfNeeded_icmp( dest, lhs, rhs );
+void poisonIfNeeded_icmp( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_icmp_SchemeNuno( dest, lhs, rhs );
@@ -633,7 +660,7 @@ void poisonIfNeeded_icmp( dest, lhs, rhs );
  *
  * \b Reentrancy: 
  *
- * \param br (input) 
+ * \param xx (input) TODO: add parameters once this is thought through
  *    
  * \param yy (output) 
  *
@@ -643,9 +670,9 @@ void poisonIfNeeded_icmp( dest, lhs, rhs );
 void poisonIfNeeded_br()
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_br_SchemeNuno( dest, lhs, rhs, nsw, nuw );
+    return poisonIfNeeded_br_SchemeNuno(); 
   }
-  return poisonIfNeeded_br_SchemeEtc( dest, lhs, rhs, nsw, nuw );
+  return poisonIfNeeded_br_SchemeEtc(); 
 }}
 	
 // ----------------------------------------------------------------------------
@@ -660,19 +687,27 @@ void poisonIfNeeded_br()
  *
  * \b Reentrancy: 
  *
- * \param getelementptr (input) 
- *    
- * \param yy (output) 
+ *  CAS TODO3: check the types for these arguments.
  *
+ * \param dest (output) write the result here
+ *
+ * \param lhs (input) the first parameter 
+ *    
+ * \param rhs (input) the second parameter
+ *    
+ * \param inbounds (input) true IFF the inbounds flag is present
+ *    
  * \return void
  *
  */
-void poisonIfNeeded_getelementptr()
+ void poisonIfNeeded_getelementptr( Value& dest, 
+				    const APInt& lhs, const APInt rhs, 
+				    bool inbounds)
 {{
   if ( llvm::lli_undef_fix::opt_nuno )  {
-    return poisonIfNeeded_getelementptr_SchemeNuno( dest, src );
+    return poisonIfNeeded_getelementptr_SchemeNuno(); 
   }
-  return poisonIfNeeded_getelementptr_SchemeEtc( dest, src );
+  return poisonIfNeeded_getelementptr_SchemeEtc(); 
 }}
 	
 } // end poisonIfNeeded_bitcastspace APIntPoison
