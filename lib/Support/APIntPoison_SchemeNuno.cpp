@@ -354,7 +354,7 @@ void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
  *	poisoned (probably because one of the operands was poisoned),
  *	that poison remains.
  */
-void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
   if ( exact )  { 
@@ -363,7 +363,7 @@ void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
        is here for now to guarantee accuracy.
      */
     if ( shiftAmt != 0 )  {
-      if ( lhs.getLoBits(shiftAmt).trunc(shiftAmt) != 0 )  {
+      if ( src.getLoBits(shiftAmt).trunc(shiftAmt) != 0 )  {
 	// an unallowed unsigned wrap happened
 	dest.orPoisoned(true);
       }
@@ -380,7 +380,7 @@ void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
  *	poisoned (probably because one of the operands was poisoned),
  *	that poison remains.
  */
-void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
   if ( exact )  { 
@@ -389,7 +389,7 @@ void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
        is here for now to guarantee accuracy.
      */
     if ( shiftAmt != 0 )  {
-      if ( lhs.getLoBits(shiftAmt).trunc(shiftAmt) != 0 )  {
+      if ( src.getLoBits(shiftAmt).trunc(shiftAmt) != 0 )  {
 	// an unallowed unsigned wrap happened
 	dest.orPoisoned(true);
       }
@@ -401,8 +401,8 @@ void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_select()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_select_SchemeNuno( APInt& Dest,
-    const APInt& Src1, const APInt& Src2, const APInt& Src3 )
+void poisonIfNeeded_select_SchemeNuno( APInt& dest,
+    const APInt& src1, const APInt& src2, const APInt& src3 )
 {{
   /* TODO: get rid of this, and the #include <stdlib.h> above, if we can use
       the opt_select_antidote variable. 
@@ -411,29 +411,29 @@ void poisonIfNeeded_select_SchemeNuno( APInt& Dest,
   if ( lli_undef_fix::opt_antidote_select )  { 
     /* this is the default behavior */
     /* CAS TODO: make the above if be dependant on a command-line parameter */
-    Dest.setPoisoned( Src1.getPoisoned() );
-    Dest.orPoisoned( Src2, Src3 );
+    dest.setPoisoned( src1.getPoisoned() );
+    dest.orPoisoned( src2, src3 );
   } else {
     /* only propagate poison iff:
-	Src1 is poisoned
+	src1 is poisoned
 	or
-	the selected element of {Src2, Src3} is poisoned.
+	the selected element of {src2, src3} is poisoned.
       */
-    Dest.setPoisoned( Src1.getPoisoned() );
-    Dest.orPoisoned( 
-	(Src1 == 0) ? 
-	  Src3.getPoisoned() : Src2.getPoisoned() 
+    dest.setPoisoned( src1.getPoisoned() );
+    dest.orPoisoned( 
+	(src1 == 0) ? 
+	  src3.getPoisoned() : src2.getPoisoned() 
 	);
   }
   #if 0 
     std::cerr << "in select opcode: \n";
-    if ( Src1.getPoisoned() || Src2.getPoisoned() || 
-	  Src3.getPoisoned() || Dest.getPoisoned() )  {
+    if ( src1.getPoisoned() || src2.getPoisoned() || 
+	  src3.getPoisoned() || dest.getPoisoned() )  {
        std::cout << "   select: poison bits " << 
-	   "Src1=" << Src1.getPoisoned() <<
-	   " Src2=" << Src2.getPoisoned() <<
-	   " Src3=" << Src3.getPoisoned() <<
-	   " Dest=" << Dest.getPoisoned() << "\n";
+	   "src1=" << src1.getPoisoned() <<
+	   " src2=" << src2.getPoisoned() <<
+	   " src3=" << src3.getPoisoned() <<
+	   " dest=" << dest.getPoisoned() << "\n";
     }
     fflush( stdout );
     fflush( stderr );
@@ -525,7 +525,9 @@ void poisonIfNeeded_br_SchemeNuno()
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_getelementptr()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_getelementptr_SchemeNuno()
+void poisonIfNeeded_getelementptr_SchemeNuno( Value& dest, 
+    const APInt& lhs, const APInt& rhs,
+    bool inbounds )
 {{
   // intentionally nothing
   return;
