@@ -41,7 +41,7 @@ define i32 @main() {   ; i32()*
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result1 )
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result2 )
 
-  %poisoned_1= add i8 122, 7 ; should be 1
+  %poisoned_1= add nsw nuw i8 122, 7 ; should be 1
   %poison_result= and i8 3, %poisoned_1
 
   ; Call puts function to write out the string to stdout.
