@@ -498,7 +498,7 @@ void poisonIfNeeded_inttoptr_SchemeEtc( APInt& dest, const APInt& src )
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_bitcast_SchemeEtc( APInt& dest, const APInt& src ) 
 {{
-  // intentionally nothing
+  dest.setPoisoned( src.getPoisoned() );
   return;
 }}
 	
@@ -508,7 +508,7 @@ void poisonIfNeeded_bitcast_SchemeEtc( APInt& dest, const APInt& src )
 void poisonIfNeeded_icmp_SchemeEtc( APInt& dest, 
 				     const APInt& lhs, const APInt& rhs ) 
 {{
-  // intentionally nothing
+  dest.orPoison( lhs, rhs );
   return;
 }}
 	
