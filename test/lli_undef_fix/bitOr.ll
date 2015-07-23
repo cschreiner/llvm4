@@ -35,8 +35,8 @@ define i32 @main() {   ; i32()*
   %unpoison_st_i8 = getelementptr [21 x i8], [21 x i8]* @unpoison_st, i64 0, i64 0
   %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
-  %result1= or i8 56, 37 ; 0x38 & 0x25 = 32 = 0x20 
-  %result2= or i8 178, 7 ; should be 2
+  %result1= or i8 56, 37 ; 0x38 | 0x25 = 61 = 0x3d 
+  %result2= or i8 178, 7 ; should be 183 = 0xb7
 
   ; Call puts function to write out the string to stdout.
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result1 )
