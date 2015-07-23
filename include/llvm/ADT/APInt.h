@@ -713,7 +713,7 @@ public:
   /// \returns An APInt value representing the negation of *this.
   APInt operator-() const { 
     APInt result= APInt(BitWidth, 0) - (*this); 
-    result.poisoned= this->poisoned;
+    // Note: would call a poisonIfNeeded(~) ftn here
     return result;
   }
 
@@ -814,7 +814,7 @@ public:
     } else {
       pVal[0] |= RHS;
     }
-    orPoisoned( RHS );
+    // Note: would call a poisonIfNeeded(~) ftn here
     return *this;
   }
 
@@ -904,7 +904,7 @@ public:
     } else {
       result= XorSlowCase(RHS);
     }
-    result.poisoned= this->poisoned || RHS.poisoned;
+    // Note: would call a poisonIfNeeded(~) ftn here
     return result;
   }
 
@@ -916,7 +916,7 @@ public:
   /// \returns An APInt value representing the bitwise XOR of *this and RHS.
   APInt LLVM_ATTRIBUTE_UNUSED_RESULT Xor(const APInt &RHS) const {
     APInt result= this->operator^(RHS);
-    result.poisoned= this->poisoned || RHS.poisoned;
+    // Note: would call a poisonIfNeeded(~) ftn here
     return result;
   }
 
@@ -973,7 +973,7 @@ public:
     } else {
       result= shlSlowCase(shiftAmt);
     }
-    result.poisoned= poisoned;
+    // Note: would call a poisonIfNeeded(~) ftn here
     return result;
   }
 
@@ -2051,6 +2051,5 @@ inline APInt Not(const APInt &APIVal) { return ~APIVal; }
 hash_code hash_value(const APInt &Arg);
 } // namespace llvm
 
-// TODO2: consider if APIntPoison.h should be automatically included here.
 
 #endif
