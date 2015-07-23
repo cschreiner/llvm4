@@ -299,13 +299,17 @@ void poisonIfNeeded_bitXor_SchemeNuno( APInt& dest, const APInt& lhs, const APIn
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
+void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 			 bool nsw, bool nuw )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
      quick check for special cases that propogate or clear poison
    */
-  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+  if ( src.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+  if ( shiftAmt >= src.getBitWidth() )  {
     dest.setPoisoned( true );
     return;
   }
@@ -316,7 +320,7 @@ void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
   if ( nsw )  { 
     if ( dest.isNegative() )  {
       // did any 0 bits get shifted out?
-      if ( ! lhs.getHiBits(shiftAmt).trunc(shiftAmt).isAllOnesValue()  )  {
+      if ( ! src.getHiBits(shiftAmt).trunc(shiftAmt).isAllOnesValue()  )  {
       	// an unallowed signed wrap happened
       	dest.orPoisoned(true);
       }
@@ -325,7 +329,7 @@ void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
       /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
 	 is here for now to guarantee accuracy.
        */
-      if ( lhs.getHiBits(shiftAmt).trunc(shiftAmt) != 0 )  {
+      if ( src.getHiBits(shiftAmt).trunc(shiftAmt) != 0 )  {
       	// an unallowed signed wrap happened
       	dest.orPoisoned(true);
       }
@@ -336,7 +340,7 @@ void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
     /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
        is here for now to guarantee accuracy.
      */
-    if ( lhs.getHiBits(shiftAmt).trunc(shiftAmt) != 0 )  {
+    if ( src.getHiBits(shiftAmt).trunc(shiftAmt) != 0 )  {
       // an unallowed unsigned wrap happened
       dest.orPoisoned(true);
     }
@@ -358,7 +362,12 @@ void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
      quick check for special cases that propogate or clear poison
    */
-  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+  if ( src.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+
+  if ( shiftAmt >= src.getBitWidth() )  {
     dest.setPoisoned( true );
     return;
   }
@@ -392,7 +401,12 @@ void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
      quick check for special cases that propogate or clear poison
    */
-  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+  if ( src.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+
+  if ( shiftAmt >= src.getBitWidth() )  {
     dest.setPoisoned( true );
     return;
   }
