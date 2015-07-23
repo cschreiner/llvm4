@@ -12,6 +12,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <stdlib.h>
+#include <iostream>
+
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/DebugLoc.h"
@@ -480,7 +483,9 @@ void poisonIfNeeded_zext_SchemeEtc( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_ptrtoint_SchemeEtc( APInt& dest, const APInt& src ) 
 {{
-  // intentionally nothing
+  // TODO2: src needs to be of a pointer type.
+  // TODO2: update this once we find a way to represent poison in pointers.
+  dest.setPoisoned( false );
   return;
 }}
 
@@ -489,7 +494,12 @@ void poisonIfNeeded_ptrtoint_SchemeEtc( APInt& dest, const APInt& src )
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_inttoptr_SchemeEtc( APInt& dest, const APInt& src )
 {{
-  // intentionally nothing
+  // TODO2: dest needs to be of a pointer type.
+  // TODO2: update this once we find a way to represent poison in pointers.
+  if ( src.isPoisoned() )  {
+    std::cout << "Converting a poisoned int to a pointer is unsupported.\n";
+    exit( 1 );
+  }
   return;
 }}
 
