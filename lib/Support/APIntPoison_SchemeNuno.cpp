@@ -12,6 +12,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+#include <iostream>
+#include <stdlib.h>
+
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/DebugLoc.h"
@@ -43,6 +46,14 @@ namespace APIntPoison {
 void poisonIfNeeded_add_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 				   bool nsw, bool nuw )
 {{
+  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+     quick check for special cases that propogate or clear poison
+   */
+  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+  
   if ( nsw )  { 
     if ( rhs.slt(0) ? dest.sgt(lhs) : dest.slt(lhs) )  {
       // an unallowed signed wrap happened
@@ -69,6 +80,14 @@ void poisonIfNeeded_add_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
 void poisonIfNeeded_sub_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
+  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+     quick check for special cases that propogate or clear poison
+   */
+  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+  
   if ( nsw )  { 
     if ( rhs.sgt(0) ? dest.sgt(lhs) : dest.slt(lhs) )  {
       // an unallowed signed wrap happened
@@ -95,22 +114,9 @@ void poisonIfNeeded_sub_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
 void poisonIfNeeded_mul_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
-
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
      quick check for special cases that propogate or clear poison
    */
-  if ( llvm::lli_undef_fix::opt_antidote_and_or )  {
-    if ( lhs.getPoisoned() && (!rhs) )  { 
-      // poison times zero is unpoisoned zero
-      dest.setPoisoned( false );
-      return;
-    }
-    if ( (!lhs) && rhs.getPoisoned() )  { 
-      // zero times poison is unpoisoned zero
-      dest.setPoisoned( false );
-      return;
-    }
-  }
   if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
     dest.setPoisoned( true );
     return;
@@ -183,6 +189,14 @@ void poisonIfNeeded_mul_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
 void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool exact )
 {{
+  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+     quick check for special cases that propogate or clear poison
+   */
+  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+  
   if ( exact )  { 
     if ( (rhs * dest) != lhs )  {
       // an unallowed remainder happened
@@ -220,29 +234,17 @@ void poisonIfNeeded_rem_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs )
    */
 void poisonIfNeeded_bitAnd_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
-  if ( llvm::lli_undef_fix::opt_antidote_and_or || 
-      llvm::lli_undef_fix::opt_poison_eq_undef )  {
-    if ( lhs.getPoisoned() && rhs.getPoisoned() )  {
-       dest.setPoisoned( true );
-       return;
-    }
-    if ( (!lhs.getPoisoned()) && (!rhs.getPoisoned()) )  {
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is poisoned, rhs is unpoisoned and zero.
-    if ( lhs.getPoisoned() && (!rhs.getPoisoned()) && (!rhs) )  {
-       // a corrupted value in lhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is unpoisoned and zero, rhs is poisoned.
-    if ( (!lhs.getPoisoned()) && (!lhs) && rhs.getPoisoned() )  {
-       // a corrupted value in rhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-  } 
+  assert( 
+	 ( lhs.getBitWidth() == rhs.getBitWidth() ) && 
+	 "Both arguments must have the same bitwidth" );
+
+  if ( lhs.getBitWidth() == 1 )  {
+    dest.setPoisoned( 
+		     ((lhs == 1) && rhs.getPoisoned()) || 
+		     (lhs.getPoisoned() && (rhs == 1))
+		      );
+    return;
+  }
 
   // use the classical definition of poison
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
@@ -259,29 +261,17 @@ void poisonIfNeeded_bitAnd_SchemeNuno( APInt& dest, const APInt& lhs, const APIn
    */
 void poisonIfNeeded_bitOr_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
-  if ( llvm::lli_undef_fix::opt_antidote_and_or ||
-      llvm::lli_undef_fix::opt_poison_eq_undef )  {
-    if ( lhs.getPoisoned() && rhs.getPoisoned() )  {
-       dest.setPoisoned( true );
-       return;
-    }
-    if ( (!lhs.getPoisoned()) && (!rhs.getPoisoned()) )  {
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is poisoned, rhs is unpoisoned and one.
-    if ( lhs.getPoisoned() && (!rhs.getPoisoned()) && rhs.isAllOnesValue() )  {
-       // a corrupted value in lhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-    // check for lhs is unpoisoned and zero, rhs is poisoned.
-    if ( (!lhs.getPoisoned()) && lhs.isAllOnesValue() && rhs.getPoisoned() )  {
-       // a corrupted value in rhs does not affect the result.
-       dest.setPoisoned( false );
-       return;
-    }
-  } 
+  assert( 
+	 ( lhs.getBitWidth() == rhs.getBitWidth() ) && 
+	 "Both arguments must have the same bitwidth" );
+
+  if ( lhs.getBitWidth() == 1 )  {
+    dest.setPoisoned( 
+		     ((lhs == 1) && rhs.getPoisoned()) || 
+		     (lhs.getPoisoned() && (rhs == 1))
+		      );
+    return;
+  }
 
   // use the classical definition of poison
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
@@ -312,6 +302,14 @@ void poisonIfNeeded_bitXor_SchemeNuno( APInt& dest, const APInt& lhs, const APIn
 void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
 			 bool nsw, bool nuw )
 {{
+  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+     quick check for special cases that propogate or clear poison
+   */
+  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+
   // if nothing was shifted, no poison can be generated.
   if ( shiftAmt == 0 )  { return; }
 
@@ -357,6 +355,14 @@ void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& lhs, unsigned shiftAmt,
 void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
+  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+     quick check for special cases that propogate or clear poison
+   */
+  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+
   if ( exact )  { 
     // did any 1 bits get shifted out?
     /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
@@ -383,6 +389,14 @@ void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
+  /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+     quick check for special cases that propogate or clear poison
+   */
+  if ( lhs.getPoisoned() || rhs.getPoisoned() )  {
+    dest.setPoisoned( true );
+    return;
+  }
+
   if ( exact )  { 
     // did any 1 bits get shifted out?
     /* CAS TODO3: this trunc(~) call here may be unnecessary, but it
@@ -404,27 +418,16 @@ void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 void poisonIfNeeded_select_SchemeNuno( APInt& dest,
     const APInt& src1, const APInt& src2, const APInt& src3 )
 {{
-  /* TODO: get rid of this, and the #include <stdlib.h> above, if we can use
-      the opt_select_antidote variable. 
-  */
-
-  if ( lli_undef_fix::opt_antidote_select )  { 
-    /* this is the default behavior */
-    /* CAS TODO: make the above if be dependant on a command-line parameter */
-    dest.setPoisoned( src1.getPoisoned() );
-    dest.orPoisoned( src2, src3 );
-  } else {
-    /* only propagate poison iff:
-	src1 is poisoned
-	or
-	the selected element of {src2, src3} is poisoned.
-      */
-    dest.setPoisoned( src1.getPoisoned() );
-    dest.orPoisoned( 
-	(src1 == 0) ? 
-	  src3.getPoisoned() : src2.getPoisoned() 
-	);
-  }
+  /* only propagate poison iff:
+      src1 is poisoned
+      or
+      the selected element of {src2, src3} is poisoned.
+    */
+  dest.setPoisoned( src1.getPoisoned() );
+  dest.orPoisoned( 
+      (src1 == 0) ? 
+	src3.getPoisoned() : src2.getPoisoned() 
+      );
   #if 0 
     std::cerr << "in select opcode: \n";
     if ( src1.getPoisoned() || src2.getPoisoned() || 
@@ -477,7 +480,9 @@ void poisonIfNeeded_zext_SchemeNuno( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_ptrtoint_SchemeNuno( APInt& dest, const APInt& src ) 
 {{
-  // intentionally nothing
+  // TODO2: src needs to be of a pointer type.
+  // TODO2: update this once we find a way to represent poison in pointers.
+  dest.setPoisoned( false );
   return;
 }}
 
@@ -486,7 +491,12 @@ void poisonIfNeeded_ptrtoint_SchemeNuno( APInt& dest, const APInt& src )
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_inttoptr_SchemeNuno( APInt& dest, const APInt& src )
 {{
-  // intentionally nothing
+  // TODO2: dest needs to be of a pointer type.
+  // TODO2: update this once we find a way to represent poison in pointers.
+  if ( src.getPoisoned() )  {
+    std::cout << "Converting a poisoned int to a pointer is unsupported.\n";
+    exit( 1 );
+  }
   return;
 }}
 
@@ -495,7 +505,7 @@ void poisonIfNeeded_inttoptr_SchemeNuno( APInt& dest, const APInt& src )
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_bitcast_SchemeNuno( APInt& dest, const APInt& src ) 
 {{
-  // intentionally nothing
+  dest.setPoisoned( src.getPoisoned() );
   return;
 }}
 	
@@ -505,7 +515,7 @@ void poisonIfNeeded_bitcast_SchemeNuno( APInt& dest, const APInt& src )
 void poisonIfNeeded_icmp_SchemeNuno( APInt& dest, 
 				     const APInt& lhs, const APInt& rhs ) 
 {{
-  // intentionally nothing
+  dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
   return;
 }}
 	
@@ -518,7 +528,8 @@ void poisonIfNeeded_icmp_SchemeNuno( APInt& dest,
 // ----------------------------------------------------------------------------
 void poisonIfNeeded_br_SchemeNuno()
 {{
-  // intentionally nothing
+  // TODO: find some way to pass in the value of the br arguments.
+  // Then update this function per the nominal "Nuno" document.
   return;
 }}
 	
