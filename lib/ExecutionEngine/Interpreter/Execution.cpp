@@ -225,18 +225,15 @@ static void executeFRemInst(GenericValue &Dest, GenericValue Src1,
 /// result can be computed without knowing the poison value.  E.g. (x
 /// <= INT_MAX) is always true, therefore a poison value in x is
 /// irrelevant.
-///
+////
 /// \param OP must be the name of an APInt comparison method.
 /// \param TY is currently unused.
-#define IMPLEMENT_INTEGER_ICMP(OP, TY)                                 \
-   case Type::IntegerTyID:                                             \
-      Dest.IntVal = APInt(1, Src1.IntVal.OP(Src2.IntVal) );            \
-      Dest.IntVal.setPoisoned(                                         \
-         Src1.IntVal.getPoisoned() || Src2.IntVal.getPoisoned() );     \
+#define IMPLEMENT_INTEGER_ICMP(OP, TY)				\
+   case Type::IntegerTyID:					\
+      Dest.IntVal = APInt(1, Src1.IntVal.OP(Src2.IntVal) );	\
+      APIntPoison::poisonIfNeeded_icmp( Dest.IntVal,		\
+	    Src1.IntVal, Src2.IntVal );				\
       break;
-
-// TODO: poison should be set by a poisonIfNeeded_icmp(~) ftn, even if
-// it is a trivial task.
 
 #define IMPLEMENT_VECTOR_INTEGER_ICMP(OP, TY)                          \
   case Type::VectorTyID: {                                             \
