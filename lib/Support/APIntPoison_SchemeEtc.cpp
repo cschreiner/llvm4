@@ -496,7 +496,7 @@ void poisonIfNeeded_inttoptr_SchemeEtc( APInt& dest, const APInt& src )
 {{
   // TODO2: dest needs to be of a pointer type.
   // TODO2: update this once we find a way to represent poison in pointers.
-  if ( src.isPoisoned() )  {
+  if ( src.getPoisoned() )  {
     std::cout << "Converting a poisoned int to a pointer is unsupported.\n";
     exit( 1 );
   }
@@ -518,7 +518,7 @@ void poisonIfNeeded_bitcast_SchemeEtc( APInt& dest, const APInt& src )
 void poisonIfNeeded_icmp_SchemeEtc( APInt& dest, 
 				     const APInt& lhs, const APInt& rhs ) 
 {{
-  dest.orPoison( lhs, rhs );
+  dest.orPoisoned( lhs, rhs );
   return;
 }}
 	
