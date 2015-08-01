@@ -41,14 +41,14 @@ define i32 @main() {   ; i32()*
   ; printfs that should generate poision use printf with poison_st.
 
   %result_result0= trunc i27 65579217 to i19
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_result0 ) 
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i19 %result_result0 ) 
 
   %result_result1= trunc i9 384 to i4
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_result1 ) 
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i4 %result_result1 ) 
 
-  %poison_i7= add i7 nsw 31, 31
+  %poison_i7= add nsw i7 63, 63
   %result_result2= trunc i7 %poison_i7 to i5
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_result2 ) 
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i5 %result_result2 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return
