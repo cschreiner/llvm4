@@ -82,7 +82,7 @@ define i32 @main() {   ; i32()*
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_u1p1 )
   %result_p1u1= or i1 %poisoned_1, 1
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1u1 )
-  %result_p1p1= and i1 %poisoned_1, %poisoned_1
+  %result_p1p1= or i1 %poisoned_1, %poisoned_1
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1p1 )
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
