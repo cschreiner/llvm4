@@ -40,18 +40,18 @@ define i32 @main() {   ; i32()*
   ; printfs that should NOT generate poision use printf with unpoison_st.
   ; printfs that should generate poision use printf with poison_st.
 
-  %result_result0= sext i12 2403 to i15
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i15 %result_result0 ) 
+  %result0= sext i12 2403 to i15
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i15 %result0 ) 
 
-  %result_result1= sext i4 2 to i7
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result_result1 ) 
+  %result1= sext i4 2 to i7
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result1 ) 
 
-  %result_result2= sext i4 9 to i7
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result_result2 ) 
+  %result2= sext i4 9 to i7
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result2 ) 
 
   %poison_operand= add nsw i9 250, 10
-  %result_result3= sext i9 %poison_operand to i10
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i10 %result_result3 ) 
+  %result3= sext i9 %poison_operand to i10
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i10 %result3 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return
