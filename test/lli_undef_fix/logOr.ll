@@ -18,9 +18,13 @@
 ;	program when output.
 
 ; Description:
-; Test bitwise or capabilities, twice under conditions should not generate
-; poision, once under conditions that would generate poison if banned (but
-; it isn't banned), once that generates poison.
+
+; Test logical and capabilities, which should run the same as bitwise
+; and, except under the "Nuno" proposal, which separates out 1-bit
+; values for the special logical treatment.  Tests run twice under
+; conditions should not generate poision, once under conditions that
+; would generate poison if banned (but it isn't banned), once that
+; generates poison.
 
 ; Declare the printf() control strings as global constants.
 @unpoison_st = private unnamed_addr constant [21 x i8] c"unpoisoned: '0x%x' \0A\00"
@@ -29,25 +33,59 @@
 ; External declaration of the puts function
 declare i32 @printf(i8* nocapture readonly, ...)
 
-; Definition of main function
+; -----------------------------------------------------------------------------
 define i32 @main() {   ; i32()*
+; -----------------------------------------------------------------------------
   ; Convert [19 x i8]* to i8  *...
   %unpoison_st_i8 = getelementptr [21 x i8], [21 x i8]* @unpoison_st, i64 0, i64 0
   %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
-  %result1= or i8 56, 37 ; 0x38 | 0x25 = 61 = 0x3d 
-  %result2= or i8 178, 7 ; should be 183 = 0xb7
+  ;; generate some poison values for use later
+  %poisoned_0= add nsw nuw i1 1, 1 ; should be 0
+  %poisoned_1= add nsw nuw i1 1, %poisioned_0 ; should be 1
 
-  ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result1 )
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result2 )
+  ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+  ; systematically test all 16 combinations
+  ; printfs that should NOT generate poision use printf with unpoison_st.
+  ; printfs that should generate poision use printf with poison_st.
 
-  %poisoned_1= add nsw nuw i8 122, 7 ; should be 1
-  %poison_result= or i8 3, %poisoned_1
+  %result_u0u0= and i1 0, 0
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u0p0 ) 
+  %result_u0p0= and i1 0, %poisoned_0
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_u0p0 )
+  %result_p0u0= and i1 %poisoned_0, 0
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p0u0 )
+  %result_p0p0= and i1 %poisoned_0, %poisoned_0
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p0p0 )
 
-  ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %poison_result )
+  %result_u0u1= and i1 0, 1
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u0p1 )
+  %result_u0p1= and i1 0, %poisoned_1
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u0p1 )
+  %result_p0u1= and i1 %poisoned_0, 1
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p0u1 )
+  %result_p0p1= and i1 %poisoned_0, %poisoned_1
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p0p1 )
 
+  %result_u1u0= and i1 1, 0
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u1p0 )
+  %result_u1p0= and i1 1, %poisoned_0
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_u1p0 )
+  %result_p1u0= and i1 %poisoned_1, 0
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_p1u0 )
+  %result_p1p0= and i1 %poisoned_1, %poisoned_0
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1p0 )
+
+  %result_u1u1= and i1 1, 1
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u1p1 )
+  %result_u1p1= and i1 1, %poisoned_1
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_u1p1 )
+  %result_p1u1= and i1 %poisoned_1, 1
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1u1 )
+  %result_p1p1= and i1 %poisoned_1, %poisoned_1
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1p1 )
+
+  ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return
   ret i32 0
 }
