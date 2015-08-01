@@ -46,7 +46,7 @@ define i32 @main() {   ; i32()*
   %result_result1= zext i6 35 to i12
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i12 %result_result1 ) 
 
-  %poison_operand= add i11 nsw 1023, 22
+  %poison_operand= add nsw i11 1023, 22
   %result_result2= zext i11 %poison_operand to i23
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i23 %result_result2 ) 
 
