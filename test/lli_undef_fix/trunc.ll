@@ -48,7 +48,7 @@ define i32 @main() {   ; i32()*
 
   %poison_i7= add nsw i7 63, 63
   %result2= trunc i7 %poison_i7 to i5
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i5 %result2 ) 
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i5 %result2 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return

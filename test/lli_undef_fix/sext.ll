@@ -51,7 +51,7 @@ define i32 @main() {   ; i32()*
 
   %poison_operand= add nsw i9 250, 10
   %result3= sext i9 %poison_operand to i10
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i10 %result3 ) 
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i10 %result3 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return
