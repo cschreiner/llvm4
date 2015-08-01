@@ -61,18 +61,18 @@ define i32 @main() {   ; i32()*
   %result_u0u1= or i1 0, 1
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u0p1 )
   %result_u0p1= or i1 0, %poisoned_1
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u0p1 )
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_u0p1 )
   %result_p0u1= or i1 %poisoned_0, 1
-  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p0u1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_p0u1 )
   %result_p0p1= or i1 %poisoned_0, %poisoned_1
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p0p1 )
 
   %result_u1u0= or i1 1, 0
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u1p0 )
   %result_u1p0= or i1 1, %poisoned_0
-  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_u1p0 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_u1p0 )
   %result_p1u0= or i1 %poisoned_1, 0
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %result_p1u0 )
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1u0 )
   %result_p1p0= or i1 %poisoned_1, %poisoned_0
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1p0 )
 
@@ -82,7 +82,7 @@ define i32 @main() {   ; i32()*
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_u1p1 )
   %result_p1u1= or i1 %poisoned_1, 1
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1u1 )
-  %result_p1p1= or i1 %poisoned_1, %poisoned_1
+  %result_p1p1= and i1 %poisoned_1, %poisoned_1
   call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %result_p1p1 )
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
