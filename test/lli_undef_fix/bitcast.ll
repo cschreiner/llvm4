@@ -40,21 +40,18 @@ define i32 @main() {   ; i32()*
   ; printfs that should NOT generate poision use printf with unpoison_st.
   ; printfs that should generate poision use printf with poison_st.
 
-  %result0= inttoptr i19 5 to i18*
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i18* %result0 ) 
+  %result0= bitcast i7 0 to i9
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i9 %result0 ) 
 
-  %result1= inttoptr i32 78877 to i26*
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i26* %result1 ) 
+  %result1= bitcast i30 50928 to i37
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i37 %result1 ) 
 
-  %result2= inttoptr i15 9 to i26*
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i26* %result2 ) 
+  %result2= bitcast i85 9 to i6
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i6 %result2 ) 
 
-  ; TODO2: when we get the ability to store a poisoned pointer value,
-  ;  use that as an operand to ptrtoint instead of artificially adding
-  ;  poison to the integer.
-  %tmp3= add nsw nuw i18 %523, 262143 ; 262143 is INT20_MAX= 2**18-1
-  %result3= inttoptr i18 %tmp3 to i21*
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i21* %result3 ) 
+  %poison3= add nsw nuw i5 31, 26; 
+  %result3= bitcast i5 %poison3 to i33
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i33 %result3 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return
