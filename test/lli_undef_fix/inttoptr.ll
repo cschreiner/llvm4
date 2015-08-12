@@ -52,7 +52,7 @@ define i32 @main() {   ; i32()*
   ; TODO2: when we get the ability to store a poisoned pointer value,
   ;  use that as an operand to ptrtoint instead of artificially adding
   ;  poison to the integer.
-  %tmp3= add nsw nuw i18 %523, 262143 ; 262143 is INT20_MAX= 2**18-1
+  %tmp3= add nsw nuw i18 523, 262143 ; 262143 is INT20_MAX= 2**18-1
   %result3= inttoptr i18 %tmp3 to i21*
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i21* %result3 ) 
 
