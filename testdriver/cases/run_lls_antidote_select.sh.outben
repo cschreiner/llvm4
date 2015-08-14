@@ -83,6 +83,85 @@ exiting due to external poison propogation.
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
  
 #####################################################################
+found test .ll program: ../test/lli_undef_fix/bitAnd.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x20' 
+unpoisoned: '0x2' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/bitcast.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+
+########
+stderr: 
+
+/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/bitcast.ll:43:21: error: invalid cast opcode for cast from 'i7' to 'i9'
+  %result0= bitcast i7 0 to i9
+                    ^
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/bitOr.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x3d' 
+unpoisoned: '0xb7' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
 found test .ll program: ../test/lli_undef_fix/div_signed.ll
    .ll file says failure expected
  
@@ -160,6 +239,81 @@ stderr:
 
 ########
 exit status="0"  (Expected zero, i.e. .ll program should end normally.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/inttoptr.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+
+########
+stderr: 
+
+/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/inttoptr.ll:55:26: error: use of undefined value '%523'
+  %tmp3= add nsw nuw i18 %523, 262143 ; 262143 is INT20_MAX= 2**18-1
+                         ^
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/logAnd.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+
+########
+stderr: 
+
+/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/logAnd.ll:54:3: error: instruction forward referenced with type 'i8'
+  %result_u0p0= and i1 0, %poisoned_0
+  ^
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/logOr.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+
+########
+stderr: 
+
+/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/logOr.ll:54:3: error: instruction forward referenced with type 'i8'
+  %result_u0p0= or i1 0, %poisoned_0
+  ^
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/lshr.ll
@@ -241,6 +395,84 @@ stderr:
 Attempt to call an external function with a poison value in arg# 1.
   ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/ptrtoint.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x5' 
+unpoisoned: '0x1d' 
+unpoisoned: '0x9' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/rem_signed.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+
+########
+stderr: 
+
+/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/rem_signed.ll:39:18: error: expected type
+  %nowrap2= srem exact i8 231, 5 ; -25/5
+                 ^
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/rem_unsigned.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+
+########
+stderr: 
+
+/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/rem_unsigned.ll:40:18: error: expected type
+  %nowrap2= urem exact i8 240, 3
+                 ^
 
 ########
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
@@ -404,6 +636,34 @@ exit status="1"  (Expected zero, i.e. .ll program should end normally.)
 TEST FAILURE: unexpected .ll failure
  
 #####################################################################
+found test .ll program: ../test/lli_undef_fix/sext.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x7963' 
+unpoisoned: '0x2' 
+unpoisoned: '0x79' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
 found test .ll program: ../test/lli_undef_fix/shl_signed.ll
    .ll file says failure expected
  
@@ -555,6 +815,85 @@ LUF Option settings via LLI_LUF_OPTS:
 unpoisoned: '0x97' 
 unpoisoned: '0x97' 
 unpoisoned: '0xea' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/trunc.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0xa8d1' 
+unpoisoned: '0x0' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/xor.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+
+########
+stderr: 
+
+/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/xor.ll:52:3: error: instruction forward referenced with type 'i8'
+  %result_u0p0= xor i1 0, %poisoned_0
+  ^
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/zext.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=1 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x963' 
+unpoisoned: '0x23' 
 
 ########
 stderr: 
