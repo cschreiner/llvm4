@@ -19,7 +19,7 @@
 
 ; Description:
 ; Divide unsigned numbers together and examine the remainder, twice
-; under conditions should not generate poision, once under conditions
+; under conditions should not generate poison, once under conditions
 ; that would generate poison if banned (but it isn't banned), once
 ; that generates poison.
 

@@ -37,8 +37,8 @@ define i32 @main() {   ; i32()*
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; test various combinations
-  ; printfs that should NOT generate poision use printf with unpoison_st.
-  ; printfs that should generate poision use printf with poison_st.
+  ; printfs that should NOT generate poison use printf with unpoison_st.
+  ; printfs that should generate poison use printf with poison_st.
 
   %result0= trunc i27 65579217 to i19
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i19 %result0 ) 

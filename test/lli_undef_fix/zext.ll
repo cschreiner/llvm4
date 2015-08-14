@@ -37,8 +37,8 @@ define i32 @main() {   ; i32()*
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; test various combinations
-  ; printfs that should NOT generate poision use printf with unpoison_st.
-  ; printfs that should generate poision use printf with poison_st.
+  ; printfs that should NOT generate poison use printf with unpoison_st.
+  ; printfs that should generate poison use printf with poison_st.
 
   %result0= zext i13 2403 to i17
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i17 %result0 ) 

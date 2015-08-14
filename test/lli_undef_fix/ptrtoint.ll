@@ -37,8 +37,8 @@ define i32 @main() {   ; i32()*
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; test various combinations
-  ; printfs that should NOT generate poision use printf with unpoison_st.
-  ; printfs that should generate poision use printf with poison_st.
+  ; printfs that should NOT generate poison use printf with unpoison_st.
+  ; printfs that should generate poison use printf with poison_st.
 
   %tmp0= inttoptr i16 5 to i15*
   %result0= ptrtoint i15* %tmp0 to i16

@@ -17,7 +17,7 @@
 ;	program when output.
 
 ; Add unsigned numbers together, twice under conditions should not generate
-; poision, once under conditions that would generate poison if banned (but
+; poison, once under conditions that would generate poison if banned (but
 ; it isn't banned), once that generates poison.
 
 ; Declare the printf() control strings as global constants.
