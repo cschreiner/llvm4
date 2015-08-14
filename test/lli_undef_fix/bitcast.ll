@@ -40,18 +40,22 @@ define i32 @main() {   ; i32()*
   ; printfs that should NOT generate poison use printf with unpoison_st.
   ; printfs that should generate poison use printf with poison_st.
 
-  %result0= bitcast i7 0 to i9
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i9 %result0 ) 
+  %a0= bitcast i7 0 to i7
+  %result0= bitcast i7 %a0 to i7
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result0 ) 
 
-  %result1= bitcast i30 50928 to i37
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i37 %result1 ) 
+  %a1= bitcast i30 50928 to i30
+  %result1= bitcast i30 %a1 to i30
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i30 %result1 ) 
 
-  %result2= bitcast i85 9 to i6
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i6 %result2 ) 
+  %a2= bitcast i85 9 to i85
+  %result2= bitcast i85 %a2 to i85
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i85 %result2 ) 
 
   %poison3= add nsw nuw i5 31, 26; 
-  %result3= bitcast i5 %poison3 to i33
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i33 %result3 ) 
+  %a3= bitcast i5 %poison3 to i5
+  %result3= bitcast i5 %a3 to i5
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i5 %result3 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return
