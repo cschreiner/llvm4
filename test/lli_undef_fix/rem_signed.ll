@@ -36,18 +36,18 @@ define i32 @main() {   ; i32()*
   %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
   %nowrap1= srem i8 231, 5 ; -25/5
-  %nowrap2= srem exact i8 231, 5 ; -25/5
+  %nowrap2= srem i8 231, 5 ; -25/5
 
   ; Call puts function to write out the string to stdout.
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap1 )
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap2 )
 
   %unpoisoned_1= srem i8 205, 10 ; -51 / 10
-  %poisoned_1= srem exact i8 205, 10 ; -51 / 10 
+  %poisoned_1= srem i8 205, 10 ; -51 / 10 
 
   ; Call puts function to write out the string to stdout.
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %unpoisoned_1 )
-  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i8 %poisoned_1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %poisoned_1 )
 
   ; clean up and return
   ret i32 0
