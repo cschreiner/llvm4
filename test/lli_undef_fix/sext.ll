@@ -40,6 +40,7 @@ define i32 @main() {   ; i32()*
   ; printfs that should NOT generate poison use printf with unpoison_st.
   ; printfs that should generate poison use printf with poison_st.
 
+  ; 2403 = 0x963, sext yields 0x7963
   %result0= sext i12 2403 to i15
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i15 %result0 ) 
 

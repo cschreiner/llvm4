@@ -44,7 +44,7 @@ define i32 @main() {   ; i32()*
   %result0= bitcast i7 %a0 to i7
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result0 ) 
 
-  %a1= bitcast i30 50928 to i30
+  %a1= bitcast i30 50928 to i30 ; 50928=0xc6f0
   %result1= bitcast i30 %a1 to i30
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i30 %result1 ) 
 

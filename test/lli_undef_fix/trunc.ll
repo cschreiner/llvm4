@@ -40,10 +40,10 @@ define i32 @main() {   ; i32()*
   ; printfs that should NOT generate poison use printf with unpoison_st.
   ; printfs that should generate poison use printf with poison_st.
 
-  %result0= trunc i27 65579217 to i19
+  %result0= trunc i27 65579217 to i19 ; yields 0xa8d1
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i19 %result0 ) 
 
-  %result1= trunc i9 384 to i4
+  %result1= trunc i9 384 to i4 ; yields 0
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i4 %result1 ) 
 
   %poison_i7= add nsw i7 63, 63

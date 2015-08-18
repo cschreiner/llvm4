@@ -36,19 +36,19 @@ define i32 @main() {   ; i32()*
   %unpoison_st_i8 = getelementptr [21 x i8], [21 x i8]* @unpoison_st, i64 0, i64 0
   %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
-  %nowrap1= urem i8 240, 3
-  %nowrap2= urem i8 240, 3
+  %exact1= urem i8 240, 3
+  %exact2= urem i8 240, 3
 
   ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap1 )
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap2 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %exact1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %exact2 )
 
-  %unpoisoned_1= urem i8 145, 9
-  %poisoned_1= urem i8 145, 9
+  %inexact1= urem i8 145, 9
+  %inexact2= urem i8 145, 9
 
   ; Call puts function to write out the string to stdout.
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %unpoisoned_1 )
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %poisoned_1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %inexact1 )
+  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %inexact2 )
 
   ; clean up and return
   ret i32 0
