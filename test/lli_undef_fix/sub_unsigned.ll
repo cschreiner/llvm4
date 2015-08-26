@@ -34,15 +34,15 @@ define i32 @main() {   ; i32()*
   %unpoison_st_i8 = getelementptr [21 x i8], [21 x i8]* @unpoison_st, i64 0, i64 0
   %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
-  %nowrap1= sub i8 168, 17
-  %nowrap2= sub nuw i8 168, 17
+  %nowrap1= sub i8 168, 17 ; = 0x97
+  %nowrap2= sub nuw i8 168, 17 ; = 0x97
 
   ; Call puts function to write out the string to stdout.
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap1 )
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %nowrap2 )
 
-  %unpoisoned_1= sub i8 25, 47
-  %poisoned_1= sub nuw i8 25, 47
+  %unpoisoned_1= sub i8 25, 47 ; = 0xea
+  %poisoned_1= sub nuw i8 25, 47 ; = poisoned 0xea
 
   ; Call puts function to write out the string to stdout.
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %unpoisoned_1 )

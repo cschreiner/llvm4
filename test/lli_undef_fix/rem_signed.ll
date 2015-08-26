@@ -35,15 +35,17 @@ define i32 @main() {   ; i32()*
   %unpoison_st_i8 = getelementptr [21 x i8], [21 x i8]* @unpoison_st, i64 0, i64 0
   %poison_st_i8 = getelementptr [19 x i8], [19 x i8]* @poison_st, i64 0, i64 0
 
-  %exact1= srem i8 231, 5 ; -25/5
-  %exact2= srem i8 231, 5 ; -25/5
+  ; TODO2: change %exact2 and %inexact2 to be poisoned
+
+  %exact1= srem i8 231, 5 ; -25/5 ; should be 0
+  %exact2= srem i8 231, 5 ; -25/5 ; should be 0
 
   ; Call puts function to write out the string to stdout.
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %exact1 )
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %exact2 )
 
-  %inexact1= srem i8 205, 10 ; -51 / 10
-  %inexact2= srem i8 205, 10 ; -51 / 10 
+  %inexact1= srem i8 205, 10 ; -51 / 10  ; should be -1, same sign as 205
+  %inexact2= srem i8 205, 10 ; -51 / 10  ; should be -1, same sign as 205
 
   ; Call puts function to write out the string to stdout.
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i8 %inexact1 )

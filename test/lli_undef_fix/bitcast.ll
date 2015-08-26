@@ -52,10 +52,10 @@ define i32 @main() {   ; i32()*
   %result2= bitcast i85 %a2 to i85
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i85 %result2 ) 
 
-  %poison3= add nsw nuw i5 31, 26; 
+  %poison3= add nsw nuw i5 31, 26 ; should be 25 = 0x19 aka -7
   %a3= bitcast i5 %poison3 to i5
   %result3= bitcast i5 %a3 to i5
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i5 %result3 ) 
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i5 %result3 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return

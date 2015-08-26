@@ -40,21 +40,22 @@ define i32 @main() {   ; i32()*
   ; printfs that should NOT generate poison use printf with unpoison_st.
   ; printfs that should generate poison use printf with poison_st.
 
-  %result0= inttoptr i19 5 to i18* ; why does this print as 0x0?
+  %result0= inttoptr i19 5 to i18* ; TODO2: why does this print as 0x0?
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i18* %result0 ) 
 
-  %result1= inttoptr i32 78877 to i26* ; why does this print as 0x0?
+  %result1= inttoptr i32 78877 to i26* ; TODO2: why does this print as 0x0?
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i26* %result1 ) 
 
-  %result2= inttoptr i15 9 to i26* ; why does this print as 0x0?
+  %result2= inttoptr i15 9 to i26* ; TODO2: why does this print as 0x0?
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i26* %result2 ) 
 
   ; TODO2: when we get the ability to store a poisoned pointer value,
   ;  use that as an operand to ptrtoint instead of artificially adding
   ;  poison to the integer.
+  ; TODO2: why does this print as 0?
   %tmp3= add nsw nuw i18 523, 262143 ; 262143 is INT20_MAX= 2**18-1
   %result3= inttoptr i18 %tmp3 to i21*
-  call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i21* %result3 ) 
+  call i32 (i8*, ...) @printf(i8* %poison_st_i8, i21* %result3 ) 
 
   ; . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
   ; clean up and return
