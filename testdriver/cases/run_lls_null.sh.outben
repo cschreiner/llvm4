@@ -10,6 +10,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xb9' 
@@ -38,6 +39,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x9d' 
@@ -66,11 +68,97 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xfc54' 
 unpoisoned: '0xfc54' 
 unpoisoned: '0x682' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/bitAnd.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x20' 
+unpoisoned: '0x2' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/bitcast.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x0' 
+unpoisoned: '0xc6f0' 
+unpoisoned: '0x9' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/bitOr.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x3d' 
+unpoisoned: '0xb7' 
 
 ########
 stderr: 
@@ -94,6 +182,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xfb' 
@@ -122,6 +211,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x50' 
@@ -150,6 +240,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 hello 2a world
@@ -160,6 +251,87 @@ stderr:
 
 ########
 exit status="0"  (Expected zero, i.e. .ll program should end normally.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/inttoptr.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
+
+########
+stderr: 
+
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/logAnd.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x0' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/logOr.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x0' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/lshr.ll
@@ -173,6 +345,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x2b38' 
@@ -201,6 +374,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x2a' 
@@ -229,6 +403,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x78' 
@@ -246,6 +421,91 @@ exiting due to external poison propogation.
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
  
 #####################################################################
+found test .ll program: ../test/lli_undef_fix/ptrtoint.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x5' 
+unpoisoned: '0x1d' 
+unpoisoned: '0x9' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/rem_signed.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
+unpoisoned: '0xff' 
+unpoisoned: '0xff' 
+
+########
+stderr: 
+
+
+########
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/rem_unsigned.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
+unpoisoned: '0x1' 
+unpoisoned: '0x1' 
+
+########
+stderr: 
+
+
+########
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
+ 
+#####################################################################
 found test .ll program: ../test/lli_undef_fix/select_std_1f.ll
    .ll file says failure expected
  
@@ -257,6 +517,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x9' 
@@ -283,6 +544,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x5' 
@@ -309,6 +571,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x14' 
@@ -333,6 +596,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x82' 
@@ -359,6 +623,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x82' 
@@ -385,6 +650,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x14' 
@@ -398,6 +664,35 @@ stderr:
 exit status="0"  (Expected zero, i.e. .ll program should end normally.)
  
 #####################################################################
+found test .ll program: ../test/lli_undef_fix/sext.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x7963' 
+unpoisoned: '0x2' 
+unpoisoned: '0x79' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
 found test .ll program: ../test/lli_undef_fix/shl_signed.ll
    .ll file says failure expected
  
@@ -409,6 +704,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x8880' 
@@ -437,6 +733,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x52b0' 
@@ -465,6 +762,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 this prints if poison-free: '0xe' 
@@ -491,6 +789,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 
@@ -516,6 +815,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x19' 
@@ -544,11 +844,95 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x97' 
 unpoisoned: '0x97' 
 unpoisoned: '0xea' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/trunc.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0xa8d1' 
+unpoisoned: '0x0' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/xor.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x0' 
+
+########
+stderr: 
+
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
+
+########
+exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+ 
+#####################################################################
+found test .ll program: ../test/lli_undef_fix/zext.ll
+   .ll file says failure expected
+ 
+LUF Option settings via LLI_LUF_OPTS: 
+  antidote_select=0 (default=0) 
+  antidote_and_or=0 (default=0) 
+  print_new_poison=0 (default=0) 
+  poison_eq_undef=0 (default=0) 
+  poison_eq_undef_early=0 (default=0) 
+  return_if_div_0=0 (default=0) 
+  nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
+  (end of options) 
+
+unpoisoned: '0x963' 
+unpoisoned: '0x23' 
 
 ########
 stderr: 

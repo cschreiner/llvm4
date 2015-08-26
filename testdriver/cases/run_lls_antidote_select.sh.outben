@@ -10,6 +10,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xb9' 
@@ -38,6 +39,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x9d' 
@@ -66,6 +68,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xfc54' 
@@ -94,6 +97,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x20' 
@@ -121,15 +125,19 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+unpoisoned: '0x0' 
+unpoisoned: '0xc6f0' 
+unpoisoned: '0x9' 
 
 ########
 stderr: 
 
-/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/bitcast.ll:43:21: error: invalid cast opcode for cast from 'i7' to 'i9'
-  %result0= bitcast i7 0 to i9
-                    ^
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
 
 ########
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
@@ -146,6 +154,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x3d' 
@@ -173,6 +182,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xfb' 
@@ -201,6 +211,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x50' 
@@ -229,6 +240,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 hello 2a world
@@ -252,15 +264,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
 
 ########
 stderr: 
 
-/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/inttoptr.ll:55:26: error: use of undefined value '%523'
-  %tmp3= add nsw nuw i18 %523, 262143 ; 262143 is INT20_MAX= 2**18-1
-                         ^
+exiting due to external poison propogation. 
 
 ########
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
@@ -277,15 +291,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+unpoisoned: '0x0' 
 
 ########
 stderr: 
 
-/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/logAnd.ll:54:3: error: instruction forward referenced with type 'i8'
-  %result_u0p0= and i1 0, %poisoned_0
-  ^
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
 
 ########
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
@@ -302,15 +318,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+unpoisoned: '0x0' 
 
 ########
 stderr: 
 
-/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/logOr.ll:54:3: error: instruction forward referenced with type 'i8'
-  %result_u0p0= or i1 0, %poisoned_0
-  ^
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
 
 ########
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
@@ -327,6 +345,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x2b38' 
@@ -355,6 +374,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x2a' 
@@ -383,6 +403,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x78' 
@@ -411,6 +432,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x5' 
@@ -439,18 +461,21 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
+unpoisoned: '0xff' 
+unpoisoned: '0xff' 
 
 ########
 stderr: 
 
-/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/rem_signed.ll:39:18: error: expected type
-  %nowrap2= srem exact i8 231, 5 ; -25/5
-                 ^
 
 ########
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/rem_unsigned.ll
@@ -464,18 +489,21 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+unpoisoned: '0x0' 
+unpoisoned: '0x0' 
+unpoisoned: '0x1' 
+unpoisoned: '0x1' 
 
 ########
 stderr: 
 
-/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/rem_unsigned.ll:40:18: error: expected type
-  %nowrap2= urem exact i8 240, 3
-                 ^
 
 ########
-exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
+exit status="0"  (Expected nonzero, i.e. .ll program should end with an error.)
+TEST FAILURE: unexpected .ll success
  
 #####################################################################
 found test .ll program: ../test/lli_undef_fix/select_std_1f.ll
@@ -489,6 +517,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x9' 
@@ -515,6 +544,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x5' 
@@ -541,6 +571,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x14' 
@@ -568,6 +599,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x82' 
@@ -594,6 +626,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x82' 
@@ -620,6 +653,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x14' 
@@ -647,6 +681,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x7963' 
@@ -675,6 +710,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x8880' 
@@ -703,6 +739,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x52b0' 
@@ -731,6 +768,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 this prints if poison-free: '0xe' 
@@ -757,6 +795,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 
@@ -782,6 +821,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x19' 
@@ -810,6 +850,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x97' 
@@ -838,6 +879,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0xa8d1' 
@@ -865,15 +907,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+unpoisoned: '0x0' 
 
 ########
 stderr: 
 
-/uusoc/scratch/dyson/cas/edu/uut/lli_undef_fix4/live/bin/lli: ../test/lli_undef_fix/xor.ll:52:3: error: instruction forward referenced with type 'i8'
-  %result_u0p0= xor i1 0, %poisoned_0
-  ^
+Attempt to call an external function with a poison value in arg# 1.
+  ftn name="printf", numArgs=2
+exiting due to external poison propogation. 
 
 ########
 exit status="1"  (Expected nonzero, i.e. .ll program should end with an error.)
@@ -890,6 +934,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x963' 
