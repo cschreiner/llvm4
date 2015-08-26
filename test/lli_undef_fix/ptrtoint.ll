@@ -44,7 +44,7 @@ define i32 @main() {   ; i32()*
   %result0= ptrtoint i15* %tmp0 to i16
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i16 %result0 ) 
 
-  %tmp1= inttoptr i32 78877 to i20*
+  %tmp1= inttoptr i32 78877 to i20* ; 78877= 0x1341d
   %result1= ptrtoint i20* %tmp1 to i7 ; overflow intended
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result1 ) 
 
