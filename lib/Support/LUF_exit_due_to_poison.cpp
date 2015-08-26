@@ -69,6 +69,8 @@ void llvm::lli_undef_fix::exit_due_to_poison()
   fflush ( stdout );
   fflush ( stderr );
   std::cerr << "exiting due to external poison propogation. \n";
+  // TODO: add code here to bypass this exit with an error message when
+  // llvm::lli_undef_fix::opt_no_exit_due_to_poison is true..
   exit( EXIT_FAILURE );
 }}
 
