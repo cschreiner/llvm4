@@ -4,7 +4,10 @@
 # to maintain a separate test script for every .ll file.
 
 
-for ii in `find ../test/lli_undef_fix -maxdepth 1 -iname \*.ll | sort `; do
+# Note: some editors create a temporary file called .#x.ll (or similar) when
+# editing file x.ll, this temporary file should not run as part of a test
+# case.
+for ii in `find ../test/lli_undef_fix -maxdepth 1 -iname \*.ll ! -iname .\* | sort `; do
    echo '#####################################################################'
    echo found test .ll program: $ii
 
