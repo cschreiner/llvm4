@@ -46,7 +46,8 @@
 bool llvm::lli_undef_fix::opt_antidote_select= false;
 
 /** use short circuit evaluation to remove poison from unused operands of and
-and or opcodes.  */ 
+   and or opcodes.  
+*/ 
 bool llvm::lli_undef_fix::opt_antidote_and_or= false;
 
 /** prints a message when a new poison value is generated */
@@ -58,7 +59,7 @@ bool llvm::lli_undef_fix::opt_print_new_poison= false;
 bool llvm::lli_undef_fix::opt_poison_eq_undef= false;
 
 /** adds an interpretation of David's & Nuno's plan with early
-    undef-to-random-value resolution.
+   undef-to-random-value resolution.
  */
 bool llvm::lli_undef_fix::opt_poison_eq_undef_early= false;
 
@@ -66,9 +67,18 @@ bool llvm::lli_undef_fix::opt_poison_eq_undef_early= false;
  */
 bool llvm::lli_undef_fix::opt_return_if_div_0= false;
 
-/** use the poison generation scheme John, Nuno, David and I contributed to that we named after Nuno.
+/** use the poison generation scheme John, Nuno, David and I contributed to
+   that we named after Nuno.
  */
 bool llvm::lli_undef_fix::opt_nuno= false;
+
+/** Certain operations are required to exit when they act on a poisoned
+   value.  (Which operations depends on which poison scheme is being
+   tested.)  This option disables exiting and merely prints an error message
+   instead, which simplifies testing of other features.  This options is
+   ONLY intended for use in testing.
+ */
+bool llvm::lli_undef_fix::opt_no_exit_due_to_poison= false;
 
 typedef struct {
    const char* name;
@@ -102,6 +112,10 @@ const filelocal_opt_t opt_array[]= {
 
   { "nuno", 
     &llvm::lli_undef_fix::opt_nuno, 
+    false },
+
+  { "no_exit_due_to_poison", 
+    &llvm::lli_undef_fix::opt_no_exit_due_to_poison, 
     false },
 
   // end of the list
