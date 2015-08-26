@@ -44,9 +44,11 @@ define i32 @main() {   ; i32()*
   %result0= sext i12 2403 to i15
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i15 %result0 ) 
 
+  ; sext yields 2
   %result1= sext i4 2 to i7
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result1 ) 
 
+  ; sext yields 0x79
   %result2= sext i4 9 to i7
   call i32 (i8*, ...) @printf(i8* %unpoison_st_i8, i7 %result2 ) 
 
