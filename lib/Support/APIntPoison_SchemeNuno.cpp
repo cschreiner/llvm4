@@ -267,8 +267,8 @@ void poisonIfNeeded_bitOr_SchemeNuno( APInt& dest, const APInt& lhs, const APInt
 
   if ( lhs.getBitWidth() == 1 )  {
     dest.setPoisoned( 
-		     ((lhs == 1) && rhs.getPoisoned()) || 
-		     (lhs.getPoisoned() && (rhs == 1))
+		     ((lhs == 0) && rhs.getPoisoned()) || 
+		     (lhs.getPoisoned() && (rhs == 0))
 		      );
     return;
   }
