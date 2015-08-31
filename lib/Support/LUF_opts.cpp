@@ -72,6 +72,12 @@ bool llvm::lli_undef_fix::opt_return_if_div_0= false;
  */
 bool llvm::lli_undef_fix::opt_nuno= false;
 
+/** use the poison generation scheme John, Nuno, David and I contributed to
+   that we named after Nuno, with a guarantee that 2 poison operands will
+   always produce poison.
+ */
+bool llvm::lli_undef_fix::opt_nunoPP= false;
+
 /** Certain operations are required to exit when they act on a poisoned
    value.  (Which operations depends on which poison scheme is being
    tested.)  This option disables exiting and merely prints an error message
@@ -112,6 +118,10 @@ const filelocal_opt_t opt_array[]= {
 
   { "nuno", 
     &llvm::lli_undef_fix::opt_nuno, 
+    false },
+
+  { "nunoPP", 
+    &llvm::lli_undef_fix::opt_nunoPP, 
     false },
 
   { "no_exit_due_to_poison", 
