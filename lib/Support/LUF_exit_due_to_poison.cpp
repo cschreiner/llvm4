@@ -34,6 +34,7 @@
 #include <stdlib.h>
 
 #include "llvm/Support/LUF_etc.h"
+#include "llvm/Support/LUF_opts.h"
 
 /*++ **************************************************************************
    *   declarations
@@ -68,9 +69,13 @@ void llvm::lli_undef_fix::exit_due_to_poison()
 {{
   fflush ( stdout );
   fflush ( stderr );
+  if ( llvm::lli_undef_fix::opt_no_exit_due_to_poison )  {
+    std::cerr << "would exit due to external poison propogation, but \n" << 
+	"option \"no_exit_due_to_poison\" forces the program to continue. \n";
+    return;
+  } 
+
   std::cerr << "exiting due to external poison propogation. \n";
-  // TODO: add code here to bypass this exit with an error message when
-  // llvm::lli_undef_fix::opt_no_exit_due_to_poison is true..
   exit( EXIT_FAILURE );
 }}
 
