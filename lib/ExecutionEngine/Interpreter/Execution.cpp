@@ -138,11 +138,13 @@ void Interpreter::checkFtnCallForPoisonedArgs(
     if ( val_ptr->getType()->getTypeID() == llvm::Type::IntegerTyID )  {
       GenericValue gv= getOperandValue( val_ptr, exCon );
       if ( gv.IntVal.getPoisoned() )  {
-       std::cerr << "Attempt to call an external function with a poison " \
-           "value in arg# " << arg_num << ".\n";
-       std::cerr << "  ftn name=\"" << ftn_ptr->getName().str() << 
-           "\", numArgs=" << cs.arg_size() << "\n";
-       lli_undef_fix::exit_due_to_poison();
+	// TODO: change this to be able to detect poison in more than one 
+	// argument.
+	std::cerr << "Attempt to call an external function with a poison " \
+	    "value in arg# " << arg_num << ".\n";
+        std::cerr << "  ftn name=\"" << ftn_ptr->getName().str() << 
+            "\", numArgs=" << cs.arg_size() << "\n";
+        lli_undef_fix::exit_due_to_poison();
       }
     }
   }
