@@ -11,6 +11,10 @@
 // propogation through its arithmetic operations.
 //
 //===----------------------------------------------------------------------===//
+//
+/// Implements the undef scheme Nuno and John and David and CAS are fiddling 
+/// with.  Includes guarantees that if both operands are poison, then the 
+/// result is poison.  (Currently the "Nuno" scheme doesn't have that.)
 
 #include <iostream>
 #include <stdlib.h>
@@ -32,8 +36,9 @@ namespace llvm {
 // ############################################################################
 namespace APIntPoison {
 
-// TODO: adapt this to implement the scheme Nuno and John and David
-// and I are fiddling with.
+// TODO: keep this in sync with SchemeNuno.
+// TODO2: make sure ops other than and and or will return poisoned if both 
+//	operands are poisoned.
 
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_add()
@@ -43,7 +48,7 @@ namespace APIntPoison {
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_add_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_add_SchemeNunoPP( APInt& dest, APInt& lhs, APInt& rhs, 
 				   bool nsw, bool nuw )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -77,7 +82,7 @@ void poisonIfNeeded_add_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_sub_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_sub_SchemeNunoPP( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -111,7 +116,7 @@ void poisonIfNeeded_sub_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_mul_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_mul_SchemeNunoPP( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool nsw, bool nuw )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -186,7 +191,7 @@ void poisonIfNeeded_mul_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs, 
+void poisonIfNeeded_div_SchemeNunoPP( APInt& dest, APInt& lhs, APInt& rhs, 
 			 bool exact )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -209,7 +214,7 @@ void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_div( APInt&, APInt&, ApInt& )
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs )  
+void poisonIfNeeded_div_SchemeNunoPP( APInt& dest, APInt& lhs, APInt& rhs )  
 {{
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
   return;
@@ -218,7 +223,7 @@ void poisonIfNeeded_div_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs )
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_rem()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_rem_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs )
+void poisonIfNeeded_rem_SchemeNunoPP( APInt& dest, APInt& lhs, APInt& rhs )
 {{
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
   return;
@@ -232,7 +237,7 @@ void poisonIfNeeded_rem_SchemeNuno( APInt& dest, APInt& lhs, APInt& rhs )
    *	0).  Otherwise propogates poison if either operand is
    *	poisoned.
    */
-void poisonIfNeeded_bitAnd_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
+void poisonIfNeeded_bitAnd_SchemeNunoPP( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   assert( 
 	 ( lhs.getBitWidth() == rhs.getBitWidth() ) && 
@@ -241,7 +246,8 @@ void poisonIfNeeded_bitAnd_SchemeNuno( APInt& dest, const APInt& lhs, const APIn
   if ( lhs.getBitWidth() == 1 )  {
     dest.setPoisoned( 
 		     ((lhs == 1) && rhs.getPoisoned()) || 
-		     (lhs.getPoisoned() && (rhs == 1))
+		     (lhs.getPoisoned() && (rhs == 1)) ||
+		     (lhs.getPoisoned() && rhs.getPoisoned())
 		      );
     return;
   }
@@ -259,7 +265,7 @@ void poisonIfNeeded_bitAnd_SchemeNuno( APInt& dest, const APInt& lhs, const APIn
    *	1).  Otherwise propogates poison if either operand is
    *	poisoned.
    */
-void poisonIfNeeded_bitOr_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
+void poisonIfNeeded_bitOr_SchemeNunoPP( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   assert( 
 	 ( lhs.getBitWidth() == rhs.getBitWidth() ) && 
@@ -268,7 +274,8 @@ void poisonIfNeeded_bitOr_SchemeNuno( APInt& dest, const APInt& lhs, const APInt
   if ( lhs.getBitWidth() == 1 )  {
     dest.setPoisoned( 
 		     ((lhs == 0) && rhs.getPoisoned()) || 
-		     (lhs.getPoisoned() && (rhs == 0))
+		     (lhs.getPoisoned() && (rhs == 0)) ||
+		     (lhs.getPoisoned() && rhs.getPoisoned())
 		      );
     return;
   }
@@ -281,7 +288,7 @@ void poisonIfNeeded_bitOr_SchemeNuno( APInt& dest, const APInt& lhs, const APInt
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_bitXor()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_bitXor_SchemeNuno( APInt& dest, const APInt& lhs, const APInt& rhs )
+void poisonIfNeeded_bitXor_SchemeNunoPP( APInt& dest, const APInt& lhs, const APInt& rhs )
 {{
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
   return;
@@ -299,7 +306,7 @@ void poisonIfNeeded_bitXor_SchemeNuno( APInt& dest, const APInt& lhs, const APIn
  *	the result was already poisoned (probably because one of the
  *	operands was poisoned), that poison remains.
  */
-void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
+void poisonIfNeeded_shl_SchemeNunoPP( APInt& dest, APInt& src, unsigned shiftAmt,
 			 bool nsw, bool nuw )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -356,7 +363,7 @@ void poisonIfNeeded_shl_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
  *	poisoned (probably because one of the operands was poisoned),
  *	that poison remains.
  */
-void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
+void poisonIfNeeded_lshr_SchemeNunoPP( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -395,7 +402,7 @@ void poisonIfNeeded_lshr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
  *	poisoned (probably because one of the operands was poisoned),
  *	that poison remains.
  */
-void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
+void poisonIfNeeded_ashr_SchemeNunoPP( APInt& dest, APInt& src, unsigned shiftAmt,
 			  bool exact )
 {{
   /* . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
@@ -429,7 +436,7 @@ void poisonIfNeeded_ashr_SchemeNuno( APInt& dest, APInt& src, unsigned shiftAmt,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_select()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_select_SchemeNuno( APInt& dest,
+void poisonIfNeeded_select_SchemeNunoPP( APInt& dest,
     const APInt& src1, const APInt& src2, const APInt& src3 )
 {{
   /* only propagate poison iff:
@@ -462,7 +469,7 @@ void poisonIfNeeded_select_SchemeNuno( APInt& dest,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_trunc()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_trunc_SchemeNuno( APInt& dest, const APInt& src, 
+void poisonIfNeeded_trunc_SchemeNunoPP( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
   dest.setPoisoned( src.getPoisoned() );
@@ -472,7 +479,7 @@ void poisonIfNeeded_trunc_SchemeNuno( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_sext()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_sext_SchemeNuno( APInt& dest, const APInt& src, 
+void poisonIfNeeded_sext_SchemeNunoPP( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
   dest.setPoisoned( src.getPoisoned() );
@@ -482,7 +489,7 @@ void poisonIfNeeded_sext_SchemeNuno( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_zext()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_zext_SchemeNuno( APInt& dest, const APInt& src, 
+void poisonIfNeeded_zext_SchemeNunoPP( APInt& dest, const APInt& src, 
     const unsigned newBitWidth )
 {{
   dest.setPoisoned( src.getPoisoned() );
@@ -492,7 +499,7 @@ void poisonIfNeeded_zext_SchemeNuno( APInt& dest, const APInt& src,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_ptrtoint()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_ptrtoint_SchemeNuno( APInt& dest, const APInt& src ) 
+void poisonIfNeeded_ptrtoint_SchemeNunoPP( APInt& dest, const APInt& src ) 
 {{
   // TODO2: src needs to be of a pointer type.
   // TODO2: update this once we find a way to represent poison in pointers.
@@ -503,7 +510,7 @@ void poisonIfNeeded_ptrtoint_SchemeNuno( APInt& dest, const APInt& src )
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_inttoptr()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_inttoptr_SchemeNuno( APInt& dest, const APInt& src )
+void poisonIfNeeded_inttoptr_SchemeNunoPP( APInt& dest, const APInt& src )
 {{
   // TODO2: dest needs to be of a pointer type.
   // TODO2: update this once we find a way to represent poison in pointers.
@@ -517,7 +524,7 @@ void poisonIfNeeded_inttoptr_SchemeNuno( APInt& dest, const APInt& src )
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_bitcast()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_bitcast_SchemeNuno( APInt& dest, const APInt& src ) 
+void poisonIfNeeded_bitcast_SchemeNunoPP( APInt& dest, const APInt& src ) 
 {{
   dest.setPoisoned( src.getPoisoned() );
   return;
@@ -526,7 +533,7 @@ void poisonIfNeeded_bitcast_SchemeNuno( APInt& dest, const APInt& src )
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_icmp()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_icmp_SchemeNuno( APInt& dest, 
+void poisonIfNeeded_icmp_SchemeNunoPP( APInt& dest, 
 				     const APInt& lhs, const APInt& rhs ) 
 {{
   dest.setPoisoned( lhs.getPoisoned() || rhs.getPoisoned() );
@@ -540,7 +547,7 @@ void poisonIfNeeded_icmp_SchemeNuno( APInt& dest,
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_br()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_br_SchemeNuno()
+void poisonIfNeeded_br_SchemeNunoPP()
 {{
   // TODO: find some way to pass in the value of the br arguments.
   // Then update this function per the nominal "Nuno" document.
@@ -550,7 +557,7 @@ void poisonIfNeeded_br_SchemeNuno()
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_getelementptr()
 // ----------------------------------------------------------------------------
-void poisonIfNeeded_getelementptr_SchemeNuno( Value& dest, 
+void poisonIfNeeded_getelementptr_SchemeNunoPP( Value& dest, 
     const APInt& lhs, const APInt& rhs,
     bool inbounds )
 {{
