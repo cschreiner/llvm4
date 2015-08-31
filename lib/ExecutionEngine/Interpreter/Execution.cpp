@@ -129,6 +129,10 @@ void Interpreter::checkFtnCallForPoisonedArgs(
   //const unsigned NumArgs = SF.Caller.arg_size(); 
   // TODO2: delete if not needed
 
+  std::cout << "   starting checkFtnCallForPoisonedArgs()...\n";;
+  std::cout << std::flush;;
+  fflush( stdout );;
+
   unsigned arg_num= 0;
   for ( CallSite::arg_iterator cs_it = cs.arg_begin(), 
       cs_it_end = exCon.Caller.arg_end(); 
@@ -138,17 +142,37 @@ void Interpreter::checkFtnCallForPoisonedArgs(
     if ( val_ptr->getType()->getTypeID() == llvm::Type::IntegerTyID )  {
       GenericValue gv= getOperandValue( val_ptr, exCon );
       if ( gv.IntVal.getPoisoned() )  {
+        int msgKey= rand() % 100;;
 	// TODO: change this to be able to detect poison in more than one 
 	// argument.
-	std::cerr << "Attempt to call an external function with a poison " \
-	    "value in arg# " << arg_num << ".\n";
-        std::cerr << "  ftn name=\"" << ftn_ptr->getName().str() << 
-            "\", numArgs=" << cs.arg_size() << "\n";
+	//;;std::cerr << "Attempt to call an external function with a poison " \
+	//;;    "value in arg# " << arg_num << ".\n";
+        //;;std::cerr << "  ftn name=\"" << ftn_ptr->getName().str() << 
+	//;;    "\", numArgs=" << cs.arg_size() << ", key=" << msgKey << "\n";
+	fflush ( stdout );;
+	fflush ( stderr );;
+        if ( lli_undef_fix::opt_no_exit_due_to_poison )  {
+          // NOTE: these MUST be the exact duplicate of the above output, 
+	  // except they go to stdout, not stderr:
+	  std::cout << "Attempt to call an external function with a poison " \
+	      "value in arg# " << arg_num << ".\n";
+	  std::cout << "  ftn name=\"" << ftn_ptr->getName().str() << 
+	      "\", numArgs=" << cs.arg_size() << ", key=" << msgKey << "\n";
+	  std::cout << std::flush;;
+          // TODO2: see if there is some way to dump output to a
+          // string, and then send the string to stdout and stderr.
+	  // --CAS 2015aug31
+	  fflush ( stdout );
+	  fflush ( stderr );
+	}
         lli_undef_fix::exit_due_to_poison();
       }
     }
   }
 
+  std::cout << "   stopping checkFtnCallForPoisonedArgs()...\n";;
+  std::cout << std::flush;;
+  fflush( stdout );;
 }}
 
 //===----------------------------------------------------------------------===//
@@ -1269,6 +1293,10 @@ void Interpreter::visitStoreInst(StoreInst &I) {
 void Interpreter::visitCallSite(CallSite CS) {
   ExecutionContext &SF = ECStack.back();
 
+  std::cout << "starting visitCallSite(~)...\n";;
+  std::cout << std::flush;;
+  fflush( stdout );;
+
   // Check to see if this is an intrinsic function call...
   Function *F = CS.getCalledFunction();
   if (F && F->isDeclaration())
@@ -1333,6 +1361,11 @@ void Interpreter::visitCallSite(CallSite CS) {
   // and treat it as a function pointer.
   GenericValue SRC = getOperandValue(SF.Caller.getCalledValue(), SF);
   callFunction((Function*)GVTOP(SRC), ArgVals);
+  fflush( stdout );;
+  std::cout << std::flush;;
+  std::cout << "stopping visitCallSite(~), just called the ftn. \n";;
+  fflush( stdout );;
+  std::cout << std::flush;;
 }
 
 // auxiliary function for shift operations
