@@ -11,6 +11,9 @@
 // propogation through its arithmetic operations.
 //
 //===----------------------------------------------------------------------===//
+//
+/// Implements the undef scheme Nuno and John and David and CAS are fiddling 
+/// with.
 
 #include <iostream>
 #include <stdlib.h>
@@ -31,9 +34,6 @@ namespace llvm {
 
 // ############################################################################
 namespace APIntPoison {
-
-// TODO: adapt this to implement the scheme Nuno and John and David
-// and I are fiddling with.
 
 // ----------------------------------------------------------------------------
 /// \brief same interface as poisonIfNeeded_add()
