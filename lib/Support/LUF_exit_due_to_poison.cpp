@@ -67,11 +67,15 @@
    */
 void llvm::lli_undef_fix::exit_due_to_poison()
 {{
+  std::cout << "      starting exit_due_to_poison()...\n";;
+  std::cout << std::flush;;
   fflush ( stdout );
   fflush ( stderr );
   if ( llvm::lli_undef_fix::opt_no_exit_due_to_poison )  {
     std::cerr << "would exit due to external poison propogation, but \n" << 
 	"option \"no_exit_due_to_poison\" forces the program to continue. \n";
+    std::cout << "      stopping exit_due_to_poison()...\n";;
+    std::cout << std::flush;;
     return;
   } 
 
