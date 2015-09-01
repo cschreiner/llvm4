@@ -34,6 +34,7 @@ add_llvm_library(LLVMSupport
   APIntPoison_printIfPoison.cpp
   APIntPoison_SchemeEtc.cpp
   APIntPoison_SchemeNuno.cpp
+  APIntPoison_SchemeNunoPP.cpp
   APSInt.cpp
   ARMBuildAttrs.cpp
   ARMWinEH.cpp
