@@ -49,7 +49,7 @@ extern bool opt_poison_eq_undef;
 extern bool opt_poison_eq_undef_early;
 extern bool opt_return_if_div_0;
 extern bool opt_nuno;
-extern bool opt_nunoPP;
+extern bool opt_nuno_pp;
 extern bool opt_no_exit_due_to_poison;
 
 /*** ==========================================================================

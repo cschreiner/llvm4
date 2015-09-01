@@ -62,7 +62,7 @@ void poisonIfNeeded_add( APInt& dest, APInt& lhs, APInt& rhs,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_add_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_add_SchemeNunoPP( dest, lhs, rhs, nsw, nuw );
   }
   return poisonIfNeeded_add_SchemeEtc( dest, lhs, rhs, nsw, nuw );
@@ -101,7 +101,7 @@ void poisonIfNeeded_sub( APInt& dest, APInt& lhs, APInt& rhs,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_sub_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_sub_SchemeNunoPP( dest, lhs, rhs, nsw, nuw );
   }
   return poisonIfNeeded_sub_SchemeEtc( dest, lhs, rhs, nsw, nuw );
@@ -140,7 +140,7 @@ void poisonIfNeeded_mul( APInt& dest, APInt& lhs, APInt& rhs,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_mul_SchemeNuno( dest, lhs, rhs, nsw, nuw );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_mul_SchemeNunoPP( dest, lhs, rhs, nsw, nuw );
   }
   return poisonIfNeeded_mul_SchemeEtc( dest, lhs, rhs, nsw, nuw );
@@ -179,7 +179,7 @@ void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_div_SchemeNuno( dest, lhs, rhs, exact );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_div_SchemeNunoPP( dest, lhs, rhs, exact );
   }
   return poisonIfNeeded_div_SchemeEtc( dest, lhs, rhs, exact );
@@ -209,7 +209,7 @@ void poisonIfNeeded_div( APInt& dest, APInt& lhs, APInt& rhs )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_div_SchemeNuno( dest, lhs, rhs );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_div_SchemeNunoPP( dest, lhs, rhs );
   }
   return poisonIfNeeded_div_SchemeEtc( dest, lhs, rhs );
@@ -241,7 +241,7 @@ void poisonIfNeeded_rem( APInt& dest, APInt& lhs, APInt& rhs )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_rem_SchemeNuno( dest, lhs, rhs );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_rem_SchemeNunoPP( dest, lhs, rhs );
   }
   return poisonIfNeeded_rem_SchemeEtc( dest, lhs, rhs );
@@ -273,7 +273,7 @@ void poisonIfNeeded_bitAnd( APInt& dest, const APInt& lhs, const APInt& rhs )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_bitAnd_SchemeNuno( dest, lhs, rhs );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_bitAnd_SchemeNunoPP( dest, lhs, rhs );
   }
   return poisonIfNeeded_bitAnd_SchemeEtc( dest, lhs, rhs );
@@ -306,7 +306,7 @@ void poisonIfNeeded_bitOr( APInt& dest, const APInt& lhs, const APInt& rhs )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_bitOr_SchemeNuno( dest, lhs, rhs );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_bitOr_SchemeNunoPP( dest, lhs, rhs );
   }
   return poisonIfNeeded_bitOr_SchemeEtc( dest, lhs, rhs );
@@ -335,7 +335,7 @@ void poisonIfNeeded_bitXor( APInt& dest, const APInt& lhs, const APInt& rhs )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_bitXor_SchemeNuno( dest, lhs, rhs );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_bitXor_SchemeNunoPP( dest, lhs, rhs );
   }
   return poisonIfNeeded_bitXor_SchemeEtc( dest, lhs, rhs );
@@ -375,7 +375,7 @@ void poisonIfNeeded_shl( APInt& dest, APInt& src, unsigned shiftAmt,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_shl_SchemeNuno( dest, src, shiftAmt, nsw, nuw );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_shl_SchemeNunoPP( dest, src, shiftAmt, nsw, nuw );
   }
   return poisonIfNeeded_shl_SchemeEtc( dest, src, shiftAmt, nsw, nuw );
@@ -412,7 +412,7 @@ void poisonIfNeeded_lshr( APInt& dest, APInt& src, unsigned shiftAmt,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_lshr_SchemeNuno( dest, src, shiftAmt, exact );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_lshr_SchemeNunoPP( dest, src, shiftAmt, exact );
   }
   return poisonIfNeeded_lshr_SchemeEtc( dest, src, shiftAmt, exact );
@@ -450,7 +450,7 @@ void poisonIfNeeded_ashr( APInt& dest, APInt& src, unsigned shiftAmt,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_ashr_SchemeNuno( dest, src, shiftAmt, exact );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_ashr_SchemeNunoPP( dest, src, shiftAmt, exact );
   }
   return poisonIfNeeded_ashr_SchemeEtc( dest, src, shiftAmt, exact );
@@ -480,7 +480,7 @@ void poisonIfNeeded_select( APInt& dest,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_select_SchemeNuno( dest, src1, src2, src3 );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_select_SchemeNunoPP( dest, src1, src2, src3 );
   }
   return poisonIfNeeded_select_SchemeEtc( dest, src1, src2, src3 );
@@ -512,7 +512,7 @@ void poisonIfNeeded_trunc( APInt& dest, const APInt& src,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_trunc_SchemeNuno( dest, src, newBitWidth );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_trunc_SchemeNunoPP( dest, src, newBitWidth );
   }
   return poisonIfNeeded_trunc_SchemeEtc( dest, src, newBitWidth );
@@ -544,7 +544,7 @@ void poisonIfNeeded_sext( APInt& dest, const APInt& src,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_sext_SchemeNuno( dest, src, newBitWidth );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_sext_SchemeNunoPP( dest, src, newBitWidth );
   }
   return poisonIfNeeded_sext_SchemeEtc( dest, src, newBitWidth );
@@ -576,7 +576,7 @@ void poisonIfNeeded_zext( APInt& dest, const APInt& src,
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_zext_SchemeNuno( dest, src, newBitWidth );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_zext_SchemeNunoPP( dest, src, newBitWidth );
   }
   return poisonIfNeeded_zext_SchemeEtc( dest, src, newBitWidth );
@@ -607,7 +607,7 @@ void poisonIfNeeded_ptrtoint( APInt& dest, const APInt& src )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_ptrtoint_SchemeNuno( dest, src );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_ptrtoint_SchemeNunoPP( dest, src );
   }
   return poisonIfNeeded_ptrtoint_SchemeEtc( dest, src );
@@ -638,7 +638,7 @@ void poisonIfNeeded_inttoptr( APInt& dest, const APInt& src )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_inttoptr_SchemeNunoPP( dest, src );
   }
   return poisonIfNeeded_inttoptr_SchemeEtc( dest, src );
@@ -669,7 +669,7 @@ void poisonIfNeeded_bitcast( APInt& dest, const APInt& src )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_inttoptr_SchemeNuno( dest, src );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_inttoptr_SchemeNunoPP( dest, src );
   }
   return poisonIfNeeded_inttoptr_SchemeEtc( dest, src );
@@ -699,7 +699,7 @@ void poisonIfNeeded_icmp( APInt& dest, const APInt& lhs, const APInt& rhs )
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_icmp_SchemeNuno( dest, lhs, rhs );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_icmp_SchemeNunoPP( dest, lhs, rhs );
   }
   return poisonIfNeeded_icmp_SchemeEtc( dest, lhs, rhs );
@@ -733,7 +733,7 @@ void poisonIfNeeded_br()
     poisonIfNeeded_br_SchemeNuno(); 
     return;
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     poisonIfNeeded_br_SchemeNunoPP(); 
     return;
   }
@@ -773,7 +773,7 @@ void poisonIfNeeded_br()
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_getelementptr_SchemeNuno( dest, lhs, rhs, inbounds ); 
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_getelementptr_SchemeNunoPP( dest, lhs, rhs, inbounds ); 
   }
   return poisonIfNeeded_getelementptr_SchemeEtc( dest, lhs, rhs, inbounds ); 
@@ -812,7 +812,7 @@ void poisonIfNeeded_xx()
   if ( llvm::lli_undef_fix::opt_nuno )  {
     return poisonIfNeeded_xx_SchemeNuno( dest, src );
   }
-  if ( llvm::lli_undef_fix::opt_nunoPP )  {
+  if ( llvm::lli_undef_fix::opt_nuno_pp )  {
     return poisonIfNeeded_xx_SchemeNunoPP( dest, src );
   }
   return poisonIfNeeded_xx_SchemeEtc( dest, src );

@@ -76,7 +76,7 @@ bool llvm::lli_undef_fix::opt_nuno= false;
    that we named after Nuno, with a guarantee that 2 poison operands will
    always produce poison.
  */
-bool llvm::lli_undef_fix::opt_nunoPP= false;
+bool llvm::lli_undef_fix::opt_nuno_pp= false;
 
 /** Certain operations are required to exit when they act on a poisoned
    value.  (Which operations depends on which poison scheme is being
@@ -120,8 +120,8 @@ const filelocal_opt_t opt_array[]= {
     &llvm::lli_undef_fix::opt_nuno, 
     false },
 
-  { "nunoPP", 
-    &llvm::lli_undef_fix::opt_nunoPP, 
+  { "nuno_pp", 
+    &llvm::lli_undef_fix::opt_nuno_pp, 
     false },
 
   { "no_exit_due_to_poison", 
