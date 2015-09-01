@@ -31,6 +31,8 @@
 #include "llvm/Support/LUF_opts.h"
 #include "llvm/Support/LUF_etc.h"
 #include <iostream> // TODO: disable when debugging code is disabled
+#include <stdio.h> // TODO: disable when debugging code is disabled
+#include <unistd.h> // TODO: disable when debugging code is disabled
 
 #include <algorithm>
 #include <cmath>
@@ -1361,11 +1363,13 @@ void Interpreter::visitCallSite(CallSite CS) {
   // and treat it as a function pointer.
   GenericValue SRC = getOperandValue(SF.Caller.getCalledValue(), SF);
   callFunction((Function*)GVTOP(SRC), ArgVals);
-  fflush( stdout );;
+  printf ( "   in visitCallSite(~), target function just returned \n" );;
   std::cout << std::flush;;
+  fflush( stdout );;
   std::cout << "stopping visitCallSite(~), just called the ftn. \n";;
-  fflush( stdout );;
   std::cout << std::flush;;
+  fflush( stdout );;
+  sleep( 2 );;
 }
 
 // auxiliary function for shift operations
