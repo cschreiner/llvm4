@@ -131,9 +131,11 @@ void Interpreter::checkFtnCallForPoisonedArgs(
   //const unsigned NumArgs = SF.Caller.arg_size(); 
   // TODO2: delete if not needed
 
-  std::cout << "   starting checkFtnCallForPoisonedArgs()...\n";;
-  std::cout << std::flush;;
-  fflush( stdout );;
+  #if 0 // info messages often useful for debugging
+    std::cout << "   starting checkFtnCallForPoisonedArgs()...\n";
+    std::cout << std::flush;
+    fflush( stdout );
+  #endif
 
   unsigned arg_num= 0;
   for ( CallSite::arg_iterator cs_it = cs.arg_begin(), 
@@ -172,9 +174,11 @@ void Interpreter::checkFtnCallForPoisonedArgs(
     }
   }
 
-  std::cout << "   stopping checkFtnCallForPoisonedArgs()...\n";;
-  std::cout << std::flush;;
-  fflush( stdout );;
+  #if 0 // info messages often useful for debugging
+    std::cout << "   stopping checkFtnCallForPoisonedArgs()...\n";
+    std::cout << std::flush;
+    fflush( stdout );
+  #endif
 }}
 
 //===----------------------------------------------------------------------===//
@@ -1295,8 +1299,10 @@ void Interpreter::visitStoreInst(StoreInst &I) {
 void Interpreter::visitCallSite(CallSite CS) {
   ExecutionContext &SF = ECStack.back();
 
-  std::cout << "starting visitCallSite(~)...\n";;
-  std::cout << std::flush;;
+  #if 0 // info messages often useful for debugging
+    std::cout << "starting visitCallSite(~)...\n";
+    std::cout << std::flush;
+  #endif
   fflush( stdout );;
 
   // Check to see if this is an intrinsic function call...
@@ -1363,13 +1369,15 @@ void Interpreter::visitCallSite(CallSite CS) {
   // and treat it as a function pointer.
   GenericValue SRC = getOperandValue(SF.Caller.getCalledValue(), SF);
   callFunction((Function*)GVTOP(SRC), ArgVals);
-  printf ( "   in visitCallSite(~), target function just returned \n" );;
-  std::cout << std::flush;;
-  fflush( stdout );;
-  std::cout << "stopping visitCallSite(~), just called the ftn. \n";;
-  std::cout << std::flush;;
-  fflush( stdout );;
-  sleep( 2 );;
+  #if 0 // info messages often useful for debugging
+    printf ( "   in visitCallSite(~), target function just returned \n" );
+    std::cout << std::flush;
+    fflush( stdout );
+    std::cout << "stopping visitCallSite(~), just called the ftn. \n";
+    std::cout << std::flush;
+    fflush( stdout );
+    sleep( 2 );
+  #endif
 }
 
 // auxiliary function for shift operations
