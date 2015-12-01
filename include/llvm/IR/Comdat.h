@@ -42,7 +42,7 @@ public:
   SelectionKind getSelectionKind() const { return SK; }
   void setSelectionKind(SelectionKind Val) { SK = Val; }
   StringRef getName() const;
-  void print(raw_ostream &OS) const;
+  void print(raw_ostream &OS, bool IsForDebug = false) const;
   void dump() const;
 
 private:
@@ -61,6 +61,6 @@ inline raw_ostream &operator<<(raw_ostream &OS, const Comdat &C) {
   return OS;
 }
 
-} // namespace llvm
+} // end llvm namespace
 
 #endif

@@ -19,6 +19,7 @@
 #include "llvm/ADT/SetVector.h"
 #include "llvm/ADT/StringMap.h"
 #include "llvm/ADT/ilist.h"
+#include "llvm/Analysis/AliasAnalysis.h"
 #include "llvm/CodeGen/DAGCombine.h"
 #include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/CodeGen/SelectionDAGNodes.h"
@@ -31,7 +32,6 @@
 
 namespace llvm {
 
-class AliasAnalysis;
 class MachineConstantPoolValue;
 class MachineFunction;
 class MDNode;
@@ -215,6 +215,8 @@ class SelectionDAG {
   /// Tracks dbg_value information through SDISel.
   SDDbgInfo *DbgInfo;
 
+  uint16_t NextPersistentId = 0;
+
 public:
   /// Clients of various APIs that cause global effects on
   /// the DAG can optionally implement this interface.  This allows the clients
@@ -281,6 +283,7 @@ public:
   void clear();
 
   MachineFunction &getMachineFunction() const { return *MF; }
+  const DataLayout &getDataLayout() const { return MF->getDataLayout(); }
   const TargetMachine &getTarget() const { return TM; }
   const TargetSubtargetInfo &getSubtarget() const { return MF->getSubtarget(); }
   const TargetLowering &getTargetLoweringInfo() const { return *TLI; }
@@ -320,6 +323,14 @@ public:
   allnodes_iterator allnodes_end() { return AllNodes.end(); }
   ilist<SDNode>::size_type allnodes_size() const {
     return AllNodes.size();
+  }
+
+  iterator_range<allnodes_iterator> allnodes() {
+    return iterator_range<allnodes_iterator>(allnodes_begin(), allnodes_end());
+  }
+  iterator_range<allnodes_const_iterator> allnodes() const {
+    return iterator_range<allnodes_const_iterator>(allnodes_begin(),
+                                                   allnodes_end());
   }
 
   /// Return the root tag of the SelectionDAG.
@@ -495,6 +506,8 @@ public:
   SDValue getExternalSymbol(const char *Sym, SDLoc dl, EVT VT);
   SDValue getTargetExternalSymbol(const char *Sym, EVT VT,
                                   unsigned char TargetFlags = 0);
+  SDValue getMCSymbol(MCSymbol *Sym, EVT VT);
+
   SDValue getValueType(EVT);
   SDValue getRegister(unsigned Reg, EVT VT);
   SDValue getRegisterMask(const uint32_t *RegMask);
@@ -521,7 +534,7 @@ public:
     SDVTList VTs = getVTList(MVT::Other, MVT::Glue);
     SDValue Ops[] = { Chain, getRegister(Reg, N.getValueType()), N, Glue };
     return getNode(ISD::CopyToReg, dl, VTs,
-                   ArrayRef<SDValue>(Ops, Glue.getNode() ? 4 : 3));
+                   makeArrayRef(Ops, Glue.getNode() ? 4 : 3));
   }
 
   // Similar to last getCopyToReg() except parameter Reg is a SDValue
@@ -530,7 +543,7 @@ public:
     SDVTList VTs = getVTList(MVT::Other, MVT::Glue);
     SDValue Ops[] = { Chain, Reg, N, Glue };
     return getNode(ISD::CopyToReg, dl, VTs,
-                   ArrayRef<SDValue>(Ops, Glue.getNode() ? 4 : 3));
+                   makeArrayRef(Ops, Glue.getNode() ? 4 : 3));
   }
 
   SDValue getCopyFromReg(SDValue Chain, SDLoc dl, unsigned Reg, EVT VT) {
@@ -547,7 +560,7 @@ public:
     SDVTList VTs = getVTList(VT, MVT::Other, MVT::Glue);
     SDValue Ops[] = { Chain, getRegister(Reg, VT), Glue };
     return getNode(ISD::CopyFromReg, dl, VTs,
-                   ArrayRef<SDValue>(Ops, Glue.getNode() ? 3 : 2));
+                   makeArrayRef(Ops, Glue.getNode() ? 3 : 2));
   }
 
   SDValue getCondCode(ISD::CondCode Cond);
@@ -659,7 +672,7 @@ public:
   SDValue getNode(unsigned Opcode, SDLoc DL, EVT VT,
                   ArrayRef<SDUse> Ops);
   SDValue getNode(unsigned Opcode, SDLoc DL, EVT VT,
-                  ArrayRef<SDValue> Ops);
+                  ArrayRef<SDValue> Ops, const SDNodeFlags *Flags = nullptr);
   SDValue getNode(unsigned Opcode, SDLoc DL, ArrayRef<EVT> ResultTys,
                   ArrayRef<SDValue> Ops);
   SDValue getNode(unsigned Opcode, SDLoc DL, SDVTList VTs,
@@ -676,7 +689,7 @@ public:
                   SDValue N3, SDValue N4);
   SDValue getNode(unsigned Opcode, SDLoc DL, EVT VT, SDValue N1, SDValue N2,
                   SDValue N3, SDValue N4, SDValue N5);
-  
+
   // Specialize again based on number of operands for nodes with a VTList
   // rather than a single VT.
   SDValue getNode(unsigned Opcode, SDLoc DL, SDVTList VTs);
@@ -890,6 +903,12 @@ public:
   /// the target's desired shift amount type.
   SDValue getShiftAmountOperand(EVT LHSTy, SDValue Op);
 
+  /// Expand the specified \c ISD::VAARG node as the Legalize pass would.
+  SDValue expandVAArg(SDNode *Node);
+
+  /// Expand the specified \c ISD::VACOPY node as the Legalize pass would.
+  SDValue expandVACopy(SDNode *Node);
+
   /// *Mutate* the specified node in-place to have the
   /// specified operands.  If the resultant node already exists in the DAG,
   /// this does not modify the specified node, instead it returns the node that
@@ -1061,6 +1080,10 @@ public:
     // target info.
     switch (Opcode) {
     case ISD::ADD:
+    case ISD::SMIN:
+    case ISD::SMAX:
+    case ISD::UMIN:
+    case ISD::UMAX:
     case ISD::MUL:
     case ISD::MULHU:
     case ISD::MULHS:
@@ -1077,6 +1100,8 @@ public:
     case ISD::ADDE:
     case ISD::FMINNUM:
     case ISD::FMAXNUM:
+    case ISD::FMINNAN:
+    case ISD::FMAXNAN:
       return true;
     default: return false;
     }
@@ -1139,6 +1164,10 @@ public:
                                  const ConstantSDNode *Cst1,
                                  const ConstantSDNode *Cst2);
 
+  SDValue FoldConstantVectorArithmetic(unsigned Opcode, SDLoc DL,
+                                       EVT VT, ArrayRef<SDValue> Ops,
+                                       const SDNodeFlags *Flags = nullptr);
+
   /// Constant fold a setcc to true or false.
   SDValue FoldSetCC(EVT VT, SDValue N1,
                     SDValue N2, ISD::CondCode Cond, SDLoc dl);
@@ -1187,6 +1216,10 @@ public:
   /// is true if they are the same value, or if one is negative zero and the
   /// other positive zero.
   bool isEqualTo(SDValue A, SDValue B) const;
+
+  /// Return true if A and B have no common bits set. As an example, this can
+  /// allow an 'add' to be transformed into an 'or'.
+  bool haveNoCommonBitsSet(SDValue A, SDValue B) const;
 
   /// Utility function used by legalize and lowering to
   /// "unroll" a vector operation by splitting out the scalars and operating
@@ -1278,6 +1311,7 @@ private:
   StringMap<SDNode*> ExternalSymbols;
 
   std::map<std::pair<std::string, unsigned char>,SDNode*> TargetExternalSymbols;
+  DenseMap<MCSymbol *, SDNode *> MCSymbols;
 };
 
 template <> struct GraphTraits<SelectionDAG*> : public GraphTraits<SDNode*> {

@@ -29,8 +29,7 @@ class X86SelectionDAGInfo : public TargetSelectionDAGInfo {
                                  ArrayRef<unsigned> ClobberSet) const;
 
 public:
-  explicit X86SelectionDAGInfo(const DataLayout &DL);
-  ~X86SelectionDAGInfo();
+  explicit X86SelectionDAGInfo() = default;
 
   SDValue EmitTargetCodeForMemset(SelectionDAG &DAG, SDLoc dl,
                                   SDValue Chain,
@@ -48,6 +47,6 @@ public:
                                   MachinePointerInfo SrcPtrInfo) const override;
 };
 
-} // namespace llvm
+}
 
 #endif

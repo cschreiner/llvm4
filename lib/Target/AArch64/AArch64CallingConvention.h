@@ -45,10 +45,8 @@ static bool finishStackBlock(SmallVectorImpl<CCValAssign> &PendingMembers,
                              MVT LocVT, ISD::ArgFlagsTy &ArgFlags,
                              CCState &State, unsigned SlotAlign) {
   unsigned Size = LocVT.getSizeInBits() / 8;
-  unsigned StackAlign = State.getMachineFunction()
-                            .getTarget()
-                            .getDataLayout()
-                            ->getStackAlignment();
+  unsigned StackAlign =
+      State.getMachineFunction().getDataLayout().getStackAlignment();
   unsigned Align = std::min(ArgFlags.getOrigAlign(), StackAlign);
 
   for (auto &It : PendingMembers) {
@@ -136,6 +134,6 @@ static bool CC_AArch64_Custom_Block(unsigned &ValNo, MVT &ValVT, MVT &LocVT,
   return finishStackBlock(PendingMembers, LocVT, ArgFlags, State, SlotAlign);
 }
 
-} // namespace
+}
 
 #endif

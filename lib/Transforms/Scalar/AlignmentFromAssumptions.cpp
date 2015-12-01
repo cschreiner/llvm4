@@ -54,13 +54,13 @@ struct AlignmentFromAssumptions : public FunctionPass {
 
   void getAnalysisUsage(AnalysisUsage &AU) const override {
     AU.addRequired<AssumptionCacheTracker>();
-    AU.addRequired<ScalarEvolution>();
+    AU.addRequired<ScalarEvolutionWrapperPass>();
     AU.addRequired<DominatorTreeWrapperPass>();
 
     AU.setPreservesCFG();
     AU.addPreserved<LoopInfoWrapperPass>();
     AU.addPreserved<DominatorTreeWrapperPass>();
-    AU.addPreserved<ScalarEvolution>();
+    AU.addPreserved<ScalarEvolutionWrapperPass>();
   }
 
   // For memory transfers, we need a common alignment for both the source and
@@ -76,7 +76,7 @@ struct AlignmentFromAssumptions : public FunctionPass {
                             const SCEV *&OffSCEV);
   bool processAssumption(CallInst *I);
 };
-} // namespace
+}
 
 char AlignmentFromAssumptions::ID = 0;
 static const char aip_name[] = "Alignment from assumptions";
@@ -84,7 +84,7 @@ INITIALIZE_PASS_BEGIN(AlignmentFromAssumptions, AA_NAME,
                       aip_name, false, false)
 INITIALIZE_PASS_DEPENDENCY(AssumptionCacheTracker)
 INITIALIZE_PASS_DEPENDENCY(DominatorTreeWrapperPass)
-INITIALIZE_PASS_DEPENDENCY(ScalarEvolution)
+INITIALIZE_PASS_DEPENDENCY(ScalarEvolutionWrapperPass)
 INITIALIZE_PASS_END(AlignmentFromAssumptions, AA_NAME,
                     aip_name, false, false)
 
@@ -270,7 +270,7 @@ bool AlignmentFromAssumptions::extractAlignmentInfo(CallInst *I,
   OffSCEV = nullptr;
   if (PtrToIntInst *PToI = dyn_cast<PtrToIntInst>(AndLHS)) {
     AAPtr = PToI->getPointerOperand();
-    OffSCEV = SE->getConstant(Int64Ty, 0);
+    OffSCEV = SE->getZero(Int64Ty);
   } else if (const SCEVAddExpr* AndLHSAddSCEV =
              dyn_cast<SCEVAddExpr>(AndLHSSCEV)) {
     // Try to find the ptrtoint; subtract it and the rest is the offset.
@@ -347,6 +347,8 @@ bool AlignmentFromAssumptions::processAssumption(CallInst *ACall) {
       // instruction, but only for one operand, save it. If we reach the
       // other operand through another assumption later, then we may
       // change the alignment at that point.
+      // FIXME: The above statement is no longer true.  Fix the code below
+      // to be able to reason about different dest/src alignments.
       if (MemTransferInst *MTI = dyn_cast<MemTransferInst>(MI)) {
         unsigned NewSrcAlignment = getNewAlignment(AASCEV, AlignSCEV, OffSCEV,
           MTI->getSource(), SE);
@@ -376,20 +378,23 @@ bool AlignmentFromAssumptions::processAssumption(CallInst *ACall) {
         if (AltSrcAlignment <= std::max(NewDestAlignment, AltDestAlignment))
           NewAlignment = std::max(NewAlignment, AltSrcAlignment);
 
-        if (NewAlignment > MI->getAlignment()) {
-          MI->setAlignment(ConstantInt::get(Type::getInt32Ty(
-            MI->getParent()->getContext()), NewAlignment));
+        if (NewAlignment > MTI->getDestAlignment()) {
+          MTI->setDestAlignment(NewAlignment);
+          ++NumMemIntAlignChanged;
+        }
+
+        if (NewAlignment > MTI->getSrcAlignment()) {
+          MTI->setSrcAlignment(NewAlignment);
           ++NumMemIntAlignChanged;
         }
 
         NewDestAlignments.insert(std::make_pair(MTI, NewDestAlignment));
         NewSrcAlignments.insert(std::make_pair(MTI, NewSrcAlignment));
-      } else if (NewDestAlignment > MI->getAlignment()) {
+      } else if (NewDestAlignment > MI->getDestAlignment()) {
         assert((!isa<MemIntrinsic>(MI) || isa<MemSetInst>(MI)) &&
                "Unknown memory intrinsic");
 
-        MI->setAlignment(ConstantInt::get(Type::getInt32Ty(
-          MI->getParent()->getContext()), NewDestAlignment));
+        MI->setDestAlignment(NewDestAlignment);
         ++NumMemIntAlignChanged;
       }
     }
@@ -410,7 +415,7 @@ bool AlignmentFromAssumptions::processAssumption(CallInst *ACall) {
 bool AlignmentFromAssumptions::runOnFunction(Function &F) {
   bool Changed = false;
   auto &AC = getAnalysis<AssumptionCacheTracker>().getAssumptionCache(F);
-  SE = &getAnalysis<ScalarEvolution>();
+  SE = &getAnalysis<ScalarEvolutionWrapperPass>().getSE();
   DT = &getAnalysis<DominatorTreeWrapperPass>().getDomTree();
 
   NewDestAlignments.clear();

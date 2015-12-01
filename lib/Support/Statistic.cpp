@@ -24,6 +24,7 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/CommandLine.h"
+#include "llvm/Support/Compiler.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/Format.h"
 #include "llvm/Support/ManagedStatic.h"
@@ -60,7 +61,7 @@ public:
     Stats.push_back(S);
   }
 };
-} // namespace
+}
 
 static ManagedStatic<StatisticInfo> StatInfo;
 static ManagedStatic<sys::SmartMutex<true> > StatLock;

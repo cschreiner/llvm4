@@ -22,8 +22,6 @@ class XCoreTargetMachine;
 
 class XCoreSelectionDAGInfo : public TargetSelectionDAGInfo {
 public:
-  explicit XCoreSelectionDAGInfo(const DataLayout &DL);
-  ~XCoreSelectionDAGInfo();
 
   SDValue
   EmitTargetCodeForMemcpy(SelectionDAG &DAG, SDLoc dl,
@@ -35,6 +33,6 @@ public:
                           MachinePointerInfo SrcPtrInfo) const override;
 };
 
-} // namespace llvm
+}
 
 #endif

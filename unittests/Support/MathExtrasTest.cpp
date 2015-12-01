@@ -183,6 +183,47 @@ TEST(MathExtras, RoundUpToAlignment) {
   EXPECT_EQ(8u, RoundUpToAlignment(5, 8));
   EXPECT_EQ(24u, RoundUpToAlignment(17, 8));
   EXPECT_EQ(0u, RoundUpToAlignment(~0LL, 8));
+
+  EXPECT_EQ(7u, RoundUpToAlignment(5, 8, 7));
+  EXPECT_EQ(17u, RoundUpToAlignment(17, 8, 1));
+  EXPECT_EQ(3u, RoundUpToAlignment(~0LL, 8, 3));
+  EXPECT_EQ(552u, RoundUpToAlignment(321, 255, 42));
+}
+
+template<typename T>
+void SaturatingAddTestHelper()
+{
+  const T Max = std::numeric_limits<T>::max();
+  EXPECT_EQ(T(3), SaturatingAdd(T(1), T(2)));
+  EXPECT_EQ(Max, SaturatingAdd(Max, T(1)));
+  EXPECT_EQ(Max, SaturatingAdd(T(1), Max));
+  EXPECT_EQ(Max, SaturatingAdd(Max, Max));
+}
+
+TEST(MathExtras, SaturatingAdd) {
+  SaturatingAddTestHelper<uint8_t>();
+  SaturatingAddTestHelper<uint16_t>();
+  SaturatingAddTestHelper<uint32_t>();
+  SaturatingAddTestHelper<uint64_t>();
+}
+
+template<typename T>
+void SaturatingMultiplyTestHelper()
+{
+  const T Max = std::numeric_limits<T>::max();
+  EXPECT_EQ(T(0), SaturatingMultiply(T(1), T(0)));
+  EXPECT_EQ(T(0), SaturatingMultiply(T(0), T(1)));
+  EXPECT_EQ(T(6), SaturatingMultiply(T(2), T(3)));
+  EXPECT_EQ(Max, SaturatingMultiply(Max, T(2)));
+  EXPECT_EQ(Max, SaturatingMultiply(T(2),Max));
+  EXPECT_EQ(Max, SaturatingMultiply(Max, Max));
+}
+
+TEST(MathExtras, SaturatingMultiply) {
+  SaturatingMultiplyTestHelper<uint8_t>();
+  SaturatingMultiplyTestHelper<uint16_t>();
+  SaturatingMultiplyTestHelper<uint32_t>();
+  SaturatingMultiplyTestHelper<uint64_t>();
 }
 
 }

@@ -43,10 +43,16 @@ class ARMSubtarget : public ARMGenSubtargetInfo {
 protected:
   enum ARMProcFamilyEnum {
     Others, CortexA5, CortexA7, CortexA8, CortexA9, CortexA12, CortexA15,
-    CortexA17, CortexR4, CortexR4F, CortexR5, Swift, CortexA53, CortexA57, Krait,
+    CortexA17, CortexR4, CortexR4F, CortexR5, CortexR7, CortexA53, CortexA57,
+    CortexA72, Krait, Swift
   };
   enum ARMProcClassEnum {
     None, AClass, RClass, MClass
+  };
+  enum ARMArchEnum {
+    ARMv2, ARMv2a, ARMv3, ARMv3m, ARMv4, ARMv4t, ARMv5, ARMv5t, ARMv5te,
+    ARMv5tej, ARMv6, ARMv6k, ARMv6kz, ARMv6t2, ARMv6m, ARMv6sm, ARMv7a, ARMv7r,
+    ARMv7m, ARMv7em, ARMv8a, ARMv81a
   };
 
   /// ARMProcFamily - ARM processor family: Cortex-A8, Cortex-A9, and others.
@@ -54,6 +60,9 @@ protected:
 
   /// ARMProcClass - ARM processor class: None, AClass, RClass or MClass.
   ARMProcClassEnum ARMProcClass;
+
+  /// ARMArch - ARM architecture
+  ARMArchEnum ARMArch;
 
   /// HasV4TOps, HasV5TOps, HasV5TEOps,
   /// HasV6Ops, HasV6MOps, HasV6KOps, HasV6T2Ops, HasV7Ops, HasV8Ops -
@@ -109,12 +118,12 @@ protected:
   /// NoARM - True if subtarget does not support ARM mode execution.
   bool NoARM;
 
-  /// IsR9Reserved - True if R9 is a not available as general purpose register.
-  bool IsR9Reserved;
+  /// ReserveR9 - True if R9 is not available as a general purpose register.
+  bool ReserveR9;
 
-  /// UseMovt - True if MOVT / MOVW pairs are used for materialization of 32-bit
-  /// imms (including global addresses).
-  bool UseMovt;
+  /// NoMovt - True if MOVT / MOVW pairs are not used for materialization of
+  /// 32-bit imms (including global addresses).
+  bool NoMovt;
 
   /// SupportsTailCall - True if the OS supports tail call. The dynamic linker
   /// must be able to synthesize call stubs for interworking between ARM and
@@ -190,24 +199,30 @@ protected:
   /// particularly effective at zeroing a VFP register.
   bool HasZeroCycleZeroing;
 
-  /// AllowsUnalignedMem - If true, the subtarget allows unaligned memory
+  /// StrictAlign - If true, the subtarget disallows unaligned memory
   /// accesses for some types.  For details, see
   /// ARMTargetLowering::allowsMisalignedMemoryAccesses().
-  bool AllowsUnalignedMem;
+  bool StrictAlign;
 
   /// RestrictIT - If true, the subtarget disallows generation of deprecated IT
   ///  blocks to conform to ARMv8 rule.
   bool RestrictIT;
 
-  /// Thumb2DSP - If true, the subtarget supports the v7 DSP (saturating arith
-  /// and such) instructions in Thumb2 code.
-  bool Thumb2DSP;
+  /// HasDSP - If true, the subtarget supports the DSP (saturating arith
+  /// and such) instructions.
+  bool HasDSP;
 
   /// NaCl TRAP instruction is generated instead of the regular TRAP.
   bool UseNaClTrap;
 
+  /// Generate calls via indirect call instructions.
+  bool GenLongCalls;
+
   /// Target machine allowed unsafe FP math (such as use of NEON fp)
   bool UnsafeFPMath;
+
+  /// UseSjLjEH - If true, the target uses SjLj exception handling (e.g. iOS).
+  bool UseSjLjEH;
 
   /// stackAlignment - The minimum alignment known to hold of the stack frame on
   /// entry to the function and which must be maintained by every function.
@@ -340,8 +355,10 @@ public:
   bool avoidMOVsShifterOperand() const { return AvoidMOVsShifterOperand; }
   bool hasRAS() const { return HasRAS; }
   bool hasMPExtension() const { return HasMPExtension; }
-  bool hasThumb2DSP() const { return Thumb2DSP; }
+  bool hasDSP() const { return HasDSP; }
   bool useNaClTrap() const { return UseNaClTrap; }
+  bool useSjLjEH() const { return UseSjLjEH; }
+  bool genLongCalls() const { return GenLongCalls; }
 
   bool hasFP16() const { return HasFP16; }
   bool hasD16() const { return HasD16; }
@@ -350,6 +367,7 @@ public:
 
   bool isTargetDarwin() const { return TargetTriple.isOSDarwin(); }
   bool isTargetIOS() const { return TargetTriple.isiOS(); }
+  bool isTargetWatchOS() const { return TargetTriple.isWatchOS(); }
   bool isTargetLinux() const { return TargetTriple.isOSLinux(); }
   bool isTargetNaCl() const { return TargetTriple.isOSNaCl(); }
   bool isTargetNetBSD() const { return TargetTriple.isOSNetBSD(); }
@@ -371,6 +389,11 @@ public:
             TargetTriple.getEnvironment() == Triple::EABIHF) &&
            !isTargetDarwin() && !isTargetWindows();
   }
+  bool isTargetGNUAEABI() const {
+    return (TargetTriple.getEnvironment() == Triple::GNUEABI ||
+            TargetTriple.getEnvironment() == Triple::GNUEABIHF) &&
+           !isTargetDarwin() && !isTargetWindows();
+  }
 
   // ARM Targets that support EHABI exception handling standard
   // Darwin uses SjLj. Other targets might need more checks.
@@ -379,7 +402,7 @@ public:
             TargetTriple.getEnvironment() == Triple::GNUEABI ||
             TargetTriple.getEnvironment() == Triple::EABIHF ||
             TargetTriple.getEnvironment() == Triple::GNUEABIHF ||
-            TargetTriple.getEnvironment() == Triple::Android) &&
+            isTargetAndroid()) &&
            !isTargetDarwin() && !isTargetWindows();
   }
 
@@ -387,14 +410,13 @@ public:
     // FIXME: this is invalid for WindowsCE
     return TargetTriple.getEnvironment() == Triple::GNUEABIHF ||
            TargetTriple.getEnvironment() == Triple::EABIHF ||
-           isTargetWindows();
+           isTargetWindows() || isAAPCS16_ABI();
   }
-  bool isTargetAndroid() const {
-    return TargetTriple.getEnvironment() == Triple::Android;
-  }
+  bool isTargetAndroid() const { return TargetTriple.isAndroid(); }
 
   bool isAPCS_ABI() const;
   bool isAAPCS_ABI() const;
+  bool isAAPCS16_ABI() const;
 
   bool useSoftFloat() const { return UseSoftFloat; }
   bool isThumb() const { return InThumbMode; }
@@ -405,17 +427,17 @@ public:
   bool isRClass() const { return ARMProcClass == RClass; }
   bool isAClass() const { return ARMProcClass == AClass; }
 
-  bool isV6M() const {
-    return isThumb1Only() && isMClass();
+  bool isR9Reserved() const {
+    return isTargetMachO() ? (ReserveR9 || !HasV6Ops) : ReserveR9;
   }
 
-  bool isR9Reserved() const { return IsR9Reserved; }
+  bool useStride4VFPs(const MachineFunction &MF) const;
 
   bool useMovt(const MachineFunction &MF) const;
 
   bool supportsTailCall() const { return SupportsTailCall; }
 
-  bool allowsUnalignedMem() const { return AllowsUnalignedMem; }
+  bool allowsUnalignedMem() const { return !StrictAlign; }
 
   bool restrictIT() const { return RestrictIT; }
 
@@ -428,6 +450,9 @@ public:
   /// This function returns true if the target has sincos() routine in its
   /// compiler runtime or math libraries.
   bool hasSinCos() const;
+
+  /// Returns true if machine scheduler should be enabled.
+  bool enableMachineScheduler() const override;
 
   /// True for some subtargets at > -O0.
   bool enablePostRAScheduler() const override;
@@ -453,6 +478,6 @@ public:
   /// True if fast-isel is used.
   bool useFastISel() const;
 };
-} // namespace llvm
+} // End llvm namespace
 
 #endif  // ARMSUBTARGET_H

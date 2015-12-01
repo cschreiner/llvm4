@@ -30,12 +30,18 @@
 #include "sanitizer_platform_limits_posix.h"
 #include "sanitizer_procmaps.h"
 
+#if !SANITIZER_IOS
 #include <crt_externs.h>  // for _NSGetEnviron
+#else
+extern char **environ;
+#endif
+
 #include <errno.h>
 #include <fcntl.h>
 #include <libkern/OSAtomic.h>
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
+#include <mach/vm_statistics.h>
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
@@ -54,6 +60,7 @@ namespace __sanitizer {
 // ---------------------- sanitizer_libc.h
 uptr internal_mmap(void *addr, size_t length, int prot, int flags,
                    int fd, u64 offset) {
+  if (fd == -1) fd = VM_MAKE_TAG(VM_MEMORY_ANALYSIS_TOOL);
   return (uptr)mmap(addr, length, prot, flags, fd, offset);
 }
 
@@ -190,7 +197,8 @@ void GetThreadStackTopAndBottom(bool at_initialization, uptr *stack_top,
   *stack_bottom = *stack_top - stacksize;
 }
 
-const char *GetEnv(const char *name) {
+char **GetEnviron() {
+#if !SANITIZER_IOS
   char ***env_ptr = _NSGetEnviron();
   if (!env_ptr) {
     Report("_NSGetEnviron() returned NULL. Please make sure __asan_init() is "
@@ -198,18 +206,24 @@ const char *GetEnv(const char *name) {
     CHECK(env_ptr);
   }
   char **environ = *env_ptr;
+#endif
   CHECK(environ);
+  return environ;
+}
+
+const char *GetEnv(const char *name) {
+  char **env = GetEnviron();
   uptr name_len = internal_strlen(name);
-  while (*environ != 0) {
-    uptr len = internal_strlen(*environ);
+  while (*env != 0) {
+    uptr len = internal_strlen(*env);
     if (len > name_len) {
-      const char *p = *environ;
+      const char *p = *env;
       if (!internal_memcmp(p, name, name_len) &&
           p[name_len] == '=') {  // Match.
-        return *environ + name_len + 1;  // String starting after =.
+        return *env + name_len + 1;  // String starting after =.
       }
     }
-    environ++;
+    env++;
   }
   return 0;
 }
@@ -227,6 +241,10 @@ uptr ReadBinaryName(/*out*/char *buf, uptr buf_len) {
     return internal_strlen(buf);
   }
   return 0;
+}
+
+uptr ReadLongProcessName(/*out*/char *buf, uptr buf_len) {
+  return ReadBinaryName(buf, buf_len);
 }
 
 void ReExec() {
@@ -353,20 +371,44 @@ uptr GetRSS() {
   return info.resident_size;
 }
 
-void *internal_start_thread(void (*func)(void *arg), void *arg) { return 0; }
-void internal_join_thread(void *th) { }
+void *internal_start_thread(void(*func)(void *arg), void *arg) {
+  // Start the thread with signals blocked, otherwise it can steal user signals.
+  __sanitizer_sigset_t set, old;
+  internal_sigfillset(&set);
+  internal_sigprocmask(SIG_SETMASK, &set, &old);
+  pthread_t th;
+  pthread_create(&th, 0, (void*(*)(void *arg))func, arg);
+  internal_sigprocmask(SIG_SETMASK, &old, 0);
+  return th;
+}
+
+void internal_join_thread(void *th) { pthread_join((pthread_t)th, 0); }
 
 void GetPcSpBp(void *context, uptr *pc, uptr *sp, uptr *bp) {
   ucontext_t *ucontext = (ucontext_t*)context;
-# if SANITIZER_WORDSIZE == 64
+# if defined(__aarch64__)
+  *pc = ucontext->uc_mcontext->__ss.__pc;
+#   if defined(__IPHONE_8_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0
+  *bp = ucontext->uc_mcontext->__ss.__fp;
+#   else
+  *bp = ucontext->uc_mcontext->__ss.__lr;
+#   endif
+  *sp = ucontext->uc_mcontext->__ss.__sp;
+# elif defined(__x86_64__)
   *pc = ucontext->uc_mcontext->__ss.__rip;
   *bp = ucontext->uc_mcontext->__ss.__rbp;
   *sp = ucontext->uc_mcontext->__ss.__rsp;
-# else
+# elif defined(__arm__)
+  *pc = ucontext->uc_mcontext->__ss.__pc;
+  *bp = ucontext->uc_mcontext->__ss.__r[7];
+  *sp = ucontext->uc_mcontext->__ss.__sp;
+# elif defined(__i386__)
   *pc = ucontext->uc_mcontext->__ss.__eip;
   *bp = ucontext->uc_mcontext->__ss.__ebp;
   *sp = ucontext->uc_mcontext->__ss.__esp;
-# endif  // SANITIZER_WORDSIZE
+# else
+# error "Unknown architecture"
+# endif
 }
 
 }  // namespace __sanitizer

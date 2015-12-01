@@ -190,7 +190,7 @@ public:
 
     Function &getFunction() const {
       return F;
-    };
+    }
 
     iterator begin() const {
       return iterator(*G, Callees.begin(), Callees.end());
@@ -569,6 +569,6 @@ public:
   static StringRef name() { return "LazyCallGraphPrinterPass"; }
 };
 
-} // namespace llvm
+}
 
 #endif

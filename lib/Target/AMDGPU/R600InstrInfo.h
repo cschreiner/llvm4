@@ -174,18 +174,18 @@ namespace llvm {
 
   bool
    isProfitableToDupForIfCvt(MachineBasicBlock &MBB, unsigned NumCyles,
-                             const BranchProbability &Probability) const override;
+                             BranchProbability Probability) const override;
 
   bool isProfitableToIfCvt(MachineBasicBlock &MBB, unsigned NumCyles,
                            unsigned ExtraPredCycles,
-                           const BranchProbability &Probability) const override ;
+                           BranchProbability Probability) const override ;
 
   bool
    isProfitableToIfCvt(MachineBasicBlock &TMBB,
                        unsigned NumTCycles, unsigned ExtraTCycles,
                        MachineBasicBlock &FMBB,
                        unsigned NumFCycles, unsigned ExtraFCycles,
-                       const BranchProbability &Probability) const override;
+                       BranchProbability Probability) const override;
 
   bool DefinesPredicate(MachineInstr *MI,
                                   std::vector<MachineOperand> &Pred) const override;
@@ -298,6 +298,6 @@ int getLDSNoRetOp(uint16_t Opcode);
 
 } //End namespace AMDGPU
 
-} // namespace llvm
+} // End llvm namespace
 
 #endif

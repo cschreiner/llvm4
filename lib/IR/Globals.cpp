@@ -42,10 +42,14 @@ void GlobalValue::dematerialize() {
   getParent()->dematerialize(this);
 }
 
-/// Override destroyConstant to make sure it doesn't get called on
+/// Override destroyConstantImpl to make sure it doesn't get called on
 /// GlobalValue's because they shouldn't be treated like other constants.
-void GlobalValue::destroyConstant() {
-  llvm_unreachable("You can't GV->destroyConstant()!");
+void GlobalValue::destroyConstantImpl() {
+  llvm_unreachable("You can't GV->destroyConstantImpl()!");
+}
+
+Value *GlobalValue::handleOperandChangeImpl(Value *From, Value *To, Use *U) {
+  llvm_unreachable("Unsupported class for handleOperandChange()!");
 }
 
 /// copyAttributesFrom - copy all additional attributes (those not needed to
@@ -143,9 +147,9 @@ GlobalVariable::GlobalVariable(Type *Ty, bool constant, LinkageTypes Link,
                                Constant *InitVal, const Twine &Name,
                                ThreadLocalMode TLMode, unsigned AddressSpace,
                                bool isExternallyInitialized)
-    : GlobalObject(PointerType::get(Ty, AddressSpace), Value::GlobalVariableVal,
+    : GlobalObject(Ty, Value::GlobalVariableVal,
                    OperandTraits<GlobalVariable>::op_begin(this),
-                   InitVal != nullptr, Link, Name),
+                   InitVal != nullptr, Link, Name, AddressSpace),
       isConstantGlobal(constant),
       isExternallyInitializedConstant(isExternallyInitialized) {
   setThreadLocalMode(TLMode);
@@ -161,9 +165,9 @@ GlobalVariable::GlobalVariable(Module &M, Type *Ty, bool constant,
                                const Twine &Name, GlobalVariable *Before,
                                ThreadLocalMode TLMode, unsigned AddressSpace,
                                bool isExternallyInitialized)
-    : GlobalObject(PointerType::get(Ty, AddressSpace), Value::GlobalVariableVal,
+    : GlobalObject(Ty, Value::GlobalVariableVal,
                    OperandTraits<GlobalVariable>::op_begin(this),
-                   InitVal != nullptr, Link, Name),
+                   InitVal != nullptr, Link, Name, AddressSpace),
       isConstantGlobal(constant),
       isExternallyInitializedConstant(isExternallyInitialized) {
   setThreadLocalMode(TLMode);
@@ -174,7 +178,7 @@ GlobalVariable::GlobalVariable(Module &M, Type *Ty, bool constant,
   }
 
   if (Before)
-    Before->getParent()->getGlobalList().insert(Before, this);
+    Before->getParent()->getGlobalList().insert(Before->getIterator(), this);
   else
     M.getGlobalList().push_back(this);
 }
@@ -184,31 +188,11 @@ void GlobalVariable::setParent(Module *parent) {
 }
 
 void GlobalVariable::removeFromParent() {
-  getParent()->getGlobalList().remove(this);
+  getParent()->getGlobalList().remove(getIterator());
 }
 
 void GlobalVariable::eraseFromParent() {
-  getParent()->getGlobalList().erase(this);
-}
-
-void GlobalVariable::replaceUsesOfWithOnConstant(Value *From, Value *To,
-                                                 Use *U) {
-  // If you call this, then you better know this GVar has a constant
-  // initializer worth replacing. Enforce that here.
-  assert(getNumOperands() == 1 &&
-         "Attempt to replace uses of Constants on a GVar with no initializer");
-
-  // And, since you know it has an initializer, the From value better be
-  // the initializer :)
-  assert(getOperand(0) == From &&
-         "Attempt to replace wrong constant initializer in GVar");
-
-  // And, you better have a constant for the replacement value
-  assert(isa<Constant>(To) &&
-         "Attempt to replace GVar initializer with non-constant");
-
-  // Okay, preconditions out of the way, replace the constant initializer.
-  this->setOperand(0, cast<Constant>(To));
+  getParent()->getGlobalList().erase(getIterator());
 }
 
 void GlobalVariable::setInitializer(Constant *InitVal) {
@@ -247,35 +231,40 @@ void GlobalVariable::copyAttributesFrom(const GlobalValue *Src) {
 // GlobalAlias Implementation
 //===----------------------------------------------------------------------===//
 
-GlobalAlias::GlobalAlias(PointerType *Ty, LinkageTypes Link, const Twine &Name,
-                         Constant *Aliasee, Module *ParentModule)
-    : GlobalValue(Ty, Value::GlobalAliasVal, &Op<0>(), 1, Link, Name) {
+GlobalAlias::GlobalAlias(Type *Ty, unsigned AddressSpace, LinkageTypes Link,
+                         const Twine &Name, Constant *Aliasee,
+                         Module *ParentModule)
+    : GlobalValue(Ty, Value::GlobalAliasVal, &Op<0>(), 1, Link, Name,
+                  AddressSpace) {
   Op<0>() = Aliasee;
 
   if (ParentModule)
     ParentModule->getAliasList().push_back(this);
 }
 
-GlobalAlias *GlobalAlias::create(PointerType *Ty, LinkageTypes Link,
-                                 const Twine &Name, Constant *Aliasee,
-                                 Module *ParentModule) {
-  return new GlobalAlias(Ty, Link, Name, Aliasee, ParentModule);
+GlobalAlias *GlobalAlias::create(Type *Ty, unsigned AddressSpace,
+                                 LinkageTypes Link, const Twine &Name,
+                                 Constant *Aliasee, Module *ParentModule) {
+  return new GlobalAlias(Ty, AddressSpace, Link, Name, Aliasee, ParentModule);
 }
 
-GlobalAlias *GlobalAlias::create(PointerType *Ty, LinkageTypes Linkage,
-                                 const Twine &Name, Module *Parent) {
-  return create(Ty, Linkage, Name, nullptr, Parent);
+GlobalAlias *GlobalAlias::create(Type *Ty, unsigned AddressSpace,
+                                 LinkageTypes Linkage, const Twine &Name,
+                                 Module *Parent) {
+  return create(Ty, AddressSpace, Linkage, Name, nullptr, Parent);
 }
 
-GlobalAlias *GlobalAlias::create(PointerType *Ty, LinkageTypes Linkage,
-                                 const Twine &Name, GlobalValue *Aliasee) {
-  return create(Ty, Linkage, Name, Aliasee, Aliasee->getParent());
+GlobalAlias *GlobalAlias::create(Type *Ty, unsigned AddressSpace,
+                                 LinkageTypes Linkage, const Twine &Name,
+                                 GlobalValue *Aliasee) {
+  return create(Ty, AddressSpace, Linkage, Name, Aliasee, Aliasee->getParent());
 }
 
 GlobalAlias *GlobalAlias::create(LinkageTypes Link, const Twine &Name,
                                  GlobalValue *Aliasee) {
   PointerType *PTy = Aliasee->getType();
-  return create(PTy, Link, Name, Aliasee);
+  return create(PTy->getElementType(), PTy->getAddressSpace(), Link, Name,
+                Aliasee);
 }
 
 GlobalAlias *GlobalAlias::create(const Twine &Name, GlobalValue *Aliasee) {
@@ -287,11 +276,11 @@ void GlobalAlias::setParent(Module *parent) {
 }
 
 void GlobalAlias::removeFromParent() {
-  getParent()->getAliasList().remove(this);
+  getParent()->getAliasList().remove(getIterator());
 }
 
 void GlobalAlias::eraseFromParent() {
-  getParent()->getAliasList().erase(this);
+  getParent()->getAliasList().erase(getIterator());
 }
 
 void GlobalAlias::setAliasee(Constant *Aliasee) {

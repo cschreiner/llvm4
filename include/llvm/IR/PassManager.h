@@ -203,7 +203,8 @@ public:
 
     for (unsigned Idx = 0, Size = Passes.size(); Idx != Size; ++Idx) {
       if (DebugLogging)
-        dbgs() << "Running pass: " << Passes[Idx]->name() << "\n";
+        dbgs() << "Running pass: " << Passes[Idx]->name() << " on "
+               << IR.getName() << "\n";
 
       PreservedAnalyses PassPA = Passes[Idx]->run(IR, AM);
 
@@ -890,6 +891,6 @@ struct InvalidateAllAnalysesPass {
   static StringRef name() { return "InvalidateAllAnalysesPass"; }
 };
 
-} // namespace llvm
+}
 
 #endif

@@ -39,7 +39,7 @@ enum class EncodingType {
   X86,     /// Windows x86, uses no CFI, just EH tables
   MIPS = Alpha,
 };
-} // namespace WinEH
+}
 
 enum class ExceptionHandling {
   None,     /// No exception support
@@ -414,6 +414,15 @@ public:
   /// syntactically correct.
   virtual bool isValidUnquotedName(StringRef Name) const;
 
+  /// Return true if the .section directive should be omitted when
+  /// emitting \p SectionName.  For example:
+  ///
+  /// shouldOmitSectionDirective(".text")
+  ///
+  /// returns false => .section .text,#alloc,#execinstr
+  /// returns true  => .text
+  virtual bool shouldOmitSectionDirective(StringRef SectionName) const;
+
   bool usesSunStyleELFSectionSwitchSyntax() const {
     return SunStyleELFSectionSwitchSyntax;
   }
@@ -555,6 +564,6 @@ public:
 
   bool shouldUseLogicalShr() const { return UseLogicalShr; }
 };
-} // namespace llvm
+}
 
 #endif

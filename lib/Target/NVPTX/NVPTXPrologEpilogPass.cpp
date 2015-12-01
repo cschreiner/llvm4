@@ -39,7 +39,7 @@ public:
 private:
   void calculateFrameObjectOffsets(MachineFunction &Fn);
 };
-} // namespace
+}
 
 MachineFunctionPass *llvm::createNVPTXPrologEpilogPass() {
   return new NVPTXPrologEpilogPass();
@@ -72,7 +72,7 @@ bool NVPTXPrologEpilogPass::runOnMachineFunction(MachineFunction &MF) {
 
   for (MachineFunction::iterator I = MF.begin(), E = MF.end(); I != E; ++I) {
     // If last instruction is a return instruction, add an epilogue
-    if (!I->empty() && I->back().isReturn())
+    if (I->isReturnBlock())
       TFI.emitEpilogue(MF, *I);
   }
 

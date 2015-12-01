@@ -43,9 +43,12 @@ namespace llvm {
       return (Node->NumPreds > 10 || Node->NumSuccs > 10);
     }
 
-    static bool hasNodeAddressLabel(const SUnit *Node,
-                                    const ScheduleDAG *Graph) {
-      return true;
+    static std::string getNodeIdentifierLabel(const SUnit *Node,
+                                              const ScheduleDAG *Graph) {
+      std::string R;
+      raw_string_ostream OS(R);
+      OS << static_cast<const void *>(Node);
+      return R;
     }
 
     /// If you want to override the dot attributes printed for a particular
@@ -72,7 +75,7 @@ namespace llvm {
       return G->addCustomGraphFeatures(GW);
     }
   };
-} // namespace llvm
+}
 
 std::string DOTGraphTraits<ScheduleDAG*>::getNodeLabel(const SUnit *SU,
                                                        const ScheduleDAG *G) {

@@ -37,8 +37,6 @@ namespace ARM_AM {
 
 class ARMSelectionDAGInfo : public TargetSelectionDAGInfo {
 public:
-  explicit ARMSelectionDAGInfo(const DataLayout &DL);
-  ~ARMSelectionDAGInfo();
 
   SDValue EmitTargetCodeForMemcpy(SelectionDAG &DAG, SDLoc dl,
                                   SDValue Chain,
@@ -70,6 +68,6 @@ public:
                                  RTLIB::Libcall LC) const;
 };
 
-} // namespace llvm
+}
 
 #endif

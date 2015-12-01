@@ -131,8 +131,10 @@ private:
   Value *optimizePow(CallInst *CI, IRBuilder<> &B);
   Value *optimizeExp2(CallInst *CI, IRBuilder<> &B);
   Value *optimizeFabs(CallInst *CI, IRBuilder<> &B);
+  Value *optimizeFMinFMax(CallInst *CI, IRBuilder<> &B);
   Value *optimizeSqrt(CallInst *CI, IRBuilder<> &B);
   Value *optimizeSinCosPi(CallInst *CI, IRBuilder<> &B);
+  Value *optimizeTan(CallInst *CI, IRBuilder<> &B);
 
   // Integer Library Call Optimizations
   Value *optimizeFFS(CallInst *CI, IRBuilder<> &B);
@@ -166,6 +168,6 @@ private:
   /// function by checking for an existing function with name FuncName + f
   bool hasFloatVersion(StringRef FuncName);
 };
-} // namespace llvm
+} // End llvm namespace
 
 #endif

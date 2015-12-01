@@ -43,6 +43,16 @@ static cl::opt<bool>
 DisableLTOVectorization("disable-lto-vectorization", cl::init(false),
   cl::desc("Do not run loop or slp vectorization during LTO"));
 
+#ifdef NDEBUG
+static bool VerifyByDefault = false;
+#else
+static bool VerifyByDefault = true;
+#endif
+
+static cl::opt<bool> DisableVerify(
+    "disable-llvm-verifier", cl::init(!VerifyByDefault),
+    cl::desc("Don't run the LLVM verifier during the optimization pipeline"));
+
 // Holds most recent error string.
 // *** Not thread safe ***
 static std::string sLastErrorString;
@@ -75,13 +85,21 @@ static void lto_initialize() {
 
 namespace {
 
+static void handleLibLTODiagnostic(lto_codegen_diagnostic_severity_t Severity,
+                                   const char *Msg, void *) {
+  sLastErrorString = Msg;
+  sLastErrorString += "\n";
+}
+
 // This derived class owns the native object file. This helps implement the
 // libLTO API semantics, which require that the code generator owns the object
 // file.
 struct LibLTOCodeGenerator : LTOCodeGenerator {
-  LibLTOCodeGenerator() {}
+  LibLTOCodeGenerator() {
+    setDiagnosticHandler(handleLibLTODiagnostic, nullptr); }
   LibLTOCodeGenerator(std::unique_ptr<LLVMContext> Context)
-      : LTOCodeGenerator(std::move(Context)) {}
+      : LTOCodeGenerator(std::move(Context)) {
+    setDiagnosticHandler(handleLibLTODiagnostic, nullptr); }
 
   std::unique_ptr<MemoryBuffer> NativeObjectFile;
 };
@@ -223,20 +241,8 @@ lto_symbol_attributes lto_module_get_symbol_attribute(lto_module_t mod,
   return unwrap(mod)->getSymbolAttributes(index);
 }
 
-unsigned int lto_module_get_num_deplibs(lto_module_t mod) {
-  return unwrap(mod)->getDependentLibraryCount();
-}
-
-const char* lto_module_get_deplib(lto_module_t mod, unsigned int index) {
-  return unwrap(mod)->getDependentLibrary(index);
-}
-
-unsigned int lto_module_get_num_linkeropts(lto_module_t mod) {
-  return unwrap(mod)->getLinkerOptCount();
-}
-
-const char* lto_module_get_linkeropt(lto_module_t mod, unsigned int index) {
-  return unwrap(mod)->getLinkerOpt(index);
+const char* lto_module_get_linkeropts(lto_module_t mod) {
+  return unwrap(mod)->getLinkerOpts();
 }
 
 void lto_codegen_set_diagnostic_handler(lto_code_gen_t cg,
@@ -272,7 +278,7 @@ bool lto_codegen_add_module(lto_code_gen_t cg, lto_module_t mod) {
 }
 
 void lto_codegen_set_module(lto_code_gen_t cg, lto_module_t mod) {
-  unwrap(cg)->setModule(unwrap(mod));
+  unwrap(cg)->setModule(std::unique_ptr<LTOModule>(unwrap(mod)));
 }
 
 bool lto_codegen_set_debug_model(lto_code_gen_t cg, lto_debug_model debug) {
@@ -281,8 +287,22 @@ bool lto_codegen_set_debug_model(lto_code_gen_t cg, lto_debug_model debug) {
 }
 
 bool lto_codegen_set_pic_model(lto_code_gen_t cg, lto_codegen_model model) {
-  unwrap(cg)->setCodePICModel(model);
-  return false;
+  switch (model) {
+  case LTO_CODEGEN_PIC_MODEL_STATIC:
+    unwrap(cg)->setCodePICModel(Reloc::Static);
+    return false;
+  case LTO_CODEGEN_PIC_MODEL_DYNAMIC:
+    unwrap(cg)->setCodePICModel(Reloc::PIC_);
+    return false;
+  case LTO_CODEGEN_PIC_MODEL_DYNAMIC_NO_PIC:
+    unwrap(cg)->setCodePICModel(Reloc::DynamicNoPIC);
+    return false;
+  case LTO_CODEGEN_PIC_MODEL_DEFAULT:
+    unwrap(cg)->setCodePICModel(Reloc::Default);
+    return false;
+  }
+  sLastErrorString = "Unknown PIC model";
+  return true;
 }
 
 void lto_codegen_set_cpu(lto_code_gen_t cg, const char *cpu) {
@@ -313,14 +333,15 @@ static void maybeParseOptions(lto_code_gen_t cg) {
 
 bool lto_codegen_write_merged_modules(lto_code_gen_t cg, const char *path) {
   maybeParseOptions(cg);
-  return !unwrap(cg)->writeMergedModules(path, sLastErrorString);
+  return !unwrap(cg)->writeMergedModules(path);
 }
 
 const void *lto_codegen_compile(lto_code_gen_t cg, size_t *length) {
   maybeParseOptions(cg);
   LibLTOCodeGenerator *CG = unwrap(cg);
-  CG->NativeObjectFile = CG->compile(DisableInline, DisableGVNLoadPRE,
-                                     DisableLTOVectorization, sLastErrorString);
+  CG->NativeObjectFile =
+      CG->compile(DisableVerify, DisableInline, DisableGVNLoadPRE,
+                  DisableLTOVectorization);
   if (!CG->NativeObjectFile)
     return nullptr;
   *length = CG->NativeObjectFile->getBufferSize();
@@ -329,15 +350,14 @@ const void *lto_codegen_compile(lto_code_gen_t cg, size_t *length) {
 
 bool lto_codegen_optimize(lto_code_gen_t cg) {
   maybeParseOptions(cg);
-  return !unwrap(cg)->optimize(DisableInline,
-                               DisableGVNLoadPRE, DisableLTOVectorization,
-                               sLastErrorString);
+  return !unwrap(cg)->optimize(DisableVerify, DisableInline, DisableGVNLoadPRE,
+                               DisableLTOVectorization);
 }
 
 const void *lto_codegen_compile_optimized(lto_code_gen_t cg, size_t *length) {
   maybeParseOptions(cg);
   LibLTOCodeGenerator *CG = unwrap(cg);
-  CG->NativeObjectFile = CG->compileOptimized(sLastErrorString);
+  CG->NativeObjectFile = CG->compileOptimized();
   if (!CG->NativeObjectFile)
     return nullptr;
   *length = CG->NativeObjectFile->getBufferSize();
@@ -347,8 +367,8 @@ const void *lto_codegen_compile_optimized(lto_code_gen_t cg, size_t *length) {
 bool lto_codegen_compile_to_file(lto_code_gen_t cg, const char **name) {
   maybeParseOptions(cg);
   return !unwrap(cg)->compile_to_file(
-      name, DisableInline, DisableGVNLoadPRE,
-      DisableLTOVectorization, sLastErrorString);
+      name, DisableVerify, DisableInline, DisableGVNLoadPRE,
+      DisableLTOVectorization);
 }
 
 void lto_codegen_debug_options(lto_code_gen_t cg, const char *opt) {

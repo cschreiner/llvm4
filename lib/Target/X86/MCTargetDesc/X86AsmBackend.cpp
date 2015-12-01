@@ -29,13 +29,6 @@
 #include "llvm/Support/raw_ostream.h"
 using namespace llvm;
 
-// Option to allow disabling arithmetic relaxation to workaround PR9807, which
-// is useful when running bitwise comparison experiments on Darwin. We should be
-// able to remove this once PR9807 is resolved.
-static cl::opt<bool>
-MCDisableArithRelaxation("mc-x86-disable-arith-relaxation",
-         cl::desc("Disable relaxation of arithmetic instruction for X86"));
-
 static unsigned getFixupKindLog2Size(unsigned Kind) {
   switch (Kind) {
   default:
@@ -227,7 +220,6 @@ static unsigned getRelaxedOpcodeArith(unsigned Op) {
   case X86::PUSH32i8:  return X86::PUSHi32;
   case X86::PUSH16i8:  return X86::PUSHi16;
   case X86::PUSH64i8:  return X86::PUSH64i32;
-  case X86::PUSH64i16: return X86::PUSH64i32;
   }
 }
 
@@ -243,29 +235,18 @@ bool X86AsmBackend::mayNeedRelaxation(const MCInst &Inst) const {
   if (getRelaxedOpcodeBranch(Inst.getOpcode()) != Inst.getOpcode())
     return true;
 
-  if (MCDisableArithRelaxation)
-    return false;
-
   // Check if this instruction is ever relaxable.
   if (getRelaxedOpcodeArith(Inst.getOpcode()) == Inst.getOpcode())
     return false;
 
 
-  // Check if it has an expression and is not RIP relative.
-  bool hasExp = false;
-  bool hasRIP = false;
-  for (unsigned i = 0; i < Inst.getNumOperands(); ++i) {
-    const MCOperand &Op = Inst.getOperand(i);
-    if (Op.isExpr())
-      hasExp = true;
+  // Check if the relaxable operand has an expression. For the current set of
+  // relaxable instructions, the relaxable operand is always the last operand.
+  unsigned RelaxableOp = Inst.getNumOperands() - 1;
+  if (Inst.getOperand(RelaxableOp).isExpr())
+    return true;
 
-    if (Op.isReg() && Op.getReg() == X86::RIP)
-      hasRIP = true;
-  }
-
-  // FIXME: Why exactly do we need the !hasRIP? Is it just a limitation on
-  // how we do relaxations?
-  return hasExp && !hasRIP;
+  return false;
 }
 
 bool X86AsmBackend::fixupNeedsRelaxation(const MCFixup &Fixup,
@@ -378,6 +359,17 @@ public:
   }
 };
 
+class ELFX86_IAMCUAsmBackend : public ELFX86AsmBackend {
+public:
+  ELFX86_IAMCUAsmBackend(const Target &T, uint8_t OSABI, StringRef CPU)
+      : ELFX86AsmBackend(T, OSABI, CPU) {}
+
+  MCObjectWriter *createObjectWriter(raw_pwrite_stream &OS) const override {
+    return createX86ELFObjectWriter(OS, /*IsELF64*/ false, OSABI,
+                                    ELF::EM_IAMCU);
+  }
+};
+
 class ELFX86_64AsmBackend : public ELFX86AsmBackend {
 public:
   ELFX86_64AsmBackend(const Target &T, uint8_t OSABI, StringRef CPU)
@@ -426,7 +418,7 @@ namespace CU {
     UNWIND_FRAMELESS_STACK_REG_PERMUTATION = 0x000003FF
   };
 
-} // namespace CU
+} // end CU namespace
 
 class DarwinX86AsmBackend : public X86AsmBackend {
   const MCRegisterInfo &MRI;
@@ -799,6 +791,10 @@ MCAsmBackend *llvm::createX86_32AsmBackend(const Target &T,
     return new WindowsX86AsmBackend(T, false, CPU);
 
   uint8_t OSABI = MCELFObjectTargetWriter::getOSABI(TheTriple.getOS());
+
+  if (TheTriple.isOSIAMCU())
+    return new ELFX86_IAMCUAsmBackend(T, OSABI, CPU);
+
   return new ELFX86_32AsmBackend(T, OSABI, CPU);
 }
 

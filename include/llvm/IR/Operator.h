@@ -305,7 +305,8 @@ public:
   float getFPAccuracy() const;
 
   static inline bool classof(const Instruction *I) {
-    return I->getType()->isFPOrFPVectorTy();
+    return I->getType()->isFPOrFPVectorTy() ||
+      I->getOpcode() == Instruction::FCmp;
   }
   static inline bool classof(const Value *V) {
     return isa<Instruction>(V) && classof(cast<Instruction>(V));
@@ -491,6 +492,6 @@ public:
   }
 };
 
-} // namespace llvm
+} // End llvm namespace
 
 #endif

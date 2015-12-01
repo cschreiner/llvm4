@@ -152,15 +152,15 @@ entry:
 ; CHECK-NOT: __asan_report
 ; CHECK: ret i32
 
-declare void @llvm.memset.p0i8.i64(i8* nocapture, i8, i64, i32, i1) nounwind
-declare void @llvm.memmove.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) nounwind
-declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i32, i1) nounwind
+declare void @llvm.memset.p0i8.i64(i8* nocapture, i8, i64, i1) nounwind
+declare void @llvm.memmove.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i1) nounwind
+declare void @llvm.memcpy.p0i8.p0i8.i64(i8* nocapture, i8* nocapture readonly, i64, i1) nounwind
 
 define void @memintr_test(i8* %a, i8* %b) nounwind uwtable sanitize_address {
   entry:
-  tail call void @llvm.memset.p0i8.i64(i8* %a, i8 0, i64 100, i32 1, i1 false)
-  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* %a, i8* %b, i64 100, i32 1, i1 false)
-  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* %a, i8* %b, i64 100, i32 1, i1 false)
+  tail call void @llvm.memset.p0i8.i64(i8* %a, i8 0, i64 100, i1 false)
+  tail call void @llvm.memmove.p0i8.p0i8.i64(i8* %a, i8* %b, i64 100, i1 false)
+  tail call void @llvm.memcpy.p0i8.p0i8.i64(i8* %a, i8* %b, i64 100, i1 false)
   ret void
 }
 
@@ -171,7 +171,7 @@ define void @memintr_test(i8* %a, i8* %b) nounwind uwtable sanitize_address {
 ; CHECK: ret void
 
 ; CHECK: define internal void @asan.module_ctor()
-; CHECK: call void @__asan_init_v5()
+; CHECK: call void @__asan_init()
 
 ; PROF
 ; CHECK: ![[PROF]] = !{!"branch_weights", i32 1, i32 100000}

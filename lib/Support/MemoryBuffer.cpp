@@ -57,7 +57,8 @@ void MemoryBuffer::init(const char *BufStart, const char *BufEnd,
 /// CopyStringRef - Copies contents of a StringRef into a block of memory and
 /// null-terminates it.
 static void CopyStringRef(char *Memory, StringRef Data) {
-  memcpy(Memory, Data.data(), Data.size());
+  if (!Data.empty())
+    memcpy(Memory, Data.data(), Data.size());
   Memory[Data.size()] = 0; // Null terminate string.
 }
 
@@ -94,7 +95,7 @@ public:
     return MemoryBuffer_Malloc;
   }
 };
-} // namespace
+}
 
 static ErrorOr<std::unique_ptr<MemoryBuffer>>
 getFileAux(const Twine &Filename, int64_t FileSize, uint64_t MapSize, 
@@ -161,13 +162,14 @@ MemoryBuffer::getNewMemBuffer(size_t Size, StringRef BufferName) {
 }
 
 ErrorOr<std::unique_ptr<MemoryBuffer>>
-MemoryBuffer::getFileOrSTDIN(const Twine &Filename, int64_t FileSize) {
+MemoryBuffer::getFileOrSTDIN(const Twine &Filename, int64_t FileSize,
+                             bool RequiresNullTerminator) {
   SmallString<256> NameBuf;
   StringRef NameRef = Filename.toStringRef(NameBuf);
 
   if (NameRef == "-")
     return getSTDIN();
-  return getFile(Filename, FileSize);
+  return getFile(Filename, FileSize, RequiresNullTerminator);
 }
 
 ErrorOr<std::unique_ptr<MemoryBuffer>>
@@ -220,7 +222,7 @@ public:
     return MemoryBuffer_MMap;
   }
 };
-} // namespace
+}
 
 static ErrorOr<std::unique_ptr<MemoryBuffer>>
 getMemoryBufferForStream(int FD, const Twine &BufferName) {

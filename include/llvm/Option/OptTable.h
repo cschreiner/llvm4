@@ -50,8 +50,7 @@ public:
 
 private:
   /// \brief The static option information table.
-  const Info *OptionInfos;
-  unsigned NumOptionInfos;
+  ArrayRef<Info> OptionInfos;
   bool IgnoreCase;
 
   unsigned TheInputOptionID;
@@ -74,14 +73,13 @@ private:
   }
 
 protected:
-  OptTable(const Info *OptionInfos, unsigned NumOptionInfos,
-           bool IgnoreCase = false);
+  OptTable(ArrayRef<Info> OptionInfos, bool IgnoreCase = false);
 
 public:
   ~OptTable();
 
   /// \brief Return the total number of option classes.
-  unsigned getNumOptions() const { return NumOptionInfos; }
+  unsigned getNumOptions() const { return OptionInfos.size(); }
 
   /// \brief Get the given Opt's Option instance, lazily creating it
   /// if necessary.
@@ -142,8 +140,6 @@ public:
   /// The only error that can occur in this routine is if an argument is
   /// missing values; in this case \p MissingArgCount will be non-zero.
   ///
-  /// \param ArgBegin - The beginning of the argument vector.
-  /// \param ArgEnd - The end of the argument vector.
   /// \param MissingArgIndex - On error, the index of the option which could
   /// not be parsed.
   /// \param MissingArgCount - On error, the number of missing options.
@@ -153,10 +149,9 @@ public:
   /// is the default and means exclude nothing.
   /// \return An InputArgList; on error this will contain all the options
   /// which could be parsed.
-  InputArgList *ParseArgs(ArrayRef<const char *> Args,
-                          unsigned &MissingArgIndex, unsigned &MissingArgCount,
-                          unsigned FlagsToInclude = 0,
-                          unsigned FlagsToExclude = 0) const;
+  InputArgList ParseArgs(ArrayRef<const char *> Args, unsigned &MissingArgIndex,
+                         unsigned &MissingArgCount, unsigned FlagsToInclude = 0,
+                         unsigned FlagsToExclude = 0) const;
 
   /// \brief Render the help text for an option table.
   ///

@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 #ifndef LLVM_MC_MCSYMBOLMACHO_H
-#define setIsWeakExternal
+#define LLVM_MC_MCSYMBOLMACHO_H
 
 #include "llvm/MC/MCSymbol.h"
 
@@ -118,6 +118,6 @@ public:
 
   static bool classof(const MCSymbol *S) { return S->isMachO(); }
 };
-} // namespace llvm
+}
 
 #endif

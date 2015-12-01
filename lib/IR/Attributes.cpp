@@ -190,6 +190,8 @@ std::string Attribute::getAsString(bool InAttrGrp) const {
     return "sanitize_address";
   if (hasAttribute(Attribute::AlwaysInline))
     return "alwaysinline";
+  if (hasAttribute(Attribute::ArgMemOnly))
+    return "argmemonly";
   if (hasAttribute(Attribute::Builtin))
     return "builtin";
   if (hasAttribute(Attribute::ByVal))
@@ -230,6 +232,8 @@ std::string Attribute::getAsString(bool InAttrGrp) const {
     return "noredzone";
   if (hasAttribute(Attribute::NoReturn))
     return "noreturn";
+  if (hasAttribute(Attribute::NoRecurse))
+    return "norecurse";
   if (hasAttribute(Attribute::NoUnwind))
     return "nounwind";
   if (hasAttribute(Attribute::OptimizeNone))
@@ -440,12 +444,16 @@ uint64_t AttributeImpl::getAttrMask(Attribute::AttrKind Val) {
   case Attribute::JumpTable:       return 1ULL << 45;
   case Attribute::Convergent:      return 1ULL << 46;
   case Attribute::SafeStack:       return 1ULL << 47;
+  case Attribute::NoRecurse:       return 1ULL << 48;
   case Attribute::Dereferenceable:
     llvm_unreachable("dereferenceable attribute not supported in raw format");
     break;
   case Attribute::DereferenceableOrNull:
     llvm_unreachable("dereferenceable_or_null attribute not supported in raw "
                      "format");
+    break;
+  case Attribute::ArgMemOnly:
+    llvm_unreachable("argmemonly attribute not supported in raw format");
     break;
   }
   llvm_unreachable("Unsupported attribute type");
@@ -479,8 +487,7 @@ AttributeSetNode *AttributeSetNode::get(LLVMContext &C,
   // new one and insert it.
   if (!PA) {
     // Coallocate entries after the AttributeSetNode itself.
-    void *Mem = ::operator new(sizeof(AttributeSetNode) +
-                               sizeof(Attribute) * SortedAttrs.size());
+    void *Mem = ::operator new(totalSizeToAlloc<Attribute>(SortedAttrs.size()));
     PA = new (Mem) AttributeSetNode(SortedAttrs);
     pImpl->AttrsSetNodes.InsertNode(PA, InsertPoint);
   }
@@ -612,9 +619,8 @@ AttributeSet::getImpl(LLVMContext &C,
   // create a new one and insert it.
   if (!PA) {
     // Coallocate entries after the AttributeSetImpl itself.
-    void *Mem = ::operator new(sizeof(AttributeSetImpl) +
-                               sizeof(std::pair<unsigned, AttributeSetNode *>) *
-                                   Attrs.size());
+    void *Mem = ::operator new(
+        AttributeSetImpl::totalSizeToAlloc<IndexAttrPair>(Attrs.size()));
     PA = new (Mem) AttributeSetImpl(C, Attrs);
     pImpl->AttrsLists.InsertNode(PA, InsertPoint);
   }
@@ -731,9 +737,8 @@ AttributeSet AttributeSet::get(LLVMContext &C, ArrayRef<AttributeSet> Attrs) {
     if (!AS) continue;
     SmallVector<std::pair<unsigned, AttributeSetNode *>, 8>::iterator
       ANVI = AttrNodeVec.begin(), ANVE;
-    for (const AttributeSetImpl::IndexAttrPair
-             *AI = AS->getNode(0),
-             *AE = AS->getNode(AS->getNumAttributes());
+    for (const IndexAttrPair *AI = AS->getNode(0),
+                             *AE = AS->getNode(AS->getNumAttributes());
          AI != AE; ++AI) {
       ANVE = AttrNodeVec.end();
       while (ANVI != ANVE && ANVI->first <= AI->first)
@@ -824,11 +829,6 @@ AttributeSet AttributeSet::removeAttributes(LLVMContext &C, unsigned Index,
                                             AttributeSet Attrs) const {
   if (!pImpl) return AttributeSet();
   if (!Attrs.pImpl) return *this;
-
-  // FIXME it is not obvious how this should work for alignment.
-  // For now, say we can't pass in alignment, which no current use does.
-  assert(!Attrs.hasAttribute(Index, Attribute::Alignment) &&
-         "Attempt to change alignment!");
 
   // Add the attribute slots before the one we're trying to add.
   SmallVector<AttributeSet, 4> AttrSet;
@@ -1106,6 +1106,7 @@ AttrBuilder::AttrBuilder(AttributeSet AS, unsigned Index)
 
 void AttrBuilder::clear() {
   Attrs.reset();
+  TargetDepAttrs.clear();
   Alignment = StackAlignment = DerefBytes = DerefOrNullBytes = 0;
 }
 
@@ -1356,7 +1357,8 @@ AttrBuilder &AttrBuilder::addRawValue(uint64_t Val) {
   for (Attribute::AttrKind I = Attribute::None; I != Attribute::EndAttrKinds;
        I = Attribute::AttrKind(I + 1)) {
     if (I == Attribute::Dereferenceable ||
-        I == Attribute::DereferenceableOrNull)
+        I == Attribute::DereferenceableOrNull ||
+        I == Attribute::ArgMemOnly)
       continue;
     if (uint64_t A = (Val & AttributeImpl::getAttrMask(I))) {
       Attrs[I] = true;
@@ -1376,7 +1378,7 @@ AttrBuilder &AttrBuilder::addRawValue(uint64_t Val) {
 //===----------------------------------------------------------------------===//
 
 /// \brief Which attributes cannot be applied to a type.
-AttrBuilder AttributeFuncs::typeIncompatible(const Type *Ty) {
+AttrBuilder AttributeFuncs::typeIncompatible(Type *Ty) {
   AttrBuilder Incompatible;
 
   if (!Ty->isIntegerTy())

@@ -32,8 +32,7 @@ class PDBContext : public DIContext {
 
 public:
   PDBContext(const object::COFFObjectFile &Object,
-             std::unique_ptr<IPDBSession> PDBSession,
-             bool RelativeAddress);
+             std::unique_ptr<IPDBSession> PDBSession);
 
   static bool classof(const DIContext *DICtx) {
     return DICtx->getKind() == CK_PDB;
@@ -55,6 +54,6 @@ private:
   std::string getFunctionName(uint64_t Address, DINameKind NameKind) const;
   std::unique_ptr<IPDBSession> Session;
 };
-} // namespace llvm
+}
 
 #endif

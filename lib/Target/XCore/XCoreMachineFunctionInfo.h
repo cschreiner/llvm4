@@ -1,4 +1,4 @@
-//===-- XCoreMachineFuctionInfo.h - XCore machine function info -*- C++ -*-===//
+//===- XCoreMachineFunctionInfo.h - XCore machine function info -*- C++ -*-===//
 //
 //                     The LLVM Compiler Infrastructure
 //
@@ -101,6 +101,6 @@ public:
     return SpillLabels;
   }
 };
-} // namespace llvm
+} // End llvm namespace
 
 #endif

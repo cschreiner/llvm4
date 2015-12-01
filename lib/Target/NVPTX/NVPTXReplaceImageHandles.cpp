@@ -2,7 +2,7 @@
 //
 //                     The LLVM Compiler Infrastructure
 //
-// This file is distributed under the University of Illinois Open Source 
+// This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
 //
 //===----------------------------------------------------------------------===//
@@ -45,7 +45,7 @@ private:
   bool findIndexForHandle(MachineOperand &Op, MachineFunction &MF,
                           unsigned &Idx);
 };
-} // namespace
+}
 
 char NVPTXReplaceImageHandles::ID = 0;
 
@@ -115,7 +115,7 @@ bool NVPTXReplaceImageHandles::processInstr(MachineInstr &MI) {
 
     replaceImageHandle(Handle, MF);
 
-    return true; 
+    return true;
   }
 
   return false;

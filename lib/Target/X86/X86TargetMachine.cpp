@@ -28,10 +28,17 @@ static cl::opt<bool> EnableMachineCombinerPass("x86-machine-combiner",
                                cl::desc("Enable the machine combiner pass"),
                                cl::init(true), cl::Hidden);
 
+namespace llvm {
+void initializeWinEHStatePassPass(PassRegistry &);
+}
+
 extern "C" void LLVMInitializeX86Target() {
   // Register the target.
   RegisterTargetMachine<X86TargetMachine> X(TheX86_32Target);
   RegisterTargetMachine<X86TargetMachine> Y(TheX86_64Target);
+
+  PassRegistry &PR = *PassRegistry::getPassRegistry();
+  initializeWinEHStatePassPass(PR);
 }
 
 static std::unique_ptr<TargetLoweringObjectFile> createTLOF(const Triple &TT) {
@@ -45,7 +52,7 @@ static std::unique_ptr<TargetLoweringObjectFile> createTLOF(const Triple &TT) {
     return make_unique<X86LinuxNaClTargetObjectFile>();
   if (TT.isOSBinFormatELF())
     return make_unique<X86ELFTargetObjectFile>();
-  if (TT.isKnownWindowsMSVCEnvironment())
+  if (TT.isKnownWindowsMSVCEnvironment() || TT.isWindowsCoreCLREnvironment())
     return make_unique<X86WindowsTargetObjectFile>();
   if (TT.isOSBinFormatCOFF())
     return make_unique<TargetLoweringObjectFileCOFF>();
@@ -110,12 +117,15 @@ X86TargetMachine::X86TargetMachine(const Target &T, const Triple &TT,
   if (Subtarget.isTargetWin64())
     this->Options.TrapUnreachable = true;
 
-  // TODO: By default, all reciprocal estimate operations are off because
-  // that matches the behavior before TargetRecip was added (except for btver2
-  // which used subtarget features to enable this type of codegen).
-  // We should change this to match GCC behavior where everything but
-  // scalar division estimates are turned on by default with -ffast-math.
-  this->Options.Reciprocals.setDefaults("all", false, 1);
+  // By default (and when -ffast-math is on), enable estimate codegen for
+  // everything except scalar division. By default, use 1 refinement step for
+  // all operations. Defaults may be overridden by using command-line options.
+  // Scalar division estimates are disabled because they break too much
+  // real-world code. These defaults match GCC behavior.
+  this->Options.Reciprocals.setDefaults("sqrtf", true, 1);
+  this->Options.Reciprocals.setDefaults("divf", false, 1);
+  this->Options.Reciprocals.setDefaults("vec-sqrtf", true, 1);
+  this->Options.Reciprocals.setDefaults("vec-divf", true, 1);
 
   initAsmInfo();
 }
@@ -172,8 +182,9 @@ UseVZeroUpper("x86-use-vzeroupper", cl::Hidden,
 //===----------------------------------------------------------------------===//
 
 TargetIRAnalysis X86TargetMachine::getTargetIRAnalysis() {
-  return TargetIRAnalysis(
-      [this](Function &F) { return TargetTransformInfo(X86TTIImpl(this, F)); });
+  return TargetIRAnalysis([this](const Function &F) {
+    return TargetTransformInfo(X86TTIImpl(this, F));
+  });
 }
 
 

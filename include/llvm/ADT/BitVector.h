@@ -34,7 +34,7 @@ class BitVector {
 
   BitWord  *Bits;        // Actual bits.
   unsigned Size;         // Size of bitvector in bits.
-  unsigned Capacity;     // Size of allocated memory in BitWord.
+  unsigned Capacity;     // Number of BitWords allocated in the Bits array.
 
 public:
   typedef unsigned size_type;
@@ -566,9 +566,17 @@ private:
     if (AddBits)
       clear_unused_bits();
   }
+
+public:
+  /// Return the size (in bytes) of the bit vector.
+  size_t getMemorySize() const { return Capacity * sizeof(BitWord); }
 };
 
-} // namespace llvm
+static inline size_t capacity_in_bytes(const BitVector &X) {
+  return X.getMemorySize();
+}
+
+} // End llvm namespace
 
 namespace std {
   /// Implement std::swap in terms of BitVector swap.

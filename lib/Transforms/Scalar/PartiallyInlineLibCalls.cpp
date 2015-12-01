@@ -46,7 +46,7 @@ namespace {
   };
 
   char PartiallyInlineLibCalls::ID = 0;
-} // namespace
+}
 
 INITIALIZE_PASS(PartiallyInlineLibCalls, "partially-inline-libcalls",
                 "Partially inline calls to library functions", false, false)
@@ -154,7 +154,7 @@ bool PartiallyInlineLibCalls::optimizeSQRT(CallInst *Call,
   Phi->addIncoming(Call, &CurrBB);
   Phi->addIncoming(LibCall, LibCallBB);
 
-  BB = JoinBB;
+  BB = JoinBB->getIterator();
   return true;
 }
 

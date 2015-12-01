@@ -50,8 +50,10 @@ public:
   /// starts (although it can be called anytime).
   void setKnownObjectSize(size_t size);
 
+  /// The number of bytes read at a time from the data streamer.
+  static const uint32_t kChunkSize = 4096 * 4;
+
 private:
-  const static uint32_t kChunkSize = 4096 * 4;
   mutable std::vector<unsigned char> Bytes;
   std::unique_ptr<DataStreamer> Streamer;
   mutable size_t BytesRead;   // Bytes read from stream
@@ -89,5 +91,5 @@ private:
 MemoryObject *getNonStreamedMemoryObject(
     const unsigned char *Start, const unsigned char *End);
 
-} // namespace llvm
+}
 #endif  // STREAMINGMEMORYOBJECT_H_

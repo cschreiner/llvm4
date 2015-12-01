@@ -8,7 +8,7 @@
 //===----------------------------------------------------------------------===//
 //
 // Defines an interface to a lib.exe-compatible driver that also understands
-// bitcode files. Used by llvm-lib and lld-link2 /lib.
+// bitcode files. Used by llvm-lib and lld-link /lib.
 //
 //===----------------------------------------------------------------------===//
 
@@ -51,22 +51,18 @@ static const llvm::opt::OptTable::Info infoTable[] = {
 
 class LibOptTable : public llvm::opt::OptTable {
 public:
-  LibOptTable() : OptTable(infoTable, llvm::array_lengthof(infoTable), true) {}
+  LibOptTable() : OptTable(infoTable, true) {}
 };
 
-} // namespace
+}
 
-static std::string getOutputPath(llvm::opt::InputArgList *Args) {
+static std::string getOutputPath(llvm::opt::InputArgList *Args,
+                                 const llvm::NewArchiveIterator &FirstMember) {
   if (auto *Arg = Args->getLastArg(OPT_out))
     return Arg->getValue();
-  for (auto *Arg : Args->filtered(OPT_INPUT)) {
-    if (!StringRef(Arg->getValue()).endswith_lower(".obj"))
-      continue;
-    SmallString<128> Val = StringRef(Arg->getValue());
-    llvm::sys::path::replace_extension(Val, ".lib");
-    return Val.str();
-  }
-  llvm_unreachable("internal error");
+  SmallString<128> Val = FirstMember.getNew();
+  llvm::sys::path::replace_extension(Val, ".lib");
+  return Val.str();
 }
 
 static std::vector<StringRef> getSearchPaths(llvm::opt::InputArgList *Args,
@@ -106,45 +102,47 @@ static Optional<std::string> findInputFile(StringRef File,
 int llvm::libDriverMain(llvm::ArrayRef<const char*> ArgsArr) {
   SmallVector<const char *, 20> NewArgs(ArgsArr.begin(), ArgsArr.end());
   BumpPtrAllocator Alloc;
-  BumpPtrStringSaver Saver(Alloc);
+  StringSaver Saver(Alloc);
   cl::ExpandResponseFiles(Saver, cl::TokenizeWindowsCommandLine, NewArgs);
   ArgsArr = NewArgs;
 
   LibOptTable Table;
   unsigned MissingIndex;
   unsigned MissingCount;
-  std::unique_ptr<llvm::opt::InputArgList> Args(
-      Table.ParseArgs(ArgsArr.slice(1), MissingIndex, MissingCount));
+  llvm::opt::InputArgList Args =
+      Table.ParseArgs(ArgsArr.slice(1), MissingIndex, MissingCount);
   if (MissingCount) {
     llvm::errs() << "missing arg value for \""
-                 << Args->getArgString(MissingIndex)
-                 << "\", expected " << MissingCount
+                 << Args.getArgString(MissingIndex) << "\", expected "
+                 << MissingCount
                  << (MissingCount == 1 ? " argument.\n" : " arguments.\n");
     return 1;
   }
-  for (auto *Arg : Args->filtered(OPT_UNKNOWN))
+  for (auto *Arg : Args.filtered(OPT_UNKNOWN))
     llvm::errs() << "ignoring unknown argument: " << Arg->getSpelling() << "\n";
 
-  if (Args->filtered_begin(OPT_INPUT) == Args->filtered_end()) {
+  if (Args.filtered_begin(OPT_INPUT) == Args.filtered_end()) {
     llvm::errs() << "no input files.\n";
     return 1;
   }
 
-  std::vector<StringRef> SearchPaths = getSearchPaths(Args.get(), Saver);
+  std::vector<StringRef> SearchPaths = getSearchPaths(&Args, Saver);
 
   std::vector<llvm::NewArchiveIterator> Members;
-  for (auto *Arg : Args->filtered(OPT_INPUT)) {
+  for (auto *Arg : Args.filtered(OPT_INPUT)) {
     Optional<std::string> Path = findInputFile(Arg->getValue(), SearchPaths);
     if (!Path.hasValue()) {
       llvm::errs() << Arg->getValue() << ": no such file or directory\n";
       return 1;
     }
-    Members.emplace_back(Saver.save(*Path),
-                         llvm::sys::path::filename(Arg->getValue()));
+    Members.emplace_back(Saver.save(*Path));
   }
 
-  std::pair<StringRef, std::error_code> Result = llvm::writeArchive(
-      getOutputPath(Args.get()), Members, /*WriteSymtab=*/true);
+  std::pair<StringRef, std::error_code> Result =
+      llvm::writeArchive(getOutputPath(&Args, Members[0]), Members,
+                         /*WriteSymtab=*/true, object::Archive::K_GNU,
+                         /*Deterministic*/ true, Args.hasArg(OPT_llvmlibthin));
+
   if (Result.second) {
     if (Result.first.empty())
       Result.first = ArgsArr[0];

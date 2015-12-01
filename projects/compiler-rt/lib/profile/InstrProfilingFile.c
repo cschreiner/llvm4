@@ -8,6 +8,8 @@
 \*===----------------------------------------------------------------------===*/
 
 #include "InstrProfiling.h"
+#include "InstrProfilingInternal.h"
+#include "InstrProfilingUtil.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,45 +17,19 @@
 
 #define UNCONST(ptr) ((void *)(uintptr_t)(ptr))
 
+static size_t FileWriter(const void *Data, size_t ElmSize, size_t NumElm,
+                         void **File) {
+  return fwrite(Data, ElmSize, NumElm, (FILE *)*File);
+}
+uint8_t *ValueDataBegin = NULL;
+
 static int writeFile(FILE *File) {
-  /* Match logic in __llvm_profile_write_buffer(). */
-  const __llvm_profile_data *DataBegin = __llvm_profile_begin_data();
-  const __llvm_profile_data *DataEnd = __llvm_profile_end_data();
-  const uint64_t *CountersBegin = __llvm_profile_begin_counters();
-  const uint64_t *CountersEnd   = __llvm_profile_end_counters();
-  const char *NamesBegin = __llvm_profile_begin_names();
-  const char *NamesEnd   = __llvm_profile_end_names();
-
-  /* Calculate size of sections. */
-  const uint64_t DataSize = DataEnd - DataBegin;
-  const uint64_t CountersSize = CountersEnd - CountersBegin;
-  const uint64_t NamesSize = NamesEnd - NamesBegin;
-  const uint64_t Padding = sizeof(uint64_t) - NamesSize % sizeof(uint64_t);
-
-  /* Enough zeroes for padding. */
-  const char Zeroes[sizeof(uint64_t)] = {0};
-
-  /* Create the header. */
-  uint64_t Header[PROFILE_HEADER_SIZE];
-  Header[0] = __llvm_profile_get_magic();
-  Header[1] = __llvm_profile_get_version();
-  Header[2] = DataSize;
-  Header[3] = CountersSize;
-  Header[4] = NamesSize;
-  Header[5] = (uintptr_t)CountersBegin;
-  Header[6] = (uintptr_t)NamesBegin;
-
-  /* Write the data. */
-#define CHECK_fwrite(Data, Size, Length, File) \
-  do { if (fwrite(Data, Size, Length, File) != Length) return -1; } while (0)
-  CHECK_fwrite(Header,        sizeof(uint64_t), PROFILE_HEADER_SIZE, File);
-  CHECK_fwrite(DataBegin,     sizeof(__llvm_profile_data), DataSize, File);
-  CHECK_fwrite(CountersBegin, sizeof(uint64_t), CountersSize, File);
-  CHECK_fwrite(NamesBegin,    sizeof(char), NamesSize, File);
-  CHECK_fwrite(Zeroes,        sizeof(char), Padding, File);
-#undef CHECK_fwrite
-
-  return 0;
+  uint8_t *ValueDataBegin = NULL;
+  const uint64_t ValueDataSize =
+      __llvm_profile_gather_value_data(&ValueDataBegin);
+  int r = llvmWriteProfData(File, ValueDataBegin, ValueDataSize, FileWriter);
+  free(ValueDataBegin);
+  return r;
 }
 
 static int writeFileWithName(const char *OutputName) {
@@ -83,6 +59,14 @@ static void truncateCurrentFile(void) {
   Filename = __llvm_profile_CurrentFilename;
   if (!Filename || !Filename[0])
     return;
+
+  /* Create the directory holding the file, if needed. */
+  if (strchr(Filename, '/')) {
+    char *Copy = malloc(strlen(Filename) + 1);
+    strcpy(Copy, Filename);
+    __llvm_profile_recursive_mkdir(Copy);
+    free(Copy);
+  }
 
   /* Truncate the file.  Later we'll reopen and append. */
   File = fopen(Filename, "w");

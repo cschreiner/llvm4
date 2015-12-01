@@ -40,7 +40,7 @@ namespace {
     bool needsRelocateWithSymbol(const MCSymbol &Sym,
                                  unsigned Type) const override;
   };
-} // namespace
+}
 
 ARMELFObjectWriter::ARMELFObjectWriter(uint8_t OSABI)
   : MCELFObjectTargetWriter(/*Is64Bit*/ false, OSABI,
@@ -95,7 +95,7 @@ unsigned ARMELFObjectWriter::GetRelocTypeInner(const MCValue &Target,
       case MCSymbolRefExpr::VK_GOTTPOFF:
         Type = ELF::R_ARM_TLS_IE32;
         break;
-      case MCSymbolRefExpr::VK_GOTPCREL:
+      case MCSymbolRefExpr::VK_ARM_GOT_PREL:
         Type = ELF::R_ARM_GOT_PREL;
         break;
       }
@@ -192,7 +192,7 @@ unsigned ARMELFObjectWriter::GetRelocTypeInner(const MCValue &Target,
       case MCSymbolRefExpr::VK_GOTOFF:
         Type = ELF::R_ARM_GOTOFF32;
         break;
-      case MCSymbolRefExpr::VK_GOTPCREL:
+      case MCSymbolRefExpr::VK_ARM_GOT_PREL:
         Type = ELF::R_ARM_GOT_PREL;
         break;
       case MCSymbolRefExpr::VK_ARM_TARGET1:

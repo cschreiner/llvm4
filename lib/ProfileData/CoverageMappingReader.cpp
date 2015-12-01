@@ -315,7 +315,7 @@ struct SectionData {
     return std::error_code();
   }
 };
-} // namespace
+}
 
 template <typename T, support::endianness Endian>
 std::error_code readCoverageMappingData(
@@ -343,7 +343,7 @@ std::error_code readCoverageMappingData(
 
     // Skip past the function records, saving the start and end for later.
     const char *FunBuf = Buf;
-    Buf += NRecords * (sizeof(T) + 2 * sizeof(uint32_t) + sizeof(uint64_t));
+    Buf += NRecords * sizeof(coverage::CovMapFunctionRecord<T>);
     const char *FunEnd = Buf;
 
     // Get the filenames.
@@ -366,12 +366,15 @@ std::error_code readCoverageMappingData(
     // before reading the next map.
     Buf += alignmentAdjustment(Buf, 8);
 
-    while (FunBuf < FunEnd) {
+    auto CFR =
+        reinterpret_cast<const coverage::CovMapFunctionRecord<T> *>(FunBuf);
+    while ((const char *)CFR < FunEnd) {
       // Read the function information
-      T NamePtr = endian::readNext<T, Endian, unaligned>(FunBuf);
-      uint32_t NameSize = endian::readNext<uint32_t, Endian, unaligned>(FunBuf);
-      uint32_t DataSize = endian::readNext<uint32_t, Endian, unaligned>(FunBuf);
-      uint64_t FuncHash = endian::readNext<uint64_t, Endian, unaligned>(FunBuf);
+      T NamePtr = endian::byte_swap<T, Endian>(CFR->NamePtr);
+      uint32_t NameSize = endian::byte_swap<uint32_t, Endian>(CFR->NameSize);
+      uint32_t DataSize = endian::byte_swap<uint32_t, Endian>(CFR->DataSize);
+      uint64_t FuncHash = endian::byte_swap<uint64_t, Endian>(CFR->FuncHash);
+      CFR++;
 
       // Now use that to read the coverage data.
       if (CovBuf + DataSize > CovEnd)
@@ -448,7 +451,7 @@ static std::error_code loadBinaryFormat(MemoryBufferRef ObjectBuffer,
                                         StringRef &CoverageMapping,
                                         uint8_t &BytesInAddress,
                                         support::endianness &Endian,
-                                        Triple::ArchType Arch) {
+                                        StringRef Arch) {
   auto BinOrErr = object::createBinary(ObjectBuffer);
   if (std::error_code EC = BinOrErr.getError())
     return EC;
@@ -465,7 +468,7 @@ static std::error_code loadBinaryFormat(MemoryBufferRef ObjectBuffer,
     // For any other object file, upcast and take ownership.
     OF.reset(cast<object::ObjectFile>(Bin.release()));
     // If we've asked for a particular arch, make sure they match.
-    if (Arch != Triple::ArchType::UnknownArch && OF->getArch() != Arch)
+    if (!Arch.empty() && OF->getArch() != Triple(Arch).getArch())
       return object_error::arch_not_found;
   } else
     // We can only handle object files.
@@ -477,10 +480,11 @@ static std::error_code loadBinaryFormat(MemoryBufferRef ObjectBuffer,
                                 : support::endianness::big;
 
   // Look for the sections that we are interested in.
-  auto NamesSection = lookupSection(*OF, "__llvm_prf_names");
+  auto NamesSection = lookupSection(*OF, getInstrProfNameSectionName(false));
   if (auto EC = NamesSection.getError())
     return EC;
-  auto CoverageSection = lookupSection(*OF, "__llvm_covmap");
+  auto CoverageSection =
+      lookupSection(*OF, getInstrProfCoverageSectionName(false));
   if (auto EC = CoverageSection.getError())
     return EC;
 
@@ -495,7 +499,7 @@ static std::error_code loadBinaryFormat(MemoryBufferRef ObjectBuffer,
 
 ErrorOr<std::unique_ptr<BinaryCoverageReader>>
 BinaryCoverageReader::create(std::unique_ptr<MemoryBuffer> &ObjectBuffer,
-                             Triple::ArchType Arch) {
+                             StringRef Arch) {
   std::unique_ptr<BinaryCoverageReader> Reader(new BinaryCoverageReader());
 
   SectionData Profile;

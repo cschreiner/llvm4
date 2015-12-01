@@ -34,8 +34,7 @@ public:
   HexagonResource(unsigned s) { setUnits(s); };
 
   void setUnits(unsigned s) {
-    Slots = s & ~(-1 << HEXAGON_PACKET_SIZE);
-    setWeight(s);
+    Slots = s & ~(~0U << HEXAGON_PACKET_SIZE);
   };
   unsigned setWeight(unsigned s);
 
@@ -109,6 +108,8 @@ public:
     SHUFFLE_ERROR_BRANCHES, ///< No free slots for branch insns.
     SHUFFLE_ERROR_NOSLOTS,  ///< No free slots for other insns.
     SHUFFLE_ERROR_SLOTS,    ///< Over-subscribed slots.
+    SHUFFLE_ERROR_ERRATA2, ///< Errata violation (v60).
+    SHUFFLE_ERROR_STORE_LOAD_CONFLICT, ///< store/load conflict
     SHUFFLE_ERROR_UNKNOWN   ///< Unknown error.
   };
 
@@ -134,6 +135,6 @@ public:
   void setError(unsigned Err) { Error = Err; };
   unsigned getError() const { return (Error); };
 };
-} // namespace llvm
+}
 
 #endif // HEXAGONSHUFFLER_H

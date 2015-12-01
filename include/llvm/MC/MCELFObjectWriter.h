@@ -57,8 +57,6 @@ public:
       case Triple::PS4:
       case Triple::FreeBSD:
         return ELF::ELFOSABI_FREEBSD;
-      case Triple::Linux:
-        return ELF::ELFOSABI_LINUX;
       default:
         return ELF::ELFOSABI_NONE;
     }
@@ -132,6 +130,6 @@ public:
 MCObjectWriter *createELFObjectWriter(MCELFObjectTargetWriter *MOTW,
                                       raw_pwrite_stream &OS,
                                       bool IsLittleEndian);
-} // namespace llvm
+} // End llvm namespace
 
 #endif

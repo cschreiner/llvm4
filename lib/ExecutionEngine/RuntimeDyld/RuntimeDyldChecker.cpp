@@ -673,7 +673,7 @@ private:
     return (S == MCDisassembler::Success);
   }
 };
-} // namespace llvm
+}
 
 RuntimeDyldCheckerImpl::RuntimeDyldCheckerImpl(RuntimeDyld &RTDyld,
                                                MCDisassembler *Disassembler,
@@ -727,7 +727,9 @@ bool RuntimeDyldCheckerImpl::checkAllRulesInBuffer(StringRef RulePrefix,
 }
 
 bool RuntimeDyldCheckerImpl::isSymbolValid(StringRef Symbol) const {
-  return getRTDyld().getSymbolLocalAddress(Symbol) != nullptr;
+  if (getRTDyld().getSymbol(Symbol))
+    return true;
+  return !!getRTDyld().Resolver.findSymbol(Symbol);
 }
 
 uint64_t RuntimeDyldCheckerImpl::getSymbolLocalAddr(StringRef Symbol) const {

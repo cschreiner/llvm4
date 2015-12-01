@@ -82,6 +82,8 @@ private:
 
   void expandRetRA(MachineBasicBlock &MBB, MachineBasicBlock::iterator I) const;
 
+  void expandERet(MachineBasicBlock &MBB, MachineBasicBlock::iterator I) const;
+
   std::pair<bool, bool> compareOpndSize(unsigned Opc,
                                         const MachineFunction &MF) const;
 
@@ -113,6 +115,6 @@ private:
                       MachineBasicBlock::iterator I) const;
 };
 
-} // namespace llvm
+}
 
 #endif

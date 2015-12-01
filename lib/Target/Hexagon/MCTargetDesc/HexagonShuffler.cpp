@@ -27,6 +27,7 @@
 
 using namespace llvm;
 
+namespace {
 // Insn shuffling priority.
 class HexagonBid {
   // The priority is directly proportional to how restricted the insn is based
@@ -75,11 +76,15 @@ public:
       return false;
   };
 };
+} // end anonymous namespace
 
 unsigned HexagonResource::setWeight(unsigned s) {
   const unsigned SlotWeight = 8;
   const unsigned MaskWeight = SlotWeight - 1;
   bool Key = (1 << s) & getUnits();
+
+  // TODO: Improve this API so that we can prevent misuse statically.
+  assert(SlotWeight * s < 32 && "Argument to setWeight too large.");
 
   // Calculate relative weight of the insn for the given slot, weighing it the
   // heavier the more restrictive the insn is and the lowest the slots that the

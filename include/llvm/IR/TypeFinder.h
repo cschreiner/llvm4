@@ -7,7 +7,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file contains the declaration of the TypeFinder class. 
+// This file contains the declaration of the TypeFinder class.
 //
 //===----------------------------------------------------------------------===//
 
@@ -74,6 +74,6 @@ private:
   void incorporateMDNode(const MDNode *V);
 };
 
-} // namespace llvm
+} // end llvm namespace
 
 #endif

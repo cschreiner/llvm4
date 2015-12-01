@@ -203,7 +203,7 @@ public:
 } // namespace
 
 TargetIRAnalysis AArch64TargetMachine::getTargetIRAnalysis() {
-  return TargetIRAnalysis([this](Function &F) {
+  return TargetIRAnalysis([this](const Function &F) {
     return TargetTransformInfo(AArch64TTIImpl(this, F));
   });
 }
@@ -224,6 +224,10 @@ void AArch64PassConfig::addIRPasses() {
     addPass(createCFGSimplificationPass());
 
   TargetPassConfig::addIRPasses();
+
+  // Match interleaved memory accesses to ldN/stN intrinsics.
+  if (TM->getOptLevel() != CodeGenOpt::None)
+    addPass(createInterleavedAccessPass(TM));
 
   if (TM->getOptLevel() == CodeGenOpt::Aggressive && EnableGEPOpt) {
     // Call SeparateConstOffsetFromGEP pass to extract constants within indices

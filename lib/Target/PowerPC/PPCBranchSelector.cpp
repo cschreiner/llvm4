@@ -51,7 +51,7 @@ namespace {
     }
   };
   char PPCBSel::ID = 0;
-} // namespace
+}
 
 INITIALIZE_PASS(PPCBSel, "ppc-branch-select", "PowerPC Branch Selector",
                 false, false)
@@ -91,7 +91,7 @@ bool PPCBSel::runOnMachineFunction(MachineFunction &Fn) {
   unsigned FuncSize = 0;
   for (MachineFunction::iterator MFI = Fn.begin(), E = Fn.end(); MFI != E;
        ++MFI) {
-    MachineBasicBlock *MBB = MFI;
+    MachineBasicBlock *MBB = &*MFI;
 
     // The end of the previous block may have extra nops if this block has an
     // alignment requirement.

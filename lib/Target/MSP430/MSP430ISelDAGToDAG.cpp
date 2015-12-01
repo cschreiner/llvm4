@@ -85,7 +85,7 @@ namespace {
         errs() << " JT" << JT << " Align" << Align << '\n';
     }
   };
-} // namespace
+}
 
 /// MSP430DAGToDAGISel - MSP430 specific code to select MSP430 machine
 /// instructions for SelectionDAG operations.
@@ -254,10 +254,11 @@ bool MSP430DAGToDAGISel::SelectAddr(SDValue N,
       AM.Base.Reg = CurDAG->getRegister(0, VT);
   }
 
-  Base  = (AM.BaseType == MSP430ISelAddressMode::FrameIndexBase) ?
-    CurDAG->getTargetFrameIndex(AM.Base.FrameIndex,
-                                getTargetLowering()->getPointerTy()) :
-    AM.Base.Reg;
+  Base = (AM.BaseType == MSP430ISelAddressMode::FrameIndexBase)
+             ? CurDAG->getTargetFrameIndex(
+                   AM.Base.FrameIndex,
+                   getTargetLowering()->getPointerTy(CurDAG->getDataLayout()))
+             : AM.Base.Reg;
 
   if (AM.GV)
     Disp = CurDAG->getTargetGlobalAddress(AM.GV, SDLoc(N),

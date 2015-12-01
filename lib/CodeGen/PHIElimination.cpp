@@ -104,7 +104,7 @@ namespace {
                      MachineInstrExpressionTrait> LoweredPHIMap;
     LoweredPHIMap LoweredPHIs;
   };
-} // namespace
+}
 
 STATISTIC(NumLowered, "Number of phis lowered");
 STATISTIC(NumCriticalEdgesSplit, "Number of critical edges split");
@@ -548,7 +548,7 @@ void PHIElimination::analyzePHINodes(const MachineFunction& MF) {
 bool PHIElimination::SplitPHIEdges(MachineFunction &MF,
                                    MachineBasicBlock &MBB,
                                    MachineLoopInfo *MLI) {
-  if (MBB.empty() || !MBB.front().isPHI() || MBB.isLandingPad())
+  if (MBB.empty() || !MBB.front().isPHI() || MBB.isEHPad())
     return false;   // Quick exit for basic blocks without PHIs.
 
   const MachineLoop *CurLoop = MLI ? MLI->getLoopFor(&MBB) : nullptr;

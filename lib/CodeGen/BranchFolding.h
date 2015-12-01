@@ -24,7 +24,7 @@ namespace llvm {
   class TargetInstrInfo;
   class TargetRegisterInfo;
 
-  class BranchFolder {
+  class LLVM_LIBRARY_VISIBILITY BranchFolder {
   public:
     explicit BranchFolder(bool defaultEnableTailMerge, bool CommonHoist,
                           const MachineBlockFrequencyInfo &MBFI,
@@ -54,6 +54,7 @@ namespace llvm {
     typedef std::vector<MergePotentialsElt>::iterator MPIterator;
     std::vector<MergePotentialsElt> MergePotentials;
     SmallPtrSet<const MachineBasicBlock*, 2> TriedMerging;
+    DenseMap<const MachineBasicBlock *, int> FuncletMembership;
 
     class SameTailElt {
       MPIterator MPIter;
@@ -142,6 +143,6 @@ namespace llvm {
     bool HoistCommonCode(MachineFunction &MF);
     bool HoistCommonCodeInSuccs(MachineBasicBlock *MBB);
   };
-} // namespace llvm
+}
 
 #endif /* LLVM_CODEGEN_BRANCHFOLDING_HPP */

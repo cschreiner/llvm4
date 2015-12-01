@@ -37,9 +37,7 @@ using namespace object;
 
 IRObjectFile::IRObjectFile(MemoryBufferRef Object, std::unique_ptr<Module> Mod)
     : SymbolicFile(Binary::ID_IR, Object), M(std::move(Mod)) {
-  // Setup a mangler with the DataLayout.
-  const DataLayout &DL = M->getDataLayout();
-  Mang.reset(new Mangler(&DL));
+  Mang.reset(new Mangler());
 
   const std::string &InlineAsm = M->getModuleInlineAsm();
   if (InlineAsm.empty())
@@ -221,6 +219,12 @@ uint32_t IRObjectFile::getSymbolFlags(DataRefImpl Symb) const {
   uint32_t Res = BasicSymbolRef::SF_None;
   if (GV->isDeclarationForLinker())
     Res |= BasicSymbolRef::SF_Undefined;
+  else if (GV->hasHiddenVisibility() && !GV->hasLocalLinkage())
+    Res |= BasicSymbolRef::SF_Hidden;
+  if (const GlobalVariable *GVar = dyn_cast<GlobalVariable>(GV)) {
+    if (GVar->isConstant())
+      Res |= BasicSymbolRef::SF_Const;
+  }
   if (GV->hasPrivateLinkage())
     Res |= BasicSymbolRef::SF_FormatSpecific;
   if (!GV->hasLocalLinkage())

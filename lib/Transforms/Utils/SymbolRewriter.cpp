@@ -69,7 +69,6 @@
 #include "llvm/Support/SourceMgr.h"
 #include "llvm/Support/YAMLParser.h"
 #include "llvm/Support/raw_ostream.h"
-#include "llvm/Transforms/IPO/PassManagerBuilder.h"
 #include "llvm/Transforms/Utils/SymbolRewriter.h"
 
 using namespace llvm;
@@ -538,7 +537,7 @@ void RewriteSymbols::loadAndParseMapFiles() {
   for (const auto &MapFile : MapFiles)
     parser.parse(MapFile, &Descriptors);
 }
-} // namespace
+}
 
 INITIALIZE_PASS(RewriteSymbols, "rewrite-symbols", "Rewrite Symbols", false,
                 false)

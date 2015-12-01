@@ -39,12 +39,11 @@ namespace ARMCP {
   enum ARMCPModifier {
     no_modifier,
     TLSGD,
-    GOT,
-    GOTOFF,
+    GOT_PREL,
     GOTTPOFF,
     TPOFF
   };
-} // namespace ARMCP
+}
 
 /// ARMConstantPoolValue - ARM specific constantpool value. This is used to
 /// represent PC-relative displacement between the address of the load
@@ -102,8 +101,6 @@ public:
   bool isBlockAddress() const { return Kind == ARMCP::CPBlockAddress; }
   bool isLSDA() const { return Kind == ARMCP::CPLSDA; }
   bool isMachineBasicBlock() const{ return Kind == ARMCP::CPMachineBasicBlock; }
-
-  unsigned getRelocationInfo() const override { return 2; }
 
   int getExistingMachineCPValue(MachineConstantPool *CP,
                                 unsigned Alignment) override;
@@ -254,6 +251,6 @@ public:
   }
 };
 
-} // namespace llvm
+} // End llvm namespace
 
 #endif

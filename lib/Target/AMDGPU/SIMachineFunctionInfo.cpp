@@ -29,6 +29,7 @@ void SIMachineFunctionInfo::anchor() {}
 SIMachineFunctionInfo::SIMachineFunctionInfo(const MachineFunction &MF)
   : AMDGPUMachineFunction(MF),
     TIDReg(AMDGPU::NoRegister),
+    HasSpilledSGPRs(false),
     HasSpilledVGPRs(false),
     PSInputAddr(0),
     NumUserSGPRs(0),
@@ -53,7 +54,6 @@ SIMachineFunctionInfo::SpilledReg SIMachineFunctionInfo::getSpilledReg(
   if (!LaneVGPRs.count(LaneVGPRIdx)) {
     unsigned LaneVGPR = TRI->findUnusedRegister(MRI, &AMDGPU::VGPR_32RegClass);
     LaneVGPRs[LaneVGPRIdx] = LaneVGPR;
-    MRI.setPhysRegUsed(LaneVGPR);
 
     // Add this register as live-in to all blocks to avoid machine verifer
     // complaining about use of an undefined physical register.

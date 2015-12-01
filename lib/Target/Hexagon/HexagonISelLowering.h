@@ -86,7 +86,7 @@ bool isPositiveHalfWord(SDNode *N);
 
       OP_END
     };
-  } // namespace HexagonISD
+  }
 
   class HexagonSubtarget;
 
@@ -163,9 +163,24 @@ bool isPositiveHalfWord(SDNode *N);
     MachineBasicBlock * EmitInstrWithCustomInserter(MachineInstr *MI,
         MachineBasicBlock *BB) const override;
 
+    /// If a physical register, this returns the register that receives the
+    /// exception address on entry to an EH pad.
+    unsigned
+    getExceptionPointerRegister(const Constant *PersonalityFn) const override {
+      return Hexagon::R0;
+    }
+
+    /// If a physical register, this returns the register that receives the
+    /// exception typeid on entry to a landing pad.
+    unsigned
+    getExceptionSelectorRegister(const Constant *PersonalityFn) const override {
+      return Hexagon::R1;
+    }
+
     SDValue LowerVASTART(SDValue Op, SelectionDAG &DAG) const;
     SDValue LowerConstantPool(SDValue Op, SelectionDAG &DAG) const;
-    EVT getSetCCResultType(LLVMContext &C, EVT VT) const override {
+    EVT getSetCCResultType(const DataLayout &, LLVMContext &C,
+                           EVT VT) const override {
       if (!VT.isVector())
         return MVT::i1;
       else
@@ -179,11 +194,10 @@ bool isPositiveHalfWord(SDNode *N);
 
     std::pair<unsigned, const TargetRegisterClass *>
     getRegForInlineAsmConstraint(const TargetRegisterInfo *TRI,
-                                 const std::string &Constraint,
-                                 MVT VT) const override;
+                                 StringRef Constraint, MVT VT) const override;
 
-    unsigned getInlineAsmMemConstraint(
-        const std::string &ConstraintCode) const override {
+    unsigned
+    getInlineAsmMemConstraint(StringRef ConstraintCode) const override {
       if (ConstraintCode == "o")
         return InlineAsm::Constraint_o;
       else if (ConstraintCode == "v")
@@ -198,8 +212,8 @@ bool isPositiveHalfWord(SDNode *N);
     /// The type may be VoidTy, in which case only return true if the addressing
     /// mode is legal for a load/store of any legal type.
     /// TODO: Handle pre/postinc as well.
-    bool isLegalAddressingMode(const AddrMode &AM, Type *Ty,
-                               unsigned AS) const override;
+    bool isLegalAddressingMode(const DataLayout &DL, const AddrMode &AM,
+                               Type *Ty, unsigned AS) const override;
     bool isFPImmLegal(const APFloat &Imm, EVT VT) const override;
 
     /// isLegalICmpImmediate - Return true if the specified immediate is legal
@@ -207,6 +221,18 @@ bool isPositiveHalfWord(SDNode *N);
     /// compare a register against the immediate without having to materialize
     /// the immediate into a register.
     bool isLegalICmpImmediate(int64_t Imm) const override;
+
+    // Handling of atomic RMW instructions.
+    Value *emitLoadLinked(IRBuilder<> &Builder, Value *Addr,
+        AtomicOrdering Ord) const override;
+    Value *emitStoreConditional(IRBuilder<> &Builder, Value *Val,
+        Value *Addr, AtomicOrdering Ord) const override;
+    AtomicExpansionKind shouldExpandAtomicLoadInIR(LoadInst *LI) const override;
+    bool shouldExpandAtomicStoreInIR(StoreInst *SI) const override;
+    AtomicExpansionKind
+    shouldExpandAtomicRMWInIR(AtomicRMWInst *AI) const override {
+      return AtomicExpansionKind::LLSC;
+    }
   };
 } // end namespace llvm
 

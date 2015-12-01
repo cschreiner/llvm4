@@ -47,6 +47,9 @@ namespace sys {
   /// \brief Print the stack trace using the given \c raw_ostream object.
   void PrintStackTrace(raw_ostream &OS);
 
+  // Run all registered signal handlers.
+  void RunSignalHandlers();
+
   /// AddSignalHandler - Add a function to be called when an abort/kill signal
   /// is delivered to the process.  The handler can have a cookie passed to it
   /// to identify what instance of the handler it is.
@@ -62,7 +65,7 @@ namespace sys {
   /// different thread on some platforms.
   /// @brief Register a function to be called when ctrl-c is pressed.
   void SetInterruptFunction(void (*IF)());
-} // namespace sys
-} // namespace llvm
+} // End sys namespace
+} // End llvm namespace
 
 #endif
