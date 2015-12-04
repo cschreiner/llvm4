@@ -13,6 +13,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/ADT/APInt.h"
+#include "llvm/ADT/APIntPoison.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/Hashing.h"
 #include "llvm/ADT/SmallString.h"
@@ -105,30 +106,37 @@ void APInt::initFromArray(ArrayRef<uint64_t> bigVal) {
 }
 
 APInt::APInt(unsigned numBits, ArrayRef<uint64_t> bigVal)
-  : BitWidth(numBits), VAL(0) {
+  : BitWidth(numBits), VAL(0), poisoned(false) {
   initFromArray(bigVal);
 }
 
 APInt::APInt(unsigned numBits, unsigned numWords, const uint64_t bigVal[])
-  : BitWidth(numBits), VAL(0) {
+  : BitWidth(numBits), VAL(0), poisoned(false) {
+  // Note: initFromArray checks the argument values
   initFromArray(makeArrayRef(bigVal, numWords));
 }
 
 APInt::APInt(unsigned numbits, StringRef Str, uint8_t radix)
-  : BitWidth(numbits), VAL(0) {
+  : BitWidth(numbits), VAL(0), poisoned(false) {
   assert(BitWidth && "Bitwidth too small");
   fromString(numbits, Str, radix);
 }
 
+/* Note: this is one of the few (the only) SlowCase function that
+   handles poisoning.  I did it for efficiency reasons. -- CAS 2014nov01
+ */
 APInt& APInt::AssignSlowCase(const APInt& RHS) {
   // Don't do anything for X = X
   if (this == &RHS)
     return *this;
 
+  poisoned= RHS.poisoned;
+
   if (BitWidth == RHS.getBitWidth()) {
     // assume same bit-width single-word case is already handled
     assert(!isSingleWord());
     memcpy(pVal, RHS.pVal, getNumWords() * APINT_WORD_SIZE);
+    poisoned= RHS.poisoned;
     return *this;
   }
 
@@ -149,6 +157,7 @@ APInt& APInt::AssignSlowCase(const APInt& RHS) {
     memcpy(pVal, RHS.pVal, RHS.getNumWords() * APINT_WORD_SIZE);
   }
   BitWidth = RHS.BitWidth;
+  poisoned= RHS.poisoned;
   return clearUnusedBits();
 }
 
@@ -159,6 +168,7 @@ APInt& APInt::operator=(uint64_t RHS) {
     pVal[0] = RHS;
     memset(pVal+1, 0, (getNumWords() - 1) * APINT_WORD_SIZE);
   }
+  BitWidth= sizeof(RHS)* 8; // added by CAS. Note that RHS is not an APInt.
   return clearUnusedBits();
 }
 
@@ -193,12 +203,52 @@ static bool add_1(uint64_t dest[], uint64_t x[], unsigned len, uint64_t y) {
   return y;
 }
 
+/// @brief returns a random number with width w such that 
+/// desiredBitWidth <= w <= 64
+///
+/// TODO: consider using a better random number generator than rand().
+inline uint64_t APInt::wideRand( unsigned desiredBitWidth ) {
+  assert( desiredBitWidth <= APINT_BITS_PER_WORD && 
+      "requesting too many random bits" );
+  unsigned widthSoFarInBits= 0;
+  uint64_t result= 0;
+  while ( widthSoFarInBits < desiredBitWidth ) {
+     result= (result << ( sizeof(unsigned) * 8 ) ) | (unsigned)rand();
+     widthSoFarInBits+= 8* sizeof(unsigned);
+  }
+  return result;
+}
+
+/// @brief set this APInt to a random value
+void APInt::setRandom() {
+   poisoned= false;
+   if ( isSingleWord() ) {
+      VAL= wideRand( BitWidth );
+      clearUnusedBits(); 
+      return;
+   }
+   
+   unsigned widthSoFarInBits= 0;
+   unsigned index= 0;
+   while ( widthSoFarInBits < BitWidth ) {
+      pVal[ index ]= wideRand(APINT_BITS_PER_WORD);
+      widthSoFarInBits+= APINT_BITS_PER_WORD;
+      index++;
+   }
+   pVal[ index ]= wideRand( APINT_BITS_PER_WORD );
+
+   clearUnusedBits();
+   return;
+}
+
+
 /// @brief Prefix increment operator. Increments the APInt by one.
 APInt& APInt::operator++() {
   if (isSingleWord())
     ++VAL;
   else
     add_1(pVal, pVal, getNumWords(), 1);
+  // poison is preserved with no explicit action.
   return clearUnusedBits();
 }
 
@@ -228,6 +278,7 @@ APInt& APInt::operator--() {
     --VAL;
   else
     sub_1(pVal, getNumWords(), 1);
+  // poison is preserved with no explicit action 
   return clearUnusedBits();
 }
 
@@ -251,11 +302,12 @@ static bool add(uint64_t *dest, const uint64_t *x, const uint64_t *y,
 /// @brief Addition assignment operator.
 APInt& APInt::operator+=(const APInt& RHS) {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
-  if (isSingleWord())
+  if (isSingleWord()) {
     VAL += RHS.VAL;
-  else {
+  } else {
     add(pVal, pVal, RHS.pVal, getNumWords());
   }
+  // Note: would call a poisonIfNeeded(~) ftn here
   return clearUnusedBits();
 }
 
@@ -282,6 +334,7 @@ APInt& APInt::operator-=(const APInt& RHS) {
     VAL -= RHS.VAL;
   else
     sub(pVal, pVal, RHS.pVal, getNumWords());
+  // Note: would call a poisonIfNeeded(~) ftn here
   return clearUnusedBits();
 }
 
@@ -358,15 +411,18 @@ APInt& APInt::operator*=(const APInt& RHS) {
   if (isSingleWord()) {
     VAL *= RHS.VAL;
     clearUnusedBits();
+    // Note: would call a poisonIfNeeded(~) ftn here
     return *this;
   }
 
   // Get some bit facts about LHS and check for zero
   unsigned lhsBits = getActiveBits();
   unsigned lhsWords = !lhsBits ? 0 : whichWord(lhsBits - 1) + 1;
-  if (!lhsWords)
+  if (!lhsWords) {
     // 0 * X ===> 0
+    // Note: would call a poisonIfNeeded(~) ftn here
     return *this;
+  }
 
   // Get some bit facts about RHS and check for zero
   unsigned rhsBits = RHS.getActiveBits();
@@ -374,6 +430,7 @@ APInt& APInt::operator*=(const APInt& RHS) {
   if (!rhsWords) {
     // X * 0 ===> 0
     clearAllBits();
+    // Note: would call a poisonIfNeeded(~) ftn here
     return *this;
   }
 
@@ -392,6 +449,7 @@ APInt& APInt::operator*=(const APInt& RHS) {
 
   // delete dest array and return
   delete[] dest;
+  // Note: would call a poisonIfNeeded(~) ftn here
   return *this;
 }
 
@@ -399,11 +457,13 @@ APInt& APInt::operator&=(const APInt& RHS) {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
   if (isSingleWord()) {
     VAL &= RHS.VAL;
+    // Note: would call a poisonIfNeeded(~) ftn here
     return *this;
   }
   unsigned numWords = getNumWords();
   for (unsigned i = 0; i < numWords; ++i)
     pVal[i] &= RHS.pVal[i];
+  // Note: would call a poisonIfNeeded(~) ftn here
   return *this;
 }
 
@@ -411,11 +471,13 @@ APInt& APInt::operator|=(const APInt& RHS) {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
   if (isSingleWord()) {
     VAL |= RHS.VAL;
+    // Note: would call a poisonIfNeeded(~) ftn here
     return *this;
   }
   unsigned numWords = getNumWords();
   for (unsigned i = 0; i < numWords; ++i)
     pVal[i] |= RHS.pVal[i];
+  // Note: would call a poisonIfNeeded(~) ftn here
   return *this;
 }
 
@@ -424,11 +486,13 @@ APInt& APInt::operator^=(const APInt& RHS) {
   if (isSingleWord()) {
     VAL ^= RHS.VAL;
     this->clearUnusedBits();
+    // Note: would call a poisonIfNeeded(~) ftn here
     return *this;
   }
   unsigned numWords = getNumWords();
   for (unsigned i = 0; i < numWords; ++i)
     pVal[i] ^= RHS.pVal[i];
+  // Note: would call a poisonIfNeeded(~) ftn here
   return clearUnusedBits();
 }
 
@@ -437,7 +501,11 @@ APInt APInt::AndSlowCase(const APInt& RHS) const {
   uint64_t* val = getMemory(numWords);
   for (unsigned i = 0; i < numWords; ++i)
     val[i] = pVal[i] & RHS.pVal[i];
-  return APInt(val, getBitWidth());
+  APInt Result= APInt(val, getBitWidth());
+  // Note: would call a poisonIfNeeded(~) ftn here
+  // Note: the APInt instance will free val's memory.
+  return Result;
+
 }
 
 APInt APInt::OrSlowCase(const APInt& RHS) const {
@@ -445,7 +513,10 @@ APInt APInt::OrSlowCase(const APInt& RHS) const {
   uint64_t *val = getMemory(numWords);
   for (unsigned i = 0; i < numWords; ++i)
     val[i] = pVal[i] | RHS.pVal[i];
-  return APInt(val, getBitWidth());
+  APInt Result= APInt(val, getBitWidth());
+  // Note: would call a poisonIfNeeded(~) ftn here
+  // Note: the APInt instance will free val's memory.
+  return Result;
 }
 
 APInt APInt::XorSlowCase(const APInt& RHS) const {
@@ -457,35 +528,48 @@ APInt APInt::XorSlowCase(const APInt& RHS) const {
   APInt Result(val, getBitWidth());
   // 0^0==1 so clear the high bits in case they got set.
   Result.clearUnusedBits();
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
 APInt APInt::operator*(const APInt& RHS) const {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
-  if (isSingleWord())
-    return APInt(BitWidth, VAL * RHS.VAL);
-  APInt Result(*this);
-  Result *= RHS;
+  APInt Result; 
+  if (isSingleWord()) {
+    Result= APInt(BitWidth, VAL * RHS.VAL);
+  } else {
+    Result= APInt (*this);
+    Result *= RHS;
+  }
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
 APInt APInt::operator+(const APInt& RHS) const {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
-  if (isSingleWord())
-    return APInt(BitWidth, VAL + RHS.VAL);
+  if (isSingleWord()) {
+    APInt result(BitWidth, VAL + RHS.VAL);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
+  }
   APInt Result(BitWidth, 0);
   add(Result.pVal, this->pVal, RHS.pVal, getNumWords());
   Result.clearUnusedBits();
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
 APInt APInt::operator-(const APInt& RHS) const {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
-  if (isSingleWord())
-    return APInt(BitWidth, VAL - RHS.VAL);
+  if (isSingleWord()) {
+    APInt result(BitWidth, VAL - RHS.VAL);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
+  }
   APInt Result(BitWidth, 0);
   sub(Result.pVal, this->pVal, RHS.pVal, getNumWords());
   Result.clearUnusedBits();
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
@@ -682,13 +766,17 @@ bool APInt::isSplat(unsigned SplatSizeInBits) const {
 
 /// This function returns the high "numBits" bits of this APInt.
 APInt APInt::getHiBits(unsigned numBits) const {
-  return APIntOps::lshr(*this, BitWidth - numBits);
+  APInt result= APIntOps::lshr(*this, BitWidth - numBits);
+  result.poisoned= poisoned;
+  return result;
 }
 
 /// This function returns the low "numBits" bits of this APInt.
 APInt APInt::getLoBits(unsigned numBits) const {
-  return APIntOps::lshr(APIntOps::shl(*this, BitWidth - numBits),
-                        BitWidth - numBits);
+  APInt result= APIntOps::lshr(APIntOps::shl(*this, BitWidth - numBits),
+			       BitWidth - numBits);
+  result.poisoned= poisoned;
+  return result;
 }
 
 unsigned APInt::countLeadingZerosSlowCase() const {
@@ -789,21 +877,34 @@ static void lshrNear(uint64_t *Dst, uint64_t *Src, unsigned Words,
 
 APInt APInt::byteSwap() const {
   assert(BitWidth >= 16 && BitWidth % 16 == 0 && "Cannot byteswap!");
-  if (BitWidth == 16)
-    return APInt(BitWidth, ByteSwap_16(uint16_t(VAL)));
-  if (BitWidth == 32)
-    return APInt(BitWidth, ByteSwap_32(unsigned(VAL)));
-  if (BitWidth == 48) {
-    unsigned Tmp1 = unsigned(VAL >> 16);
-    Tmp1 = ByteSwap_32(Tmp1);
-    uint16_t Tmp2 = uint16_t(VAL);
-    Tmp2 = ByteSwap_16(Tmp2);
-    return APInt(BitWidth, (uint64_t(Tmp2) << 32) | Tmp1);
+  APInt Result;
+  if (BitWidth == 16)  {
+    Result= APInt(BitWidth, ByteSwap_16(uint16_t(VAL)));
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
   }
-  if (BitWidth == 64)
-    return APInt(BitWidth, ByteSwap_64(VAL));
+  if (BitWidth == 32) {
+    Result= APInt(BitWidth, ByteSwap_32(unsigned(VAL)));
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
+  }
+   if (BitWidth == 48) {
+     unsigned Tmp1 = unsigned(VAL >> 16);
+     Tmp1 = ByteSwap_32(Tmp1);
+     uint16_t Tmp2 = uint16_t(VAL);
+     Tmp2 = ByteSwap_16(Tmp2);
+    Result= APInt(BitWidth, (uint64_t(Tmp2) << 32) | Tmp1);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
+  }
+  if (BitWidth == 64)  {
+    Result= APInt(BitWidth, ByteSwap_64(VAL));
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
+   }
+ 
+  Result= APInt(getNumWords() * APINT_BITS_PER_WORD, 0);
 
-  APInt Result(getNumWords() * APINT_BITS_PER_WORD, 0);
   for (unsigned I = 0, N = getNumWords(); I != N; ++I)
     Result.pVal[I] = ByteSwap_64(pVal[N - I - 1]);
   if (Result.BitWidth != BitWidth) {
@@ -811,6 +912,7 @@ APInt APInt::byteSwap() const {
              Result.BitWidth - BitWidth);
     Result.BitWidth = BitWidth;
   }
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
@@ -822,6 +924,7 @@ APInt llvm::APIntOps::GreatestCommonDivisor(const APInt& API1,
     B = APIntOps::urem(A, B);
     A = T;
   }
+  // Note: would call a poisonIfNeeded(~) ftn here
   return A;
 }
 
@@ -852,8 +955,10 @@ APInt llvm::APIntOps::RoundDoubleToAPInt(double Double, unsigned width) {
 
   // If the client didn't provide enough bits for us to shift the mantissa into
   // then the result is undefined, just return 0
-  if (width <= exp - 52)
-    return APInt(width, 0);
+  if (width <= exp - 52)  {
+    // was: return APInt(width, 0); TODO2: clean this up
+    return APInt::getUndef( width );
+  }
 
   // Otherwise, we have to shift the mantissa bits up to the right location
   APInt Tmp(width, mantissa);
@@ -932,11 +1037,15 @@ double APInt::roundToDouble(bool isSigned) const {
 APInt APInt::trunc(unsigned width) const {
   assert(width < BitWidth && "Invalid APInt Truncate request");
   assert(width && "Can't truncate to 0 bits");
+  APInt Result;
+ 
+  if (width <= APINT_BITS_PER_WORD)  {
+    Result= APInt(width, getRawData()[0]);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
+  }
 
-  if (width <= APINT_BITS_PER_WORD)
-    return APInt(width, getRawData()[0]);
-
-  APInt Result(getMemory(getNumWords(width)), width);
+  Result= APInt(getMemory(getNumWords(width)), width);
 
   // Copy full words.
   unsigned i;
@@ -948,20 +1057,24 @@ APInt APInt::trunc(unsigned width) const {
   if (bits != 0)
     Result.pVal[i] = pVal[i] << bits >> bits;
 
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
 // Sign extend to a new width.
 APInt APInt::sext(unsigned width) const {
   assert(width > BitWidth && "Invalid APInt SignExtend request");
+  APInt Result;
 
   if (width <= APINT_BITS_PER_WORD) {
     uint64_t val = VAL << (APINT_BITS_PER_WORD - BitWidth);
     val = (int64_t)val >> (width - BitWidth);
-    return APInt(width, val >> (APINT_BITS_PER_WORD - width));
+    Result= APInt(width, val >> (APINT_BITS_PER_WORD - width));
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
   }
-
-  APInt Result(getMemory(getNumWords(width)), width);
+ 
+  Result= APInt(getMemory(getNumWords(width)), width);
 
   // Copy full words.
   unsigned i;
@@ -989,17 +1102,22 @@ APInt APInt::sext(unsigned width) const {
   if (bits != 0)
     Result.pVal[i] = word << bits >> bits;
 
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
 //  Zero extend to a new width.
 APInt APInt::zext(unsigned width) const {
   assert(width > BitWidth && "Invalid APInt ZeroExtend request");
+  APInt Result;
 
-  if (width <= APINT_BITS_PER_WORD)
-    return APInt(width, VAL);
+  if (width <= APINT_BITS_PER_WORD)  {
+    Result= APInt(width, VAL);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
+  }
 
-  APInt Result(getMemory(getNumWords(width)), width);
+  Result= APInt(getMemory(getNumWords(width)), width);
 
   // Copy words.
   unsigned i;
@@ -1009,10 +1127,12 @@ APInt APInt::zext(unsigned width) const {
   // Zero remaining words.
   memset(&Result.pVal[i], 0, (Result.getNumWords() - i) * APINT_WORD_SIZE);
 
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Result;
 }
 
 APInt APInt::zextOrTrunc(unsigned width) const {
+  // poison preservation done by called functions
   if (BitWidth < width)
     return zext(width);
   if (BitWidth > width)
@@ -1021,6 +1141,7 @@ APInt APInt::zextOrTrunc(unsigned width) const {
 }
 
 APInt APInt::sextOrTrunc(unsigned width) const {
+  // poison preservation done by called functions
   if (BitWidth < width)
     return sext(width);
   if (BitWidth > width)
@@ -1029,12 +1150,14 @@ APInt APInt::sextOrTrunc(unsigned width) const {
 }
 
 APInt APInt::zextOrSelf(unsigned width) const {
+  // poison preservation done by called functions
   if (BitWidth < width)
     return zext(width);
   return *this;
 }
 
 APInt APInt::sextOrSelf(unsigned width) const {
+  // poison preservation done by called functions
   if (BitWidth < width)
     return sext(width);
   return *this;
@@ -1043,7 +1166,9 @@ APInt APInt::sextOrSelf(unsigned width) const {
 /// Arithmetic right-shift this APInt by shiftAmt.
 /// @brief Arithmetic right-shift function.
 APInt APInt::ashr(const APInt &shiftAmt) const {
-  return ashr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  APInt Result= ashr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return Result;
 }
 
 /// Arithmetic right-shift this APInt by shiftAmt.
@@ -1054,14 +1179,21 @@ APInt APInt::ashr(unsigned shiftAmt) const {
   if (shiftAmt == 0)
     return *this;
 
+  APInt Result;
+
   // Handle single word shifts with built-in ashr
   if (isSingleWord()) {
-    if (shiftAmt == BitWidth)
-      return APInt(BitWidth, 0); // undefined
-    else {
+    if (shiftAmt == BitWidth)  {
+      // was: Result= APInt(BitWidth, 0); // undefined // TODO2: clean this up
+      Result= getUndef( BitWidth );
+      // Note: would call a poisonIfNeeded(~) ftn here
+      return Result;
+    } else {
       unsigned SignBit = APINT_BITS_PER_WORD - BitWidth;
-      return APInt(BitWidth,
-        (((int64_t(VAL) << SignBit) >> SignBit) >> shiftAmt));
+      Result= APInt(BitWidth,
+         (((int64_t(VAL) << SignBit) >> SignBit) >> shiftAmt));
+      // Note: would call a poisonIfNeeded(~) ftn here
+      return Result;
     }
   }
 
@@ -1069,10 +1201,17 @@ APInt APInt::ashr(unsigned shiftAmt) const {
   // We return -1 if it was negative, 0 otherwise. We check this early to avoid
   // issues in the algorithm below.
   if (shiftAmt == BitWidth) {
-    if (isNegative())
-      return APInt(BitWidth, -1ULL, true);
-    else
-      return APInt(BitWidth, 0);
+    #if 0 // this was: (TODO2: clean this up)
+      if (isNegative())  {
+       Result= APInt(BitWidth, -1ULL, true);
+      } else {
+       Result= APInt(BitWidth, 0);
+      }
+    #else // the new, hopefully better code
+      Result.getUndef( BitWidth, isNegative() );
+    #endif
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
   }
 
   // Create some space for the result.
@@ -1126,36 +1265,56 @@ APInt APInt::ashr(unsigned shiftAmt) const {
   uint64_t fillValue = (isNegative() ? -1ULL : 0);
   for (unsigned i = breakWord+1; i < getNumWords(); ++i)
     val[i] = fillValue;
-  APInt Result(val, BitWidth);
+  Result= APInt(val, BitWidth);
   Result.clearUnusedBits();
+  // Note: would call a poisonIfNeeded(~) ftn here
+  // Note: the APInt instance will free val's memory.
   return Result;
 }
 
 /// Logical right-shift this APInt by shiftAmt.
 /// @brief Logical right-shift function.
 APInt APInt::lshr(const APInt &shiftAmt) const {
-  return lshr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  APInt Result= lshr((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return Result;
 }
 
 /// Logical right-shift this APInt by shiftAmt.
 /// @brief Logical right-shift function.
 APInt APInt::lshr(unsigned shiftAmt) const {
+  APInt Result;
   if (isSingleWord()) {
     if (shiftAmt >= BitWidth)
-      return APInt(BitWidth, 0);
+      Result= APInt(BitWidth, 0);
     else
-      return APInt(BitWidth, this->VAL >> shiftAmt);
+      Result= APInt(BitWidth, this->VAL >> shiftAmt);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
   }
 
   // If all the bits were shifted out, the result is 0. This avoids issues
   // with shifting by the size of the integer type, which produces undefined
   // results. We define these "undefined results" to always be 0.
-  if (shiftAmt >= BitWidth)
-    return APInt(BitWidth, 0);
+  if (shiftAmt >= BitWidth)  {
+    #if 0 // this was: (TODO2: clean this up)
+      // If all the bits were shifted out, the result is 0. This avoids
+      // issues with shifting by the size of the integer type, which
+      // produces undefined results. We define these "undefined results" to
+      // always be 0.
+      Result= APInt(BitWidth, 0);
+    #else // the new, better code
+      Result= getUndef( BitWidth );
+    #endif
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
+  }
 
   // If none of the bits are shifted out, the result is *this. This avoids
   // issues with shifting by the size of the integer type, which produces
   // undefined results in the code below. This is also an optimization.
+  //
+  // Note: Poison preservation here happens automatically.
   if (shiftAmt == 0)
     return *this;
 
@@ -1165,8 +1324,10 @@ APInt APInt::lshr(unsigned shiftAmt) const {
   // If we are shifting less than a word, compute the shift with a simple carry
   if (shiftAmt < APINT_BITS_PER_WORD) {
     lshrNear(val, pVal, getNumWords(), shiftAmt);
-    APInt Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
+    // Note: would call a poisonIfNeeded(~) ftn here
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1180,8 +1341,10 @@ APInt APInt::lshr(unsigned shiftAmt) const {
       val[i] = pVal[i+offset];
     for (unsigned i = getNumWords()-offset; i < getNumWords(); i++)
       val[i] = 0;
-    APInt Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
+    // Note: would call a poisonIfNeeded(~) ftn here
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1196,28 +1359,44 @@ APInt APInt::lshr(unsigned shiftAmt) const {
   // Remaining words are 0
   for (unsigned i = breakWord+1; i < getNumWords(); ++i)
     val[i] = 0;
-  APInt Result(val, BitWidth);
+  Result= APInt(val, BitWidth);
   Result.clearUnusedBits();
+  // Note: would call a poisonIfNeeded(~) ftn here
+  // Note: the APInt instance will free val's memory.
   return Result;
 }
 
 /// Left-shift this APInt by shiftAmt.
 /// @brief Left-shift function.
 APInt APInt::shl(const APInt &shiftAmt) const {
-  // It's undefined behavior in C to shift by BitWidth or greater.
-  return shl((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  APInt Result;
+  /* It's undefined behavior in C to shift by BitWidth or greater.  This is
+       dealt with by the shl(~) method.  
+  */
+  Result= shl((unsigned)shiftAmt.getLimitedValue(BitWidth));
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return Result;
 }
 
 APInt APInt::shlSlowCase(unsigned shiftAmt) const {
+  APInt Result;
+
   // If all the bits were shifted out, the result is 0. This avoids issues
   // with shifting by the size of the integer type, which produces undefined
   // results. We define these "undefined results" to always be 0.
-  if (shiftAmt == BitWidth)
-    return APInt(BitWidth, 0);
+  // TODO2: change the "undefined" value to be a random value.
+  if (shiftAmt == BitWidth)  {
+     // was: Result= APInt(BitWidth, 0); TODO2: clean this up
+     Result= getUndef( BitWidth );
+     // Note: would call a poisonIfNeeded(~) ftn here
+     return Result;
+  }
+
 
   // If none of the bits are shifted out, the result is *this. This avoids a
   // lshr by the words size in the loop below which can produce incorrect
   // results. It also avoids the expensive computation below for a common case.
+  // poison preservation happens automatically.
   if (shiftAmt == 0)
     return *this;
 
@@ -1225,14 +1404,18 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
   uint64_t * val = new uint64_t[getNumWords()];
 
   // If we are shifting less than a word, do it the easy way
+  assert( getNumWords() > 1 && 
+      "Following code assumes the APInt is more than one word long." );
   if (shiftAmt < APINT_BITS_PER_WORD) {
     uint64_t carry = 0;
     for (unsigned i = 0; i < getNumWords(); i++) {
       val[i] = pVal[i] << shiftAmt | carry;
       carry = pVal[i] >> (APINT_BITS_PER_WORD - shiftAmt);
     }
-    APInt Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
+    // Note: would call a poisonIfNeeded(~) ftn here
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1246,8 +1429,10 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
       val[i] = 0;
     for (unsigned i = offset; i < getNumWords(); i++)
       val[i] = pVal[i-offset];
-    APInt Result(val, BitWidth);
+    Result= APInt(val, BitWidth);
     Result.clearUnusedBits();
+    // Note: would call a poisonIfNeeded(~) ftn here
+    // Note: the APInt instance will free val's memory.
     return Result;
   }
 
@@ -1259,16 +1444,22 @@ APInt APInt::shlSlowCase(unsigned shiftAmt) const {
   val[offset] = pVal[0] << wordShift;
   for (i = 0; i < offset; ++i)
     val[i] = 0;
-  APInt Result(val, BitWidth);
+  Result= APInt(val, BitWidth);
   Result.clearUnusedBits();
+  // Note: would call a poisonIfNeeded(~) ftn here
+  // Note: the APInt instance will free val's memory.
   return Result;
 }
 
 APInt APInt::rotl(const APInt &rotateAmt) const {
-  return rotl((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  APInt Result;
+  Result= rotl((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return Result;
 }
 
 APInt APInt::rotl(unsigned rotateAmt) const {
+  // poison preservation done by called functions
   rotateAmt %= BitWidth;
   if (rotateAmt == 0)
     return *this;
@@ -1276,10 +1467,14 @@ APInt APInt::rotl(unsigned rotateAmt) const {
 }
 
 APInt APInt::rotr(const APInt &rotateAmt) const {
-  return rotr((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  APInt Result;
+  Result= rotr((unsigned)rotateAmt.getLimitedValue(BitWidth));
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return Result;
 }
 
 APInt APInt::rotr(unsigned rotateAmt) const {
+  // poison preservation done by called functions
   rotateAmt %= BitWidth;
   if (rotateAmt == 0)
     return *this;
@@ -1294,6 +1489,7 @@ APInt APInt::rotr(unsigned rotateAmt) const {
 // back to a uint64_t which is then used to construct the result. Finally,
 // the Babylonian method for computing square roots is used.
 APInt APInt::sqrt() const {
+  APInt Result;
 
   // Determine the magnitude of the value.
   unsigned magnitude = getActiveBits();
@@ -1310,7 +1506,9 @@ APInt APInt::sqrt() const {
       /* 21-30 */ 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
       /*    31 */ 6
     };
-    return APInt(BitWidth, results[ (isSingleWord() ? VAL : pVal[0]) ]);
+    Result= APInt(BitWidth, results[ (isSingleWord() ? VAL : pVal[0]) ]);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
   }
 
   // If the magnitude of the value fits in less than 52 bits (the precision of
@@ -1318,8 +1516,10 @@ APInt APInt::sqrt() const {
   // libc sqrt function which will probably use a hardware sqrt computation.
   // This should be faster than the algorithm below.
   if (magnitude < 52) {
-    return APInt(BitWidth,
+    Result= APInt(BitWidth,
                  uint64_t(::round(::sqrt(double(isSingleWord()?VAL:pVal[0])))));
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
   }
 
   // Okay, all the short cuts are exhausted. We must compute it. The following
@@ -1356,13 +1556,18 @@ APInt APInt::sqrt() const {
   // between this algorithm and pari/gp for bit widths < 192 bits.
   APInt square(x_old * x_old);
   APInt nextSquare((x_old + 1) * (x_old +1));
-  if (this->ult(square))
+  if (this->ult(square))  {
+    // Note: would call a poisonIfNeeded(~) ftn here
     return x_old;
+  }
   assert(this->ule(nextSquare) && "Error in APInt::sqrt computation");
   APInt midpoint((nextSquare - square).udiv(two));
   APInt offset(*this - square);
-  if (offset.ult(midpoint))
+  if (offset.ult(midpoint))  {
+    // Note: would call a poisonIfNeeded(~) ftn here
     return x_old;
+  }
+  // Note: would call a poisonIfNeeded(~) ftn here
   return x_old + 1;
 }
 
@@ -1373,6 +1578,8 @@ APInt APInt::sqrt() const {
 /// (potentially large) APInts around.
 APInt APInt::multiplicativeInverse(const APInt& modulo) const {
   assert(ult(modulo) && "This APInt must be smaller than the modulo");
+
+  APInt Result;
 
   // Using the properties listed at the following web page (accessed 06/21/08):
   //   http://www.numbertheory.org/php/euclid.html
@@ -1400,14 +1607,22 @@ APInt APInt::multiplicativeInverse(const APInt& modulo) const {
   // inverse, so return 0. We check this by looking at the next-to-last
   // remainder, which is the gcd(*this,modulo) as calculated by the Euclidean
   // algorithm.
-  if (r[i] != 1)
-    return APInt(BitWidth, 0);
+  if (r[i] != 1)  {
+    Result= APInt(BitWidth, 0);
+    // Note: would call a poisonIfNeeded(~) ftn here, which runs along
+    // these lines:
+    //Result.poisoned= poisoned || modulo.poisoned;
+    return Result;
+  }
 
   // The next-to-last t is the multiplicative inverse.  However, we are
   // interested in a positive inverse. Calcuate a positive one from a negative
   // one if necessary. A simple addition of the modulo suffices because
   // abs(t[i]) is known to be less than *this/2 (see the link above).
-  return t[i].isNegative() ? t[i] + modulo : t[i];
+  Result= t[i].isNegative() ? t[i] + modulo : t[i];
+  // Note: would call a poisonIfNeeded(~) ftn here, which runs along
+  // these lines:
+  return Result;
 }
 
 /// Calculate the magic numbers required to implement a signed integer division
@@ -1449,6 +1664,9 @@ APInt::ms APInt::magic() const {
   mag.m = q2 + 1;
   if (d.isNegative()) mag.m = -mag.m;   // resulting magic number
   mag.s = p - d.getBitWidth();          // resulting shift
+  // Note: would call a poisonIfNeeded(~) ftn here, which runs along
+  // these lines:
+  // mag.m.poisoned= poisoned;
   return mag;
 }
 
@@ -1499,6 +1717,9 @@ APInt::mu APInt::magicu(unsigned LeadingZeros) const {
            (q1.ult(delta) || (q1 == delta && r1 == 0)));
   magu.m = q2 + 1; // resulting magic number
   magu.s = p - d.getBitWidth();  // resulting shift
+  // Note: would call a poisonIfNeeded(~) ftn here, which runs along
+  // these lines:
+  // magu.m.poisoned= poisoned;
   return magu;
 }
 
@@ -1834,15 +2055,20 @@ void APInt::divide(const APInt LHS, unsigned lhsWords,
     delete [] Q;
     delete [] R;
   }
+  // Note: would call a poisonIfNeeded(~) ftn here for both Quotient
+  // and Remainder.
 }
 
 APInt APInt::udiv(const APInt& RHS) const {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+  APInt Quotient;
 
   // First, deal with the easy case
   if (isSingleWord()) {
     assert(RHS.VAL != 0 && "Divide by zero?");
-    return APInt(BitWidth, VAL / RHS.VAL);
+    Quotient= APInt(BitWidth, VAL / RHS.VAL);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Quotient;
   }
 
   // Get some facts about the LHS and RHS number of bits and words
@@ -1853,27 +2079,39 @@ APInt APInt::udiv(const APInt& RHS) const {
   unsigned lhsWords = !lhsBits ? 0 : (APInt::whichWord(lhsBits - 1) + 1);
 
   // Deal with some degenerate cases
-  if (!lhsWords)
+  if (!lhsWords) {
     // 0 / X ===> 0
-    return APInt(BitWidth, 0);
-  else if (lhsWords < rhsWords || this->ult(RHS)) {
+    Quotient= APInt(BitWidth, 0);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Quotient;
+  } else if (lhsWords < rhsWords || this->ult(RHS)) {
     // X / Y ===> 0, iff X < Y
-    return APInt(BitWidth, 0);
+    Quotient= APInt(BitWidth, 0);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Quotient;
   } else if (*this == RHS) {
     // X / X ===> 1
-    return APInt(BitWidth, 1);
+    Quotient= APInt(BitWidth, 1);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Quotient;
   } else if (lhsWords == 1 && rhsWords == 1) {
     // All high words are zero, just use native divide
-    return APInt(BitWidth, this->pVal[0] / RHS.pVal[0]);
+    Quotient= APInt(BitWidth, this->pVal[0] / RHS.pVal[0]);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Quotient;
   }
-
+  
   // We have to compute it the hard way. Invoke the Knuth divide algorithm.
-  APInt Quotient(1,0); // to hold result.
+  Quotient= APInt(1,0); // to hold result.
   divide(*this, lhsWords, RHS, rhsWords, &Quotient, nullptr);
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Quotient;
 }
 
 APInt APInt::sdiv(const APInt &RHS) const {
+  /* Becasue this is defined in terms of udiv, poison propogation is handled
+      with udiv.
+  */
   if (isNegative()) {
     if (RHS.isNegative())
       return (-(*this)).udiv(-RHS);
@@ -1886,9 +2124,13 @@ APInt APInt::sdiv(const APInt &RHS) const {
 
 APInt APInt::urem(const APInt& RHS) const {
   assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+  APInt result;
+
   if (isSingleWord()) {
     assert(RHS.VAL != 0 && "Remainder by zero?");
-    return APInt(BitWidth, VAL % RHS.VAL);
+    result= APInt(BitWidth, VAL % RHS.VAL);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
   }
 
   // Get some facts about the LHS
@@ -1903,25 +2145,37 @@ APInt APInt::urem(const APInt& RHS) const {
   // Check the degenerate cases
   if (lhsWords == 0) {
     // 0 % Y ===> 0
-    return APInt(BitWidth, 0);
+    result= APInt(BitWidth, 0);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
   } else if (lhsWords < rhsWords || this->ult(RHS)) {
     // X % Y ===> X, iff X < Y
-    return *this;
+    result= *this;
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
   } else if (*this == RHS) {
     // X % X == 0;
-    return APInt(BitWidth, 0);
+    result= APInt(BitWidth, 0);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
   } else if (lhsWords == 1) {
     // All high words are zero, just use native remainder
-    return APInt(BitWidth, pVal[0] % RHS.pVal[0]);
+    result= APInt(BitWidth, pVal[0] % RHS.pVal[0]);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
   }
 
   // We have to compute it the hard way. Invoke the Knuth divide algorithm.
-  APInt Remainder(1,0);
-  divide(*this, lhsWords, RHS, rhsWords, nullptr, &Remainder);
-  return Remainder;
+  result= APInt(1,0);
+  divide(*this, lhsWords, RHS, rhsWords, nullptr, &result);
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return result;
 }
 
 APInt APInt::srem(const APInt &RHS) const {
+  /* Because this is defined in terms of urem, poison propogation is handled
+     with urem.
+  */
   if (isNegative()) {
     if (RHS.isNegative())
       return -((-(*this)).urem(-RHS));
@@ -1943,6 +2197,8 @@ void APInt::udivrem(const APInt &LHS, const APInt &RHS,
     uint64_t RemVal = LHS.VAL % RHS.VAL;
     Quotient = APInt(LHS.BitWidth, QuotVal);
     Remainder = APInt(LHS.BitWidth, RemVal);
+    // Note: would call a poisonIfNeeded(~) ftn here for both Quotient
+    // and Remainder.
     return;
   }
 
@@ -1956,18 +2212,24 @@ void APInt::udivrem(const APInt &LHS, const APInt &RHS,
   if (lhsWords == 0) {
     Quotient = 0;                // 0 / Y ===> 0
     Remainder = 0;               // 0 % Y ===> 0
+    // Note: would call a poisonIfNeeded(~) ftn here on both Quotient
+    // and Remainder.
     return;
   }
 
   if (lhsWords < rhsWords || LHS.ult(RHS)) {
     Remainder = LHS;            // X % Y ===> X, iff X < Y
     Quotient = 0;               // X / Y ===> 0, iff X < Y
+    // Note: would call a poisonIfNeeded(~) ftn here on both Quotient
+    // and Remainder.
     return;
   }
 
   if (LHS == RHS) {
     Quotient  = 1;              // X / X ===> 1
     Remainder = 0;              // X % X ===> 0;
+    // Note: would call a poisonIfNeeded(~) ftn here on both Quotient
+    // and Remainder.
     return;
   }
 
@@ -1977,15 +2239,22 @@ void APInt::udivrem(const APInt &LHS, const APInt &RHS,
     uint64_t rhsValue = RHS.isSingleWord() ? RHS.VAL : RHS.pVal[0];
     Quotient = APInt(LHS.getBitWidth(), lhsValue / rhsValue);
     Remainder = APInt(LHS.getBitWidth(), lhsValue % rhsValue);
+    // Note: would call a poisonIfNeeded(~) ftn here on both Quotient
+    // and Remainder.
     return;
   }
 
   // Okay, lets do it the long way
   divide(LHS, lhsWords, RHS, rhsWords, &Quotient, &Remainder);
+  // Note: would call a poisonIfNeeded(~) ftn here on both Quotient
+  // and Remainder.
 }
 
 void APInt::sdivrem(const APInt &LHS, const APInt &RHS,
                     APInt &Quotient, APInt &Remainder) {
+  /* Becuase this is defined in terms of udivrem, poison propogation is handled
+     with udivrem.
+  */
   if (LHS.isNegative()) {
     if (RHS.isNegative())
       APInt::udivrem(-LHS, -RHS, Quotient, Remainder);
@@ -2006,12 +2275,14 @@ APInt APInt::sadd_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this+RHS;
   Overflow = isNonNegative() == RHS.isNonNegative() &&
              Res.isNonNegative() != isNonNegative();
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Res;
 }
 
 APInt APInt::uadd_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this+RHS;
   Overflow = Res.ult(RHS);
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Res;
 }
 
@@ -2019,17 +2290,20 @@ APInt APInt::ssub_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this - RHS;
   Overflow = isNonNegative() != RHS.isNonNegative() &&
              Res.isNonNegative() != isNonNegative();
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Res;
 }
 
 APInt APInt::usub_ov(const APInt &RHS, bool &Overflow) const {
   APInt Res = *this-RHS;
   Overflow = Res.ugt(*this);
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Res;
 }
 
 APInt APInt::sdiv_ov(const APInt &RHS, bool &Overflow) const {
   // MININT/-1  -->  overflow.
+  // poison preservation done by called functions
   Overflow = isMinSignedValue() && RHS.isAllOnesValue();
   return sdiv(RHS);
 }
@@ -2041,6 +2315,7 @@ APInt APInt::smul_ov(const APInt &RHS, bool &Overflow) const {
     Overflow = Res.sdiv(RHS) != *this || Res.sdiv(*this) != RHS;
   else
     Overflow = false;
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Res;
 }
 
@@ -2051,32 +2326,44 @@ APInt APInt::umul_ov(const APInt &RHS, bool &Overflow) const {
     Overflow = Res.udiv(RHS) != *this || Res.udiv(*this) != RHS;
   else
     Overflow = false;
+  // Note: would call a poisonIfNeeded(~) ftn here
   return Res;
 }
 
 APInt APInt::sshl_ov(const APInt &ShAmt, bool &Overflow) const {
+  APInt Result;
   Overflow = ShAmt.uge(getBitWidth());
-  if (Overflow)
-    return APInt(BitWidth, 0);
+  if (Overflow) {
+    Result= APInt(BitWidth, 0);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result; 
+  } 
 
   if (isNonNegative()) // Don't allow sign change.
     Overflow = ShAmt.uge(countLeadingZeros());
   else
     Overflow = ShAmt.uge(countLeadingOnes());
   
-  return *this << ShAmt;
+  Result= *this << ShAmt;
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return Result;
 }
 
 APInt APInt::ushl_ov(const APInt &ShAmt, bool &Overflow) const {
+  APInt Result;
   Overflow = ShAmt.uge(getBitWidth());
-  if (Overflow)
-    return APInt(BitWidth, 0);
+  if (Overflow)  {
+    Result= APInt(BitWidth, 0);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return Result;
+  }
 
   Overflow = ShAmt.ugt(countLeadingZeros());
 
-  return *this << ShAmt;
+  Result= *this << ShAmt;
+  // Note: would call a poisonIfNeeded(~) ftn here
+  return Result;
 }
-
 
 
 
@@ -2905,3 +3192,68 @@ APInt::tcSetLeastSignificantBits(integerPart *dst, unsigned int parts,
   while (i < parts)
     dst[i++] = 0;
 }
+
+/* =======================================================================
+* Stuff moved here by CAS to resolve an include-file loop while implementing
+* short-circuit poison propogation.  
+* TODO: remove this notice when this works.
+*/
+
+  /// \brief Bitwise AND operator.
+  ///
+  /// Performs a bitwise AND operation on *this and RHS.
+  ///
+  /// \returns An APInt value representing the bitwise AND of *this and RHS.
+  APInt APInt::operator&(const APInt &RHS) const {
+    assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+    APInt result;
+    if (isSingleWord()) {
+      result= APInt(getBitWidth(), VAL & RHS.VAL);
+    } else {
+      result= AndSlowCase(RHS);
+    }
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
+  }
+  APInt LLVM_ATTRIBUTE_UNUSED_RESULT APInt::And(const APInt &RHS) const {
+    APInt result= this->operator&(RHS);
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
+  }
+
+  /// \brief Bitwise OR operator.
+  ///
+  /// Performs a bitwise OR operation on *this and RHS.
+  ///
+  /// \returns An APInt value representing the bitwise OR of *this and RHS.
+  APInt APInt::operator|(const APInt &RHS) const {
+    assert(BitWidth == RHS.BitWidth && "Bit widths must be the same");
+    APInt result;
+    if (isSingleWord())  {
+      result= APInt(getBitWidth(), VAL | RHS.VAL);
+    } else { 
+      result= OrSlowCase(RHS);
+    }
+    // Note: would call a poisonIfNeeded(~) ftn here
+    return result;
+  }
+
+  /// \brief Bitwise OR function.
+  ///
+  /// Performs a bitwise or on *this and RHS. This is implemented bny simply
+  /// calling operator|.
+  ///
+  /// \returns An APInt value representing the bitwise OR of *this and RHS.
+  APInt LLVM_ATTRIBUTE_UNUSED_RESULT APInt::Or(const APInt &RHS) const {
+    APInt result= this->operator|(RHS);
+    // poison propogation handled by operator|().
+    return result;
+  }
+
+
+/* ======================================================================= 
+* end of Stuff moved here by CAS to resolve an include-file loop while
+* implementing short-circuit poison propogation.
+*
+* TODO: remove this notice when this works.
+*/

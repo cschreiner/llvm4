@@ -28,6 +28,7 @@
 #include "llvm/Support/Mutex.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
+#include "llvm/IR/Instructions.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -372,12 +373,33 @@ public:
   ///
   const GlobalValue *getGlobalValueAtAddress(void *Addr);
 
+private:
+  /// StoreStructToMemory -- Writes a struct out from a register.  This is
+  /// intended to be a helper function for StoreValueToMemory(~), and
+  /// takes the same parameters as that function.
+  /// 
+  /// \param Src the value to read from
+  /// \param Dest the address to write to
+  /// \param Ty information about the data type being written
+  /// \param In_ptr information about the instruction invoking the Store 
+  ///    operation
+  void StoreStructToMemory(const GenericValue &Src,
+      GenericValue *Dest, Type *Ty, const StoreInst* In_ptr);
+
+public:
   /// StoreValueToMemory - Stores the data in Val of type Ty at address Ptr.
-  /// Ptr is the address of the memory at which to store Val, cast to
-  /// GenericValue *.  It is not a pointer to a GenericValue containing the
-  /// address at which to store Val.
-  void StoreValueToMemory(const GenericValue &Val, GenericValue *Ptr,
-                          Type *Ty);
+  /// \brief Writes a value to memory.
+  /// \param Val the value to store
+  /// \param Ptr the destination to store to
+  ///	Ptr is the address of the memory at which to store Val, cast to
+  ///	GenericValue *.  It is not a pointer to a GenericValue containing the
+  ///	address at which to store Val.
+  /// \param Ty info on the data type of the value being stored
+  /// \param In_ptr info on the instruction that generated this call.
+  ///    This is used, for example, to determine if the destination memory
+  ///    location is volatile.
+void StoreValueToMemory(const GenericValue &Val,
+    GenericValue *Ptr, Type *Ty, const StoreInst* In_ptr);
 
   void InitializeMemory(const Constant *Init, void *Addr);
 
@@ -490,6 +512,33 @@ protected:
   void EmitGlobalVariable(const GlobalVariable *GV);
 
   GenericValue getConstantValue(const Constant *C);
+
+private:
+  /// \brief Loads a struct into a register.
+  ///
+  /// This is intended to be a helper function for
+  /// LoadValueFromMemory(~), and takes the same parameter types as
+  /// that function.
+  ///
+  /// \param [out] Dest the location data should be written to (this is the
+  ///     Result parameter from LoadValueFromMemory(~))
+  /// \param Src read data from here (this is the Ptr parameter from
+  ///     LoadValueFromMemory(~))
+  /// \param Ty information on the type of the data to move
+  void LoadStructFromMemory(GenericValue &Dest,
+                            GenericValue *Src, Type *Ty);
+protected:
+  /// \brief loads an item of data from memory to a register, regardless of 
+  /// its data type.  
+  ///
+  /// Typically this function determines the relevant data type, and then acts
+  /// as a dispatcher to other functions who specialize in loading that exact
+  /// data type.
+  ///
+  /// \param Result the location data should be written to 
+  /// \param Ptr read data from here
+  /// \param Ty information on the type of the data to move
+  ///
   void LoadValueFromMemory(GenericValue &Result, GenericValue *Ptr,
                            Type *Ty);
 

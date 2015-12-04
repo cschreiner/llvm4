@@ -24,6 +24,16 @@
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MathExtras.h"
 #include "llvm/Support/raw_ostream.h"
+#include "llvm/IR/DerivedTypes.h" 
+    // TODO: this wasn't necessary in lli_undef_fix__caswork3 era, why now?
+
+#include "llvm/ADT/APIntPoison.h"
+#include "llvm/Support/LUF_opts.h"
+#include "llvm/Support/LUF_etc.h"
+#include <iostream> // TODO: disable when debugging code is disabled
+#include <stdio.h> // TODO: disable when debugging code is disabled
+#include <unistd.h> // TODO: disable when debugging code is disabled
+
 #include <algorithm>
 #include <cmath>
 using namespace llvm;
@@ -35,6 +45,49 @@ STATISTIC(NumDynamicInsts, "Number of dynamic instructions executed");
 static cl::opt<bool> PrintVolatile("interpreter-print-volatile", cl::Hidden,
           cl::desc("make the interpreter print every volatile load and store"));
 
+//   --------------------------------------------------------------------------
+///  \fn PROTECT_VS_DIV_0()
+//   --------------------------------------------------------------------------
+/*** \brief protect against division by zero if runtime option is set
+   * 
+   * \b Detailed_Description: 
+   *   if the appropriate LUF opt is set and the denominator is zero, then
+   *   return from the current function with a 0 value.  
+   *
+   *   It is envisioned that the human user will only set the LUF option when 
+   *   running regression tests that, when one test item attempts to divide 
+   *   by zero, should move on to the next test item instead of crashing.
+   *
+   * \b Method: 
+   *
+   * \b Reentrancy: 
+   *
+   * \param inst (input) the instruction to be protected
+   * \param denom (input) the denominator
+   * 
+   * \return void
+   *
+   */
+#if 0 // TODO: reinstate this once debugging is done. -- CAS 2015jul09
+  #define PROTECT_VS_DIV_0( inst, denom )				\
+  {{									\
+    if ( llvm::lli_undef_fix::opt_return_if_div_0 )  {			\
+      asdf								\
+      Type *retType = Type::getVoidTy(inst.getContext());		\
+      GenericValue retVal;						\
+      retVal.IntVal= new APInt(0);					\
+      /*asdf*/								\
+      /* prototype: */							\
+      /*Interpreter::popStackAndReturnValueToCaller(Type *RetTy, */	\
+      /*                                             GenericValue Result); */ \
+      Interpreter::popStackAndReturnValueToCaller( retType, retVal );	\
+      return;								\
+    }									\
+  }}     
+#else
+#define PROTECT_VS_DIV_0 
+#endif
+
 //===----------------------------------------------------------------------===//
 //                     Various Helper Functions
 //===----------------------------------------------------------------------===//
@@ -42,6 +95,91 @@ static cl::opt<bool> PrintVolatile("interpreter-print-volatile", cl::Hidden,
 static void SetValue(Value *V, GenericValue Val, ExecutionContext &SF) {
   SF.Values[V] = Val;
 }
+
+// ----------------------------------------------------------------------------
+void Interpreter::checkFtnCallForPoisonedArgs( 
+    CallSite& cs, ExecutionContext& exCon )
+// ----------------------------------------------------------------------------
+/*** \brief make sure none of the arguments passed to a function at a
+     call site are poisoned.  
+
+  Note: For now, this just check the integer
+     arguments; pointers, floats, and data structure types will
+     hopefully be added later.
+
+  TODO2: See if there are ways of improving the efficiency of this
+  code.  In particular, can the ExecutionContext* exCon argument be
+  eliminated?
+
+  @param cs the call site whose arguments should be examined
+
+  @param exCon the execution context of the call site in question.
+    
+  @return Exits if an argument is determined to be poisoned.
+ */
+/* notes on research re how to implement this function:
+  Function::getArgumentList() is a data structure of Argument type
+    presumably the iterator arg_begin() is of Argument* type
+
+  // means of getting type of an argument
+  Value can use llvm::Value::getType()
+    and then test if getTypeID() is IntegerTyID
+
+ */
+{{
+  Function* ftn_ptr = cs.getCalledFunction();
+  //const unsigned NumArgs = SF.Caller.arg_size(); 
+  // TODO2: delete if not needed
+
+  #if 0 // info messages often useful for debugging
+    std::cout << "   starting checkFtnCallForPoisonedArgs()...\n";
+    std::cout << std::flush;
+    fflush( stdout );
+  #endif
+
+  unsigned arg_num= 0;
+  for ( CallSite::arg_iterator cs_it = cs.arg_begin(), 
+      cs_it_end = exCon.Caller.arg_end(); 
+      cs_it != cs_it_end; 
+      ++cs_it, arg_num++ )  {
+    Value *val_ptr = *cs_it;
+    if ( val_ptr->getType()->getTypeID() == llvm::Type::IntegerTyID )  {
+      GenericValue gv= getOperandValue( val_ptr, exCon );
+      if ( gv.IntVal.getPoisoned() )  {
+        int msgKey= rand() % 100;;
+	// TODO: change this to be able to detect poison in more than one 
+	// argument.
+	//;;std::cerr << "Attempt to call an external function with a poison " \
+	//;;    "value in arg# " << arg_num << ".\n";
+        //;;std::cerr << "  ftn name=\"" << ftn_ptr->getName().str() << 
+	//;;    "\", numArgs=" << cs.arg_size() << ", key=" << msgKey << "\n";
+	fflush ( stdout );;
+	fflush ( stderr );;
+        if ( lli_undef_fix::opt_no_exit_due_to_poison )  {
+          // NOTE: these MUST be the exact duplicate of the above output, 
+	  // except they go to stdout, not stderr:
+	  std::cout << "Attempt to call an external function with a poison " \
+	      "value in arg# " << arg_num << ".\n";
+	  std::cout << "  ftn name=\"" << ftn_ptr->getName().str() << 
+	      "\", numArgs=" << cs.arg_size() << ", key=" << msgKey << "\n";
+	  std::cout << std::flush;;
+          // TODO2: see if there is some way to dump output to a
+          // string, and then send the string to stdout and stderr.
+	  // --CAS 2015aug31
+	  fflush ( stdout );
+	  fflush ( stderr );
+	}
+        lli_undef_fix::exit_due_to_poison();
+      }
+    }
+  }
+
+  #if 0 // info messages often useful for debugging
+    std::cout << "   stopping checkFtnCallForPoisonedArgs()...\n";
+    std::cout << std::flush;
+    fflush( stdout );
+  #endif
+}}
 
 //===----------------------------------------------------------------------===//
 //                    Binary Instruction Implementations
@@ -111,18 +249,31 @@ static void executeFRemInst(GenericValue &Dest, GenericValue Src1,
   }
 }
 
-#define IMPLEMENT_INTEGER_ICMP(OP, TY) \
-   case Type::IntegerTyID:  \
-      Dest.IntVal = APInt(1,Src1.IntVal.OP(Src2.IntVal)); \
+/// \brief Shorthand to create functions that implement one of the
+/// icmp operations (such as less than, less-than-or-equal, greater
+/// than, etc, in signed and unsigned permutations).
+///
+/// TODO2: make the poison computation able to trap cases where the
+/// result can be computed without knowing the poison value.  E.g. (x
+/// <= INT_MAX) is always true, therefore a poison value in x is
+/// irrelevant.
+////
+/// \param OP must be the name of an APInt comparison method.
+/// \param TY is currently unused.
+#define IMPLEMENT_INTEGER_ICMP(OP, TY)				\
+   case Type::IntegerTyID:					\
+      Dest.IntVal = APInt(1, Src1.IntVal.OP(Src2.IntVal) );	\
+      APIntPoison::poisonIfNeeded_icmp( Dest.IntVal,		\
+	    Src1.IntVal, Src2.IntVal );				\
       break;
 
-#define IMPLEMENT_VECTOR_INTEGER_ICMP(OP, TY)                        \
-  case Type::VectorTyID: {                                           \
-    assert(Src1.AggregateVal.size() == Src2.AggregateVal.size());    \
-    Dest.AggregateVal.resize( Src1.AggregateVal.size() );            \
-    for( uint32_t _i=0;_i<Src1.AggregateVal.size();_i++)             \
-      Dest.AggregateVal[_i].IntVal = APInt(1,                        \
-      Src1.AggregateVal[_i].IntVal.OP(Src2.AggregateVal[_i].IntVal));\
+#define IMPLEMENT_VECTOR_INTEGER_ICMP(OP, TY)                          \
+  case Type::VectorTyID: {                                             \
+    assert(Src1.AggregateVal.size() == Src2.AggregateVal.size());      \
+    Dest.AggregateVal.resize( Src1.AggregateVal.size() );              \
+    for( uint32_t _i=0;_i<Src1.AggregateVal.size();_i++)               \
+      Dest.AggregateVal[_i].IntVal = APInt(1,                          \
+         Src1.AggregateVal[_i].IntVal.OP(Src2.AggregateVal[_i].IntVal) ); \
   } break;
 
 // Handle pointers specially because they must be compared with only as much
@@ -762,26 +913,100 @@ void Interpreter::visitBinaryOperator(BinaryOperator &I) {
       break;
     }
   } else {
+    // this is a scalar instruction, not a vector one.
+    #if 0
+      std::cout << "starting visitBinaryOperator(~) for scalar op... \n";
+    #endif
+
     switch (I.getOpcode()) {
     default:
       dbgs() << "Don't know how to handle this binary operator!\n-->" << I;
       llvm_unreachable(nullptr);
       break;
-    case Instruction::Add:   R.IntVal = Src1.IntVal + Src2.IntVal; break;
-    case Instruction::Sub:   R.IntVal = Src1.IntVal - Src2.IntVal; break;
-    case Instruction::Mul:   R.IntVal = Src1.IntVal * Src2.IntVal; break;
+    case Instruction::Add:   
+      R.IntVal = Src1.IntVal + Src2.IntVal; 
+      APIntPoison::poisonIfNeeded_add( R.IntVal, Src1.IntVal, Src2.IntVal, 
+         I.hasNoSignedWrap(), I.hasNoUnsignedWrap() );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+    case Instruction::Sub:   
+      #if 0
+       std::cout << "starting Instruction::Sub: \n";
+      #endif
+      R.IntVal = Src1.IntVal - Src2.IntVal; 
+      APIntPoison::poisonIfNeeded_sub( R.IntVal, Src1.IntVal, Src2.IntVal, 
+          I.hasNoSignedWrap(), I.hasNoUnsignedWrap() );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      //;;if ( R.IntVal.getPoisoned() )  { //;;
+      #if 0
+        std::cout << 
+           "\t" "Src1  = " << Src1.IntVal.toString() << "\n" <<
+           "\t" "Src2  = " << Src2.IntVal.toString() << "\n" <<
+           "\t" "result= " << R.IntVal.toString() << "\n";
+      #endif 
+      break;
+    case Instruction::Mul:   
+      R.IntVal = Src1.IntVal * Src2.IntVal; 
+      APIntPoison::poisonIfNeeded_mul( R.IntVal, Src1.IntVal, Src2.IntVal, 
+          I.hasNoSignedWrap(), I.hasNoUnsignedWrap() );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+
     case Instruction::FAdd:  executeFAddInst(R, Src1, Src2, Ty); break;
     case Instruction::FSub:  executeFSubInst(R, Src1, Src2, Ty); break;
     case Instruction::FMul:  executeFMulInst(R, Src1, Src2, Ty); break;
     case Instruction::FDiv:  executeFDivInst(R, Src1, Src2, Ty); break;
     case Instruction::FRem:  executeFRemInst(R, Src1, Src2, Ty); break;
-    case Instruction::UDiv:  R.IntVal = Src1.IntVal.udiv(Src2.IntVal); break;
-    case Instruction::SDiv:  R.IntVal = Src1.IntVal.sdiv(Src2.IntVal); break;
-    case Instruction::URem:  R.IntVal = Src1.IntVal.urem(Src2.IntVal); break;
-    case Instruction::SRem:  R.IntVal = Src1.IntVal.srem(Src2.IntVal); break;
-    case Instruction::And:   R.IntVal = Src1.IntVal & Src2.IntVal; break;
-    case Instruction::Or:    R.IntVal = Src1.IntVal | Src2.IntVal; break;
-    case Instruction::Xor:   R.IntVal = Src1.IntVal ^ Src2.IntVal; break;
+    case Instruction::UDiv:  
+      PROTECT_VS_DIV_0( Src2.IntVal );
+      R.IntVal = Src1.IntVal.udiv(Src2.IntVal); 
+      APIntPoison::poisonIfNeeded_div( R.IntVal, Src1.IntVal, Src2.IntVal,
+         I.isExact() );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+    case Instruction::SDiv:  
+      PROTECT_VS_DIV_0( Src2.IntVal );
+      R.IntVal = Src1.IntVal.sdiv(Src2.IntVal); 
+      APIntPoison::poisonIfNeeded_div( R.IntVal, Src1.IntVal, Src2.IntVal,
+         I.isExact() );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+    case Instruction::URem:  
+      PROTECT_VS_DIV_0( Src2.IntVal );
+      R.IntVal = Src1.IntVal.urem(Src2.IntVal); 
+      APIntPoison::poisonIfNeeded_rem( R.IntVal, Src1.IntVal, Src2.IntVal );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+    case Instruction::SRem:  
+      PROTECT_VS_DIV_0( Src2.IntVal );
+      R.IntVal = Src1.IntVal.srem(Src2.IntVal); 
+      APIntPoison::poisonIfNeeded_rem( R.IntVal, Src1.IntVal, Src2.IntVal );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+    case Instruction::And:   
+      #if 0
+       std::cout << "starting Instruction::And: \n";
+      #endif
+      R.IntVal = Src1.IntVal & Src2.IntVal; 
+      APIntPoison::poisonIfNeeded_bitAnd( R.IntVal, Src1.IntVal, Src2.IntVal );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+    case Instruction::Or:    
+      #if 0
+       std::cout << "starting Instruction::Or: \n";
+      #endif
+      R.IntVal = Src1.IntVal | Src2.IntVal; 
+      APIntPoison::poisonIfNeeded_bitOr( R.IntVal, Src1.IntVal, Src2.IntVal );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
+    case Instruction::Xor:   
+      #if 0
+       std::cout << "starting Instruction::Xor: \n";
+      #endif 
+      R.IntVal = Src1.IntVal ^ Src2.IntVal; 
+      APIntPoison::poisonIfNeeded_bitXor( R.IntVal, Src1.IntVal, Src2.IntVal );
+      APIntPoison::printIfPoison( I, R.IntVal );
+      break;
     }
   }
   SetValue(&I, R, SF);
@@ -799,6 +1024,8 @@ static GenericValue executeSelectInst(GenericValue Src1, GenericValue Src2,
           Src3.AggregateVal[i] : Src2.AggregateVal[i];
     } else {
       Dest = (Src1.IntVal == 0) ? Src3 : Src2;
+      APIntPoison::poisonIfNeeded_select( Dest.IntVal, 
+	  Src1.IntVal, Src2.IntVal, Src3.IntVal );
     }
     return Dest;
 }
@@ -810,11 +1037,13 @@ void Interpreter::visitSelectInst(SelectInst &I) {
   GenericValue Src2 = getOperandValue(I.getOperand(1), SF);
   GenericValue Src3 = getOperandValue(I.getOperand(2), SF);
   GenericValue R = executeSelectInst(Src1, Src2, Src3, Ty);
+  APIntPoison::printIfPoison( I, R.IntVal );
   SetValue(&I, R, SF);
 }
 
 //===----------------------------------------------------------------------===//
 //                     Terminator Instruction Implementations
+//                         (includes branch instructions)
 //===----------------------------------------------------------------------===//
 
 void Interpreter::exitCalled(GenericValue GV) {
@@ -885,6 +1114,9 @@ void Interpreter::visitBranchInst(BranchInst &I) {
   Dest = I.getSuccessor(0);          // Uncond branches have a fixed dest...
   if (!I.isUnconditional()) {
     Value *Cond = I.getCondition();
+    if ( getOperandValue(Cond, SF).IntVal.getPoisoned() )  {
+      lli_undef_fix::exit_due_to_poison();
+    }
     if (getOperandValue(Cond, SF).IntVal == 0) // If false cond...
       Dest = I.getSuccessor(1);
   }
@@ -896,6 +1128,9 @@ void Interpreter::visitSwitchInst(SwitchInst &I) {
   Value* Cond = I.getCondition();
   Type *ElTy = Cond->getType();
   GenericValue CondVal = getOperandValue(Cond, SF);
+  if ( getOperandValue(Cond, SF).IntVal.getPoisoned() )  {
+    lli_undef_fix::exit_due_to_poison();
+  }
 
   // Check to see if any of the cases match...
   BasicBlock *Dest = nullptr;
@@ -1052,7 +1287,7 @@ void Interpreter::visitStoreInst(StoreInst &I) {
   GenericValue Val = getOperandValue(I.getOperand(0), SF);
   GenericValue SRC = getOperandValue(I.getPointerOperand(), SF);
   StoreValueToMemory(Val, (GenericValue *)GVTOP(SRC),
-                     I.getOperand(0)->getType());
+                     I.getOperand(0)->getType(), &I);
   if (I.isVolatile() && PrintVolatile)
     dbgs() << "Volatile store: " << I;
 }
@@ -1063,6 +1298,12 @@ void Interpreter::visitStoreInst(StoreInst &I) {
 
 void Interpreter::visitCallSite(CallSite CS) {
   ExecutionContext &SF = ECStack.back();
+
+  #if 0 // info messages often useful for debugging
+    std::cout << "starting visitCallSite(~)...\n";
+    std::cout << std::flush;
+  #endif
+  fflush( stdout );;
 
   // Check to see if this is an intrinsic function call...
   Function *F = CS.getCalledFunction();
@@ -1104,10 +1345,18 @@ void Interpreter::visitCallSite(CallSite CS) {
       return;
     }
 
-
   SF.Caller = CS;
   std::vector<GenericValue> ArgVals;
   const unsigned NumArgs = SF.Caller.arg_size();
+  //std::cout << "  ftn name=\"" << F->getName().str() << "\" numArgs=" << 
+  //    NumArgs << "\n";;
+  if ( F->isDeclaration() )  { // only check external functions
+    Interpreter::checkFtnCallForPoisonedArgs( CS, SF ); 
+    /* TODO2: check if this would be better placed in the "if
+       F->isDeclaration()" statement above.
+     */
+  }
+
   ArgVals.reserve(NumArgs);
   uint16_t pNum = 1;
   for (CallSite::arg_iterator i = SF.Caller.arg_begin(),
@@ -1120,6 +1369,15 @@ void Interpreter::visitCallSite(CallSite CS) {
   // and treat it as a function pointer.
   GenericValue SRC = getOperandValue(SF.Caller.getCalledValue(), SF);
   callFunction((Function*)GVTOP(SRC), ArgVals);
+  #if 0 // info messages often useful for debugging
+    printf ( "   in visitCallSite(~), target function just returned \n" );
+    std::cout << std::flush;
+    fflush( stdout );
+    std::cout << "stopping visitCallSite(~), just called the ftn. \n";
+    std::cout << std::flush;
+    fflush( stdout );
+    sleep( 2 );
+  #endif
 }
 
 // auxiliary function for shift operations
@@ -1156,6 +1414,8 @@ void Interpreter::visitShl(BinaryOperator &I) {
     uint64_t shiftAmount = Src2.IntVal.getZExtValue();
     llvm::APInt valueToShift = Src1.IntVal;
     Dest.IntVal = valueToShift.shl(getShiftAmount(shiftAmount, valueToShift));
+    APIntPoison::poisonIfNeeded_shl( Dest.IntVal, valueToShift, shiftAmount, 
+         I.hasNoSignedWrap(), I.hasNoUnsignedWrap() );
   }
 
   SetValue(&I, Dest, SF);
@@ -1183,6 +1443,8 @@ void Interpreter::visitLShr(BinaryOperator &I) {
     uint64_t shiftAmount = Src2.IntVal.getZExtValue();
     llvm::APInt valueToShift = Src1.IntVal;
     Dest.IntVal = valueToShift.lshr(getShiftAmount(shiftAmount, valueToShift));
+    APIntPoison::poisonIfNeeded_lshr( Dest.IntVal, valueToShift, shiftAmount,
+         I.isExact() );
   }
 
   SetValue(&I, Dest, SF);
@@ -1210,6 +1472,8 @@ void Interpreter::visitAShr(BinaryOperator &I) {
     uint64_t shiftAmount = Src2.IntVal.getZExtValue();
     llvm::APInt valueToShift = Src1.IntVal;
     Dest.IntVal = valueToShift.ashr(getShiftAmount(shiftAmount, valueToShift));
+    APIntPoison::poisonIfNeeded_ashr( Dest.IntVal, valueToShift, shiftAmount,
+         I.isExact() );
   }
 
   SetValue(&I, Dest, SF);
@@ -1231,6 +1495,7 @@ GenericValue Interpreter::executeTruncInst(Value *SrcVal, Type *DstTy,
     IntegerType *DITy = cast<IntegerType>(DstTy);
     unsigned DBitWidth = DITy->getBitWidth();
     Dest.IntVal = Src.IntVal.trunc(DBitWidth);
+    APIntPoison::poisonIfNeeded_trunc( Dest.IntVal, Src.IntVal, DBitWidth );
   }
   return Dest;
 }
@@ -1251,6 +1516,7 @@ GenericValue Interpreter::executeSExtInst(Value *SrcVal, Type *DstTy,
     auto *DITy = cast<IntegerType>(DstTy);
     unsigned DBitWidth = DITy->getBitWidth();
     Dest.IntVal = Src.IntVal.sext(DBitWidth);
+    APIntPoison::poisonIfNeeded_sext( Dest.IntVal, Src.IntVal, DBitWidth );
   }
   return Dest;
 }
@@ -1272,6 +1538,7 @@ GenericValue Interpreter::executeZExtInst(Value *SrcVal, Type *DstTy,
     auto *DITy = cast<IntegerType>(DstTy);
     unsigned DBitWidth = DITy->getBitWidth();
     Dest.IntVal = Src.IntVal.zext(DBitWidth);
+    APIntPoison::poisonIfNeeded_zext( Dest.IntVal, Src.IntVal, DBitWidth );
   }
   return Dest;
 }
@@ -1419,6 +1686,9 @@ GenericValue Interpreter::executeUIToFPInst(Value *SrcVal, Type *DstTy,
   } else {
     // scalar
     assert(DstTy->isFloatingPointTy() && "Invalid UIToFP instruction");
+    if ( Src.IntVal.getPoisoned() )  {
+      lli_undef_fix::exit_due_to_poison();
+    }
     if (DstTy->getTypeID() == Type::FloatTyID)
       Dest.FloatVal = APIntOps::RoundAPIntToFloat(Src.IntVal);
     else {
@@ -1451,6 +1721,9 @@ GenericValue Interpreter::executeSIToFPInst(Value *SrcVal, Type *DstTy,
   } else {
     // scalar
     assert(DstTy->isFloatingPointTy() && "Invalid SIToFP instruction");
+    if ( Src.IntVal.getPoisoned() )  {
+      lli_undef_fix::exit_due_to_poison();
+    }
 
     if (DstTy->getTypeID() == Type::FloatTyID)
       Dest.FloatVal = APIntOps::RoundSignedAPIntToFloat(Src.IntVal);
@@ -1464,6 +1737,9 @@ GenericValue Interpreter::executeSIToFPInst(Value *SrcVal, Type *DstTy,
 
 GenericValue Interpreter::executePtrToIntInst(Value *SrcVal, Type *DstTy,
                                               ExecutionContext &SF) {
+  /* TODO: put something here to poison the integer if the pointer was
+     poisoned.
+   */
   uint32_t DBitWidth = cast<IntegerType>(DstTy)->getBitWidth();
   GenericValue Dest, Src = getOperandValue(SrcVal, SF);
   assert(SrcVal->getType()->isPointerTy() && "Invalid PtrToInt instruction");
@@ -1476,6 +1752,12 @@ GenericValue Interpreter::executeIntToPtrInst(Value *SrcVal, Type *DstTy,
                                               ExecutionContext &SF) {
   GenericValue Dest, Src = getOperandValue(SrcVal, SF);
   assert(DstTy->isPointerTy() && "Invalid PtrToInt instruction");
+  if ( Src.IntVal.getPoisoned() )  {
+    /* TODO2: should we exit here or propogate poison into the pointer
+       and only halt if the pointer is used?
+     */
+    lli_undef_fix::exit_due_to_poison();
+  }
 
   uint32_t PtrSize = getDataLayout().getPointerSizeInBits();
   if (PtrSize != Src.IntVal.getBitWidth())
@@ -1654,6 +1936,16 @@ GenericValue Interpreter::executeBitCastInst(Value *SrcVal, Type *DstTy,
 
 void Interpreter::visitTruncInst(TruncInst &I) {
   ExecutionContext &SF = ECStack.back();
+  #if 0 /* enable for debugging */
+  {
+    GenericValue Src = getOperandValue(I.getOperand(0), SF);
+    Type *destType= I.getType();
+    IntegerType *destInstType= cast<IntegerType>(destType);
+    std::cout << "starting visitTruncInst(TruncInst &I), src=" << 
+       Src.IntVal.toString(10,false) << 
+       " /w width=" << destInstType->getBitWidth() << ".\n";
+  }
+  #endif
   SetValue(&I, executeTruncInst(I.getOperand(0), I.getType(), SF), SF);
 }
 
@@ -1800,6 +2092,9 @@ void Interpreter::visitInsertElementInst(InsertElementInst &I) {
     default:
       llvm_unreachable("Unhandled dest type for insertelement instruction");
     case Type::IntegerTyID:
+      if ( Src2.IntVal.getPoisoned() )  {
+       lli_undef_fix::exit_due_to_poison();
+      }
       Dest.AggregateVal[indx].IntVal = Src2.IntVal;
       break;
     case Type::FloatTyID:
@@ -1950,6 +2245,9 @@ void Interpreter::visitInsertValueInst(InsertValueInst &I) {
       llvm_unreachable("Unhandled dest type for insertelement instruction");
     break;
     case Type::IntegerTyID:
+      if ( Src2.IntVal.getPoisoned() )  {
+       lli_undef_fix::exit_due_to_poison();
+      }
       pDest->IntVal = Src2.IntVal;
     break;
     case Type::FloatTyID:
@@ -2077,6 +2375,10 @@ void Interpreter::callFunction(Function *F, ArrayRef<GenericValue> ArgVals) {
   assert((ECStack.empty() || !ECStack.back().Caller.getInstruction() ||
           ECStack.back().Caller.arg_size() == ArgVals.size()) &&
          "Incorrect number of arguments passed into function call!");
+  #if 0
+    std::cout << "starting Execution/Interpreter::callFunction(~)... \n";
+  #endif 
+
   // Make a new stack frame... and fill it in.
   ECStack.emplace_back();
   ExecutionContext &StackFrame = ECStack.back();
@@ -2102,8 +2404,12 @@ void Interpreter::callFunction(Function *F, ArrayRef<GenericValue> ArgVals) {
   // Handle non-varargs arguments...
   unsigned i = 0;
   for (Function::arg_iterator AI = F->arg_begin(), E = F->arg_end(); 
-       AI != E; ++AI, ++i)
-    SetValue(&*AI, ArgVals[i], StackFrame);
+       AI != E; ++AI, ++i)  {
+    SetValue(&*AI, ArgVals[i], StackFrame); // asdf
+    //std::cout << "   key \"" << AI << "\"'s IntVal set to \"" << 
+    // ArgVals[i].IntVal.toString( 10, false ) << "\"\n";;
+  }
+
 
   // Handle varargs arguments...
   StackFrame.VarArgs.assign(ArgVals.begin()+i, ArgVals.end());
@@ -2120,6 +2426,18 @@ void Interpreter::run() {
     ++NumDynamicInsts;
 
     DEBUG(dbgs() << "About to interpret: " << I);
+    #if 0
+    {
+      const GenericValue &Val = SF.Values[&I];;
+      std::cout << "in Execution.cpp/Interpreter::run(): " << 
+         "About to interpret: \n" << 
+         "   " << I.toString() << "\n" <<
+         "   i" << Val.IntVal.getBitWidth() << " "
+         << Val.IntVal.toString(10,false)
+         << " (0x" << Val.IntVal.toString(16,false) << ")\n";;
+    }
+    #endif
+
     visit(I);   // Dispatch to one of the visit* methods...
   }
 }
