@@ -10,9 +10,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0xb9' 
 unpoisoned: '0xb9' 
 unpoisoned: '0x81' 
@@ -20,8 +22,6 @@ unpoisoned: '0x81'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -39,9 +39,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x9d' 
 unpoisoned: '0x9d' 
 unpoisoned: '0x1' 
@@ -49,8 +51,6 @@ unpoisoned: '0x1'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -68,9 +68,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0xfc54' 
 unpoisoned: '0xfc54' 
 unpoisoned: '0x682' 
@@ -78,8 +80,6 @@ unpoisoned: '0x682'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -97,17 +97,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x20' 
 unpoisoned: '0x2' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -125,9 +125,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x0' 
 unpoisoned: '0xc6f0' 
 unpoisoned: '0x9' 
@@ -135,8 +137,6 @@ unpoisoned: '0x9'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -154,17 +154,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x3d' 
 unpoisoned: '0xb7' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -182,9 +182,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0xfb' 
 unpoisoned: '0xfb' 
 unpoisoned: '0xfb' 
@@ -192,8 +194,6 @@ unpoisoned: '0xfb'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -211,9 +211,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x50' 
 unpoisoned: '0x50' 
 unpoisoned: '0x10' 
@@ -221,8 +223,6 @@ unpoisoned: '0x10'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -240,6 +240,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -264,9 +265,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x0' 
 unpoisoned: '0x0' 
 unpoisoned: '0x0' 
@@ -291,9 +294,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x0' 
 unpoisoned: '0x0' 
 unpoisoned: '0x0' 
@@ -301,8 +306,6 @@ unpoisoned: '0x0'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -320,16 +323,16 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x0' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -347,9 +350,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x2b38' 
 unpoisoned: '0x2b38' 
 unpoisoned: '0x3396' 
@@ -357,8 +362,6 @@ unpoisoned: '0x3396'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -376,9 +379,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x2a' 
 unpoisoned: '0x2a' 
 unpoisoned: '0x70' 
@@ -386,8 +391,6 @@ unpoisoned: '0x70'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -405,9 +408,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x78' 
 unpoisoned: '0x78' 
 unpoisoned: '0xe0' 
@@ -415,8 +420,6 @@ unpoisoned: '0xe0'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -434,9 +437,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x5' 
 unpoisoned: '0x1d' 
 unpoisoned: '0x9' 
@@ -444,8 +449,6 @@ unpoisoned: '0x9'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -463,6 +466,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -491,6 +495,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -519,16 +524,16 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x9' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -546,16 +551,16 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x5' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -573,6 +578,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -598,16 +604,16 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x82' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -625,16 +631,16 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x82' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -652,6 +658,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -677,9 +684,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x7963' 
 unpoisoned: '0x2' 
 unpoisoned: '0x79' 
@@ -687,8 +696,6 @@ unpoisoned: '0x79'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -706,9 +713,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x8880' 
 unpoisoned: '0x8880' 
 unpoisoned: '0x8100' 
@@ -716,8 +725,6 @@ unpoisoned: '0x8100'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -735,9 +742,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x52b0' 
 unpoisoned: '0x52b0' 
 unpoisoned: '0x6fa0' 
@@ -745,8 +754,6 @@ unpoisoned: '0x6fa0'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -764,16 +771,16 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 this prints if poison-free: '0xe' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -791,9 +798,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 
 ########
 stderr: 
@@ -817,9 +826,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x19' 
 unpoisoned: '0x19' 
 unpoisoned: '0x7a' 
@@ -827,8 +838,6 @@ unpoisoned: '0x7a'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -846,9 +855,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x97' 
 unpoisoned: '0x97' 
 unpoisoned: '0xea' 
@@ -856,8 +867,6 @@ unpoisoned: '0xea'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -875,17 +884,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0xa8d1' 
 unpoisoned: '0x0' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -903,16 +912,16 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x0' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -930,17 +939,17 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=0 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x963' 
 unpoisoned: '0x23' 
 
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########

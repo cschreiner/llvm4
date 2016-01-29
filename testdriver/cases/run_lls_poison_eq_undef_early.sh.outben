@@ -10,6 +10,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -38,6 +39,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -66,9 +68,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0xfc54' 
 unpoisoned: '0xfc54' 
 unpoisoned: '0x682' 
@@ -76,8 +80,6 @@ unpoisoned: '0x682'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -95,6 +97,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -122,14 +125,14 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x0' 
 unpoisoned: '0xc6f0' 
 unpoisoned: '0x9' 
-poisoned: '0x19'  
-   ; why does this end up as 7 sometimes?  Is a random value being substituted?
+poisoned: '0x7' 
 
 ########
 stderr: 
@@ -151,6 +154,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -178,6 +182,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -206,6 +211,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -234,6 +240,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -258,6 +265,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -286,6 +294,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -295,16 +304,16 @@ unpoisoned: '0x1'
 poisoned: '0x1' 
 unpoisoned: '0x0' 
 unpoisoned: '0x0' 
-poisoned: '0x1' ; TODO: see if this is random
+poisoned: '0x1' 
 poisoned: '0x1' 
 unpoisoned: '0x0' 
 poisoned: '0x1' 
-unpoisoned: '0x0' ; TODO: see if this is random
+unpoisoned: '0x0' 
 poisoned: '0x1' 
 unpoisoned: '0x0' 
 poisoned: '0x0' 
 poisoned: '0x0' 
-poisoned: '0x0' ; TODO: see if this is random
+poisoned: '0x0' 
 
 ########
 stderr: 
@@ -326,6 +335,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -333,18 +343,22 @@ unpoisoned: '0x0'
 poisoned: '0x1' 
 poisoned: '0x1' 
 poisoned: '0x1' 
+---
 unpoisoned: '0x0' 
-poisoned: '0x0'  ; TODO: see if this is random
+poisoned: '0x0' 
 unpoisoned: '0x1' 
 poisoned: '0x1' 
+---
 unpoisoned: '0x0' 
 unpoisoned: '0x1' 
-poisoned: '0x0'  ; TODO: see if this is random
+poisoned: '0x0' 
 poisoned: '0x1' 
-unpoisoned: '0x0' ; TODO: shouldn't this be 1?
-poisoned: '0x0'  ; TODO: see if this is random
-poisoned: '0x0'  ; TODO: see if this is random
-poisoned: '0x0'  ; TODO: see if this is random
+---
+unpoisoned: '0x0' 
+poisoned: '0x0' 
+poisoned: '0x0' 
+poisoned: '0x0' 
+---
 
 ########
 stderr: 
@@ -366,9 +380,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x2b38' 
 unpoisoned: '0x2b38' 
 unpoisoned: '0x3396' 
@@ -376,8 +392,6 @@ unpoisoned: '0x3396'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -395,6 +409,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -423,6 +438,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -451,6 +467,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -479,13 +496,14 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
-unpoisoned: '0x67' ; TODO: should be 0
-unpoisoned: '0xc6' ; TODO: should be 0
-unpoisoned: '0x69' ; TODO: should be -1
-unpoisoned: '0x73' ; TODO: should be -1
+unpoisoned: '0x67' 
+unpoisoned: '0xc6' 
+unpoisoned: '0x69' 
+unpoisoned: '0x73' 
 
 ########
 stderr: 
@@ -507,13 +525,14 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
-unpoisoned: '0x67' ; TODO: should be 0
-unpoisoned: '0xc6' ; TODO: should be 0
-unpoisoned: '0x69' ; TODO: should be -1
-unpoisoned: '0x73' ; TODO: should be -1
+unpoisoned: '0x67' 
+unpoisoned: '0xc6' 
+unpoisoned: '0x69' 
+unpoisoned: '0x73' 
 
 ########
 stderr: 
@@ -535,6 +554,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -561,6 +581,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -587,6 +608,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -612,6 +634,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -638,6 +661,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -664,6 +688,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -689,6 +714,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -717,9 +743,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x8880' 
 unpoisoned: '0x8880' 
 unpoisoned: '0x8100' 
@@ -727,8 +755,6 @@ unpoisoned: '0x8100'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -746,9 +772,11 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
+      starting exit_due_to_poison()...
 unpoisoned: '0x52b0' 
 unpoisoned: '0x52b0' 
 unpoisoned: '0x6fa0' 
@@ -756,8 +784,6 @@ unpoisoned: '0x6fa0'
 ########
 stderr: 
 
-Attempt to call an external function with a poison value in arg# 1.
-  ftn name="printf", numArgs=2
 exiting due to external poison propogation. 
 
 ########
@@ -775,6 +801,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -801,6 +828,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -826,6 +854,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -854,6 +883,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -882,6 +912,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
@@ -909,25 +940,26 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
 unpoisoned: '0x1' 
-poisoned: '0x1'  ; TODO2: is this random?
-poisoned: '0x1'  ; TODO2: is this random?
-poisoned: '0x1'  ; TODO2: is this random?
+poisoned: '0x1' 
+poisoned: '0x1' 
+poisoned: '0x1' 
 unpoisoned: '0x0' 
-poisoned: '0x0'  ; TODO2: is this random?
-poisoned: '0x1'  ; TODO2: is this random?
-poisoned: '0x1'  ; TODO2: is this random?
+poisoned: '0x0' 
+poisoned: '0x1' 
+poisoned: '0x1' 
 unpoisoned: '0x0' 
-poisoned: '0x1'  ; TODO2: is this random?
-poisoned: '0x0'  ; TODO2: is this random?
-poisoned: '0x1'  ; TODO2: is this random?
+poisoned: '0x1' 
+poisoned: '0x0' 
+poisoned: '0x1' 
 unpoisoned: '0x0' 
-poisoned: '0x0'  ; TODO2: is this random?
-poisoned: '0x0'  ; TODO2: is this random?
-poisoned: '0x0'  ; TODO2: is this random?
+poisoned: '0x0' 
+poisoned: '0x0' 
+poisoned: '0x0' 
 
 ########
 stderr: 
@@ -949,6 +981,7 @@ LUF Option settings via LLI_LUF_OPTS:
   poison_eq_undef_early=1 (default=0) 
   return_if_div_0=0 (default=0) 
   nuno=0 (default=0) 
+  nuno_pp=0 (default=0) 
   no_exit_due_to_poison=0 (default=0) 
   (end of options) 
 
